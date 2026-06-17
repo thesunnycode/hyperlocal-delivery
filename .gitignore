@@ -1,0 +1,99 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# IDE - VS Code
+.vscode/
+
+# IDE - NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.local
+*.local
+
+# Spring Boot
+HELP.md
+
+# Git worktrees
+.worktrees/
+
+# Frontend build output copied here by frontend-maven-plugin
+src/main/resources/static/
+
+# Local reference files - not part of the project
+/archive/
+
+# Documentation source - local only, never committed
+/docs/
+
+# AI agent and tool config - machine-local
+.claude/
+.kiro/
+.idea/
+.superpowers/
+
+# Project meta-instructions - local only
+AGENTS.md
+
+# Local scripts
+rewrite.py
+rewrite_history.ps1
+fix_trees.ps1
+
+# Design handoff bundles
+/hyperlocal-frontend-redesign.zip
+/*-frontend-redesign.zip
+/*Delivery tracking redesign*.zip
+
+# Audit reports and audit prompts - local working material, never committed
+docs/maintainers/audits/
+docs/maintainers/ux-audit/
+docs/maintainers/prompts/
+docs/maintainers/old-docs/audits/
+docs/maintainers/old-docs/ux-audit/
+docs/maintainers/old-docs/*AUDIT*.md
+docs/maintainers/old-docs/*-PROMPT.md
+docs/maintainers/old-docs/ui-ux-audit-prompt.md
+docs/maintainers/old-docs/_audit_scan.ps1
+
+# Machine-local tool output and credentials
+.playwright-mcp/
+.codex/
+
+# Loose files at the repository root
+/*.zip
+/push_readme.py
