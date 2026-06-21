@@ -23,10 +23,10 @@ no app — that updates live and never reveals who's carrying their order.
 
 <table align="center">
 <tr>
-<td align="center"><b>46</b><br><sub>endpoints</sub></td>
+<td align="center"><b>45</b><br><sub>endpoints</sub></td>
 <td align="center"><b>215</b><br><sub>tests</sub></td>
 <td align="center"><b>11</b><br><sub>tables</sub></td>
-<td align="center"><b>Java 17</b><br><sub>Spring Boot 4</sub></td>
+<td align="center"><b>Java 17</b><br><sub>Spring Boot 4.1</sub></td>
 </tr>
 </table>
 
