@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mail:
+    # Production requires SMTP: the console OTP bean exists only in dev/test.
+    # An empty default avoids placeholder resolution failure, but does not
+    # provide a production OTP sender. Configure SMTP before starting prod.
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-ttl-minutes: 1440
+    refresh-ttl-days: 7
+  # No defaults on purpose. An unset variable here is bound as its literal
+  # "${...}" text rather than failing, so StartupValidator aborts startup if
+  # either of these two is unset or blank.
+  cors:
+    allowed-origins: ${CORS_ORIGINS}
+  mail:
+    invite-link-base-url: ${INVITE_LINK_BASE_URL}
+    invite-ttl-hours: ${INVITE_TTL_HOURS:168}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.hyperlocal: INFO
