@@ -1,0 +1,68 @@
+package com.hyperlocal.delivery.dto.shipment;
+
+import java.util.List;
+
+import com.hyperlocal.delivery.model.Shipment;
+import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
+
+/**
+ * Full shipment detail response including events and delivery attempts.
+ *
+ * <p>Field names match the frontend's contract directly (the frontend's own
+ * names, not aliases):
+ * the owner shipments page ({@code /owner/shipments}) reads {@code selected.token},
+ * {@code selected.address},
+ * {@code selected.scheduledAt}, {@code selected.agentName}, and
+ * {@code selected.agentId} — not {@code trackingToken}, {@code deliveryAddress},
+ * {@code scheduledDeliveryAt}, or a nested {@code assignedAgent} object.
+ */
+public record ShipmentResponseDto(
+        Long id,
+        String token,
+        ShipmentStatus status,
+        String customerName,
+        String customerPhone,
+        String address,
+        String scheduledAt,
+        String deliveredAt,
+        Long agentId,
+        String agentName,
+        List<ShipmentEventDto> events,
+        List<DeliveryAttemptDto> attempts,
+        String createdAt,
+        String updatedAt
+) {
+
+    /**
+     * Build from a shipment entity with eagerly loaded associations.
+     */
+    public static ShipmentResponseDto from(Shipment s) {
+        List<ShipmentEventDto> eventDtos = s.getEvents() != null
+                ? s.getEvents().stream().map(ShipmentEventDto::from).toList()
+                : List.of();
+
+        List<DeliveryAttemptDto> attemptDtos = s.getAttempts() != null
+                ? s.getAttempts().stream().map(DeliveryAttemptDto::from).toList()
+                : List.of();
+
+        AgentMiniDto agent = AgentMiniDto.from(s.getAssignedAgent());
+
+        return new ShipmentResponseDto(
+                s.getId(),
+                s.getTrackingToken(),
+                s.getStatus(),
+                s.getCustomerName(),
+                s.getCustomerPhone(),
+                s.getDeliveryAddress(),
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getDeliveredAt()),
+                agent != null ? agent.id() : null,
+                agent != null ? agent.fullName() : null,
+                eventDtos,
+                attemptDtos,
+                TimeUtils.toIso(s.getCreatedAt()),
+                TimeUtils.toIso(s.getUpdatedAt())
+        );
+    }
+}
