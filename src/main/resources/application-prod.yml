@@ -1,0 +1,53 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mail:
+    # Left blank when unset (rather than a hard-required placeholder) so a
+    # deploy without SMTP configured degrades to console-logging the reset
+    # link (see MailConfig / ConsoleMailService) instead of failing to
+    # start with "Could not resolve placeholder 'SMTP_HOST'".
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-ttl-minutes: 1440
+    refresh-ttl-days: 7
+  cors:
+    allowed-origins: ${CORS_ORIGINS}
+  mail:
+    reset-link-base-url: ${RESET_LINK_BASE_URL}
+    reset-token-ttl-minutes: ${RESET_TOKEN_TTL_MINUTES:30}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.hyperlocal: DEBUG
