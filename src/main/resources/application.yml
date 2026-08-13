@@ -1,0 +1,57 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10   # Railway-appropriate; increase to 20-30 for larger instances
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.from: ${MAIL_FROM:${SMTP_USERNAME:}}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-ttl-minutes: 15       # short-lived; refresh token handles continuity
+    refresh-ttl-days: 7
+  cors:
+    allowed-origins: ${CORS_ORIGINS:*}
+  mail:
+    reset-link-base-url: ${RESET_LINK_BASE_URL:http://localhost:5173/reset-password}
+    reset-token-ttl-minutes: ${RESET_TOKEN_TTL_MINUTES:30}
+    # Where an agent lands to set their first password.
+    invite-link-base-url: ${INVITE_LINK_BASE_URL:http://localhost:5173/agent-setup}
+    # A week: the owner sends this to someone who may not read it
+    # until their next shift.
+    invite-ttl-hours: ${INVITE_TTL_HOURS:168}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never
+  health:
+    mail:
+      enabled: false
