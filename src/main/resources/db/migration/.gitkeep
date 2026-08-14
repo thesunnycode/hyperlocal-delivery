@@ -1,0 +1,4 @@
+# Flyway migrations directory.
+# Created empty in Phase 1, Task 8 so Git tracks the folder before any
+# migration exists. V1__init_schema.sql lands here in Phase 2, Task 8.
+# Safe to delete once the directory holds real migrations.
