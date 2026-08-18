@@ -1,0 +1,163 @@
+package com.hyperlocal.delivery.service;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.hyperlocal.delivery.config.MailProperties;
+import com.hyperlocal.delivery.dto.invite.AcceptInviteRequest;
+import com.hyperlocal.delivery.dto.invite.InvitePreviewResponse;
+import com.hyperlocal.delivery.dto.invite.InviteResponse;
+import com.hyperlocal.delivery.exception.AgentNotFoundException;
+import com.hyperlocal.delivery.exception.InvalidAgentException;
+import com.hyperlocal.delivery.exception.InvalidInviteTokenException;
+import com.hyperlocal.delivery.model.AgentInvite;
+import com.hyperlocal.delivery.model.User;
+import com.hyperlocal.delivery.model.UserRole;
+import com.hyperlocal.delivery.repository.AgentInviteRepository;
+import com.hyperlocal.delivery.repository.RefreshTokenRepository;
+import com.hyperlocal.delivery.repository.UserRepository;
+import com.hyperlocal.delivery.security.JwtUtil;
+import com.hyperlocal.delivery.util.TimeUtils;
+
+import lombok.RequiredArgsConstructor;
+
+/**
+ * Agent onboarding.
+ *
+ * <p>The problem this solves: {@link AgentService#create} mints an account
+ * with a random password that is hashed immediately and shown to nobody, so
+ * the agent has no way to discover the account exists, let alone sign in. An
+ * invite is a single-use expiring bearer credential that lets its holder
+ * choose a password. Possession alone does not prove mailbox ownership.
+ *
+ * <p>Three deliberate choices:
+ * <ul>
+ *   <li>Issuing an invite retires any earlier one for that agent, so a
+ *       forwarded or leaked older link stops working the moment a new one is
+ *       sent.</li>
+ *   <li>Accepting revokes every refresh token the account holds. Nothing
+ *       can refresh with those tokens afterwards. Existing access JWTs are
+ *       not revoked and remain usable until expiry.</li>
+ *   <li>A failed email is not a failed request. The invite row is committed
+ *       and the link is returned either way, and {@code emailed} says which
+ *       happened, so the owner console can tell the truth rather than
+ *       claiming a message was sent.</li>
+ * </ul>
+ */
+@Service
+@RequiredArgsConstructor
+public class AgentInviteService {
+
+    private final AgentInviteRepository inviteRepository;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AgentInviteMailer inviteMailer;
+    private final MailProperties mailProperties;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    /**
+     * Issue a fresh invite for one of the caller's own agents.
+     *
+     * <p>Tenant-scoped on {@code businessId} and restricted to
+     * DELIVERY_AGENT rows: an owner cannot mint a password-setting link for
+     * another owner, or for someone else's agent.
+     *
+     * <p>A deactivated agent is refused with {@link InvalidAgentException}
+     * (422 {@code INVALID_AGENT}), the same code shipment assignment uses
+     * for an inactive agent: a password-setting link for an account that
+     * has been switched off would be a way back in. Reactivate first.
+     */
+    @Transactional
+    public InviteResponse issue(Long businessId, Long agentId) {
+        User agent = userRepository.findById(agentId)
+                .filter(u -> u.getRole() == UserRole.DELIVERY_AGENT)
+                .filter(u -> u.getBusiness() != null && u.getBusiness().getId().equals(businessId))
+                .orElseThrow(() -> new AgentNotFoundException(agentId));
+        if (!Boolean.TRUE.equals(agent.getIsActive()) || agent.getDeletedAt() != null) {
+            throw new InvalidAgentException("Agent is deactivated; reactivate before inviting: " + agentId);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        inviteRepository.expireOutstanding(agent.getId(), now);
+
+        // Whole seconds: expires_at is a DATETIME with no fractional part, so
+        // the value reported here must be the value the preview will later
+        // read back, not one carrying digits the column drops.
+        LocalDateTime expiresAt = now.plusHours(mailProperties.inviteTtlHours())
+                .truncatedTo(ChronoUnit.SECONDS);
+
+        String rawToken = jwtUtil.generateOpaqueToken();
+        inviteRepository.save(AgentInvite.builder()
+                .user(agent)
+                .tokenHash(JwtUtil.sha256Hex(rawToken))
+                .expiresAt(expiresAt)
+                .build());
+
+        String businessName = agent.getBusiness().getName();
+        boolean emailed = inviteMailer.sendInviteEmail(
+                agent.getEmail(), agent.getFullName(), businessName, rawToken);
+
+        return new InviteResponse(
+                MailLinkBuilder.buildInviteLink(mailProperties.inviteLinkBaseUrl(), rawToken),
+                TimeUtils.toIso(expiresAt),
+                emailed);
+    }
+
+    /**
+     * What the setup screen may show before any password exists. Read-only,
+     * and it does not spend the invite — opening the link twice is normal.
+     */
+    @Transactional(readOnly = true)
+    public InvitePreviewResponse preview(String rawToken) {
+        AgentInvite invite = usable(rawToken);
+        User agent = invite.getUser();
+        return new InvitePreviewResponse(
+                agent.getFullName(),
+                agent.getEmail(),
+                agent.getBusiness() != null ? agent.getBusiness().getName() : null,
+                TimeUtils.toIso(invite.getExpiresAt()));
+    }
+
+    /**
+     * Spend the invite and set the password.
+     *
+     * <p>The row is claimed first, by a conditional UPDATE that only touches
+     * an unspent, unexpired invite. If that reports no rows, someone else won
+     * the race (or the link was already dead) and nothing is written.
+     */
+    @Transactional
+    public void accept(AcceptInviteRequest req) {
+        LocalDateTime now = LocalDateTime.now();
+        String hash = JwtUtil.sha256Hex(req.token());
+
+        AgentInvite invite = inviteRepository.findByTokenHash(hash)
+                .orElseThrow(InvalidInviteTokenException::new);
+
+        if (inviteRepository.markAccepted(hash, now) == 0) {
+            throw new InvalidInviteTokenException();
+        }
+
+        User agent = invite.getUser();
+        agent.setPasswordHash(passwordEncoder.encode(req.password()));
+        agent.setPasswordChangedAt(now);
+        userRepository.save(agent);
+
+        // Prevent refresh with existing tokens. Access JWTs remain valid
+        // until expiry while the account is active.
+        refreshTokenRepository.deleteByUser_Id(agent.getId());
+    }
+
+    private AgentInvite usable(String rawToken) {
+        AgentInvite invite = inviteRepository.findByTokenHash(JwtUtil.sha256Hex(rawToken))
+                .orElseThrow(InvalidInviteTokenException::new);
+        if (!invite.isUsable(LocalDateTime.now())) {
+            throw new InvalidInviteTokenException();
+        }
+        return invite;
+    }
+}
