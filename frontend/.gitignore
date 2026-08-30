@@ -1,0 +1,8 @@
+node_modules
+dist
+# Node/npm downloaded here by pom.xml's frontend-maven-plugin (install-node-and-npm goal)
+node
+.env
+.env.local
+*.log
+.DS_Store

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "noEmit": true,
+    // This codebase writes component imports with their extension
+    // ('./StatusBadge.tsx'), and Vite needs the literal extension to resolve
+    // — it does not remap a .jsx specifier onto a .tsx file. TS only permits
+    // that spelling with this flag, which in turn requires noEmit.
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    // apiClient reads import.meta.env.VITE_API_BASE_URL.
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}
