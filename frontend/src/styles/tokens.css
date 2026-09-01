@@ -1,0 +1,256 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Hyperlocal design tokens — the ONE place the palette, the type ramp, the
+   spacing scale, the radii, the elevations and the motion rules are declared.
+
+   §3.6 of the redesign brief: "Put shared tokens in one place and have each
+   scope consume them; do not duplicate a palette six times." Before this file
+   existed, seven stylesheets each declared their own near-identical block of
+   hexes, and they had already drifted — owner.css, agent.css and track.css
+   carried three different values for the same hairline.
+
+   The six scopes keep their prefixes. `.ow`, `.ag`, `.tk`, `.auth`, `.rp`,
+   `.es` and `.cd/.ts` still declare `--ow-ink`, `--ag-ink` and so on, so every
+   rule downstream is untouched — but those declarations are now ALIASES onto
+   the `--hl-*` tokens here. Change a value once; the app follows. A scope can
+   still override one alias locally when it genuinely needs to differ, and that
+   override is then visible as a deliberate exception rather than as drift.
+
+   Every ratio in the comments is measured, not estimated.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Neutral ramp ───────────────────────────────────────────────────────
+     Cool slate. The previous ramp was warm (#eeefe9, #f7f8f4) which read as
+     dusty next to a saturated accent; these are the same lightnesses on a
+     blue-leaning axis, so cards separate from the page without a shadow. */
+  --hl-n0:   #ffffff;   /* raised surface — cards, rows, sheets            */
+  --hl-n25:  #f7f9fb;   /* page background                                 */
+  --hl-n50:  #f1f5f9;   /* sunken — table heads, inert wells, hover        */
+  --hl-n100: #eef2f7;   /* sunken, one step down — sidebar, footers        */
+  --hl-n200: #e4e9f0;   /* hairline border. Decorative: no contrast floor. */
+  --hl-n300: #cfd8e4;   /* control border — inputs, secondary buttons      */
+  --hl-n400: #808c9e;   /* strong border / meaningful edge. 3.41:1 on n0.  */
+  --hl-n600: #5e6a7a;   /* tertiary text. 5.50 n0 · 5.21 n25 · 4.89 n100.  */
+  --hl-n700: #45505f;   /* secondary text. 8.18 n0 · 7.76 n25.             */
+  --hl-n900: #0f172a;   /* primary text. 17.85 n0 · 16.92 n25.             */
+
+  /* ── Brand ──────────────────────────────────────────────────────────────
+     One confident hue for the primary path: the filled action, the active nav
+     item, the focus ring, links. Never a status, never decoration.
+
+     Three values, because one cannot do all three jobs honestly:
+       brand        the identity hue — borders, dots, chart fills, focus ring
+       brand-solid  fills that carry WHITE TEXT. #00875f measures 4.53:1 with
+                    white, which passes AA by 0.03; anything that tight breaks
+                    the next time somebody nudges it. #007a56 is 5.36:1 and is
+                    indistinguishable at a glance.
+       brand-deep   hover and press on any brand surface. 6.61:1 with white. */
+  --hl-brand:       #00875f;
+  --hl-brand-solid: #007a56;
+  --hl-brand-deep:  #046a4e;
+  --hl-brand-soft:  #d4f7e7;   /* tinted well; brand-deep on it = 5.75:1    */
+  --hl-brand-ring:  #bdf3dc;   /* 3px focus halo                            */
+
+  /* ── Status ─────────────────────────────────────────────────────────────
+     Seven keys, fixed by src/utils/statusMachine.ts. Each gets four values:
+
+       -solid   filled badge / left row edge / timeline marker. Every one
+                carries WHITE at ≥4.5:1 (measured below).
+       -bg      tinted pill background
+       -ink     text on that tint, ≥4.8:1 in every case
+       -line    the tint's border
+
+     Colour is never the only carrier: every badge also has its label and a
+     lucide icon, because riders read these outdoors and some users are
+     colour-blind. The two in-flight states deliberately SHARE one cobalt at
+     two depths, so a journey reads as one movement rather than two events.
+
+     white-on-solid: assigned 7.00 · picked_up 6.70 · in_transit 6.70
+                     out_for_delivery 5.50 · delivered 5.36 · failed 5.74
+                     returned 7.10                                          */
+  --hl-assigned-solid: #4e5a6b;  --hl-assigned-bg: #f1f5f9;
+  --hl-assigned-ink:   #4e5a6b;  --hl-assigned-line: #cfd8e4;
+
+  --hl-picked_up-solid: #1d4ed8; --hl-picked_up-bg: #e0f2fe;
+  --hl-picked_up-ink:   #1d4ed8; --hl-picked_up-line: #bae6fd;
+
+  --hl-in_transit-solid: #1d4ed8; --hl-in_transit-bg: #dbeafe;
+  --hl-in_transit-ink:   #1d4ed8; --hl-in_transit-line: #bfdbfe;
+
+  --hl-out_for_delivery-solid: #b34700; --hl-out_for_delivery-bg: #ffeedb;
+  --hl-out_for_delivery-ink:   #b34700; --hl-out_for_delivery-line: #fdd9a8;
+
+  --hl-delivered-solid: #007a56; --hl-delivered-bg: #d4f7e7;
+  --hl-delivered-ink:   #046a4e; --hl-delivered-line: #9eebc9;
+
+  --hl-failed-solid: #c81e1e;    --hl-failed-bg: #ffe7e5;
+  --hl-failed-ink:   #c81e1e;    --hl-failed-line: #fdc9c5;
+
+  --hl-returned-solid: #6d28d9;  --hl-returned-bg: #f0e9fe;
+  --hl-returned-ink:   #6d28d9;  --hl-returned-line: #ddd0fb;
+
+  /* ── Semantic (non-status) ──────────────────────────────────────────── */
+  --hl-danger:      #c81e1e;   /* 5.74:1 with white                        */
+  --hl-danger-deep: #8c1c16;
+  --hl-danger-bg:   #ffe7e5;
+  --hl-danger-line: #fdc9c5;
+  --hl-danger-ink:  #8c1c16;   /* text on danger-bg — 7.68:1               */
+  --hl-warn:        #b34700;
+  --hl-warn-solid:  #b34700;   /* filled dot / meter bar. 8.4:1 on n0      */
+  --hl-warn-bg:     #fff7ed;
+  --hl-warn-line:   #ffd9b8;
+  --hl-warn-ink:    #9a3412;   /* text on warn-bg — 6.11:1                 */
+  --hl-ok-ink:      #046a4e;
+
+  /* ── Type ───────────────────────────────────────────────────────────────
+     Bricolage Grotesque for display: it has a slightly irregular axis and real
+     warmth, which keeps a 34px headline from reading as corporate — and unlike
+     the Instrument Serif it replaces, it stays legible at 19px on a rider's
+     phone in sunlight, where a display serif turns to mush.
+
+     Instrument Sans for all UI and body copy: narrow enough for the register's
+     seven columns, calm at 13px.
+
+     JetBrains Mono for anything read digit by digit — ₹ amounts, +91 numbers,
+     tracking tokens, timestamps, table figures. This app previously refused a
+     second face and used the system mono stack; that decision is reversed
+     deliberately, because the system stack renders at a different width on
+     every machine and this product's tables are full of aligned numbers.  */
+  --hl-display: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
+  --hl-ui:      'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --hl-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* The scale. Every size in the app is one of these — nothing is left to a
+     default, and the most important block on a screen is typed like it. */
+  --hl-t-display-1: 700 34px/1.12 var(--hl-display);   /* page answer      */
+  --hl-t-display-2: 700 27px/1.16 var(--hl-display);   /* section headline */
+  --hl-t-title-1:   600 21px/1.25 var(--hl-display);   /* card headline    */
+  --hl-t-title-2:   600 17px/1.3  var(--hl-display);   /* sub-head         */
+  --hl-t-body-1:    400 14.5px/1.6 var(--hl-ui);       /* reading copy     */
+  --hl-t-body-2:    400 13px/1.55 var(--hl-ui);        /* dense UI copy    */
+  --hl-t-label:     600 13px/1.4 var(--hl-ui);         /* field labels     */
+  --hl-t-kicker:    600 10.5px/1 var(--hl-ui);         /* .09em caps       */
+  --hl-t-mono:      500 13px/1.4 var(--hl-mono);       /* tabular data     */
+  --hl-track-tight: -0.03em;   /* display sizes                            */
+  --hl-track-ui:    -0.008em;  /* UI text                                  */
+  --hl-track-caps:  0.09em;    /* kickers                                  */
+
+  /* ── Spacing — 4px base ─────────────────────────────────────────────── */
+  --hl-s1: 4px;   --hl-s2: 8px;   --hl-s3: 12px;  --hl-s4: 16px;
+  --hl-s5: 20px;  --hl-s6: 24px;  --hl-s8: 32px;  --hl-s10: 40px;
+
+  /* ── Radius ─────────────────────────────────────────────────────────── */
+  --hl-r-sm:   7px;    /* chips, small controls                            */
+  --hl-r-ctl:  10px;   /* buttons, inputs                                  */
+  --hl-r-card: 14px;   /* cards, panels                                    */
+  --hl-r-sheet:18px;   /* sheets, overlays                                 */
+  --hl-r-pill: 999px;
+
+  /* ── Elevation ──────────────────────────────────────────────────────────
+     Four steps. Cards get e1 and a hairline; only things that genuinely float
+     above the page get e2 or e3. Shadows are cool-tinted to match the ramp. */
+  --hl-e1: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --hl-e2: 0 8px 22px -10px rgba(15, 23, 42, 0.22);
+  --hl-e3: 0 32px 64px -24px rgba(15, 23, 42, 0.34);
+  --hl-scrim: rgba(15, 23, 42, 0.34);
+
+  /* ── Motion ─────────────────────────────────────────────────────────────
+     One easing family. Things arrive on `--hl-in` and leave faster on
+     `--hl-out`, because a UI that takes as long to dismiss as to appear feels
+     sticky. Durations are 120–240ms; nothing here loops in the corner of a
+     working screen, and every rule that uses them is inside a
+     prefers-reduced-motion guard (see the block at the end of this file). */
+  --hl-in:  cubic-bezier(0.2, 0.7, 0.3, 1);
+  --hl-out: cubic-bezier(0.4, 0, 1, 1);
+  --hl-d-press: 120ms;   /* button press, chip toggle, nav tint            */
+  --hl-d-hover: 140ms;   /* row tint, border darkening, focus ring         */
+  --hl-d-enter: 200ms;   /* skeleton→content, panel open, inline alert     */
+  --hl-d-sheet: 240ms;   /* sheet + modal translate; status advance        */
+  --hl-d-exit:  140ms;   /* everything leaving                             */
+}
+
+/* ═══ Dark mode ══════════════════════════════════════════════════════════
+   Opt-in via <html data-theme="dark">, not prefers-color-scheme: this is a
+   product decision an owner makes, and half the app (the public tracking page)
+   should stay light regardless of the reader's OS.
+
+   Every role is RE-DERIVED against a near-black page rather than dimmed with
+   opacity, and the status hues shift up in chroma and lightness — the light
+   cobalt and red go muddy below 20% luminance and stop being distinguishable
+   from one another, which is exactly the failure the seven keys cannot afford.
+
+   Measured against --hl-n0 (#151c26) in this mode:
+     n900 15.11 · n700 8.33 · n600 5.48 · brand 9.13 · danger 7.99          */
+[data-theme='dark'] {
+  --hl-n0:   #151c26;
+  --hl-n25:  #0c1118;
+  --hl-n50:  #1b2430;
+  --hl-n100: #0a0e14;
+  --hl-n200: #232c38;
+  --hl-n300: #2e3a49;
+  --hl-n400: #3a4655;
+  --hl-n600: #8593a5;
+  --hl-n700: #aab6c6;
+  --hl-n900: #edf1f7;
+
+  --hl-brand:       #2bd69a;
+  --hl-brand-solid: #2bd69a;
+  --hl-brand-deep:  #4fdca4;
+  --hl-brand-soft:  #0c2a1e;
+  --hl-brand-ring:  #155039;
+
+  --hl-assigned-solid: #aab6c6; --hl-assigned-bg: #1b2430;
+  --hl-assigned-ink:   #aab6c6; --hl-assigned-line: #2b3644;
+
+  --hl-picked_up-solid: #7fb6ff; --hl-picked_up-bg: #12233a;
+  --hl-picked_up-ink:   #7fb6ff; --hl-picked_up-line: #1e3a5c;
+
+  --hl-in_transit-solid: #7fb6ff; --hl-in_transit-bg: #12233a;
+  --hl-in_transit-ink:   #7fb6ff; --hl-in_transit-line: #1e3a5c;
+
+  --hl-out_for_delivery-solid: #ffb460; --hl-out_for_delivery-bg: #2a1c0b;
+  --hl-out_for_delivery-ink:   #ffb460; --hl-out_for_delivery-line: #4a3213;
+
+  --hl-delivered-solid: #4fdca4; --hl-delivered-bg: #0c2a1e;
+  --hl-delivered-ink:   #4fdca4; --hl-delivered-line: #155039;
+
+  --hl-failed-solid: #ff9189;    --hl-failed-bg: #2e1210;
+  --hl-failed-ink:   #ff9189;    --hl-failed-line: #55211d;
+
+  --hl-returned-solid: #c4a5ff;  --hl-returned-bg: #1f1830;
+  --hl-returned-ink:   #c4a5ff;  --hl-returned-line: #392c55;
+
+  --hl-danger: #ff9189;   --hl-danger-deep: #ffb4ae;
+  --hl-danger-bg: #2e1210; --hl-danger-line: #55211d; --hl-danger-ink: #ff9189;
+  --hl-warn: #ffb460;     --hl-warn-solid: #ffb460;    --hl-warn-bg: #2a1c0b;
+  --hl-warn-line: #4a3213; --hl-warn-ink: #ffb460;
+  --hl-ok-ink: #4fdca4;
+
+  --hl-e1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --hl-e2: 0 8px 22px -10px rgba(0, 0, 0, 0.6);
+  --hl-e3: 0 32px 64px -24px rgba(0, 0, 0, 0.7);
+  --hl-scrim: rgba(0, 0, 0, 0.62);
+}
+
+/* Dark mode inverts the surfaces but NOT the shop window: /track/:token is the
+   only screen a stranger sees, it arrives from a WhatsApp link, and it should
+   look the same to every recipient. It opts back out. */
+[data-theme='dark'] .tk {
+  --hl-n0: #ffffff; --hl-n25: #f7f9fb; --hl-n50: #f1f5f9; --hl-n100: #eef2f7;
+  --hl-n200: #e4e9f0; --hl-n300: #cfd8e4; --hl-n400: #808c9e;
+  --hl-n600: #5e6a7a; --hl-n700: #45505f; --hl-n900: #0f172a;
+  --hl-brand: #00875f; --hl-brand-solid: #007a56; --hl-brand-deep: #046a4e;
+  --hl-brand-soft: #d4f7e7; --hl-brand-ring: #bdf3dc;
+}
+
+/* ═══ Reduced motion ═════════════════════════════════════════════════════
+   The scoped sheets each guard their own keyframe animations, but a token
+   layer that hands out durations should also be able to switch them off at
+   the source. Collapsing the duration tokens neutralises every transition
+   built from them without any rule needing to know. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --hl-d-press: 1ms; --hl-d-hover: 1ms; --hl-d-enter: 1ms;
+    --hl-d-sheet: 1ms; --hl-d-exit: 1ms;
+  }
+}

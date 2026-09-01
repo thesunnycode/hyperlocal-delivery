@@ -1,0 +1,64 @@
+/* Global element defaults and the two utilities that are genuinely app-wide.
+   Everything else lives in a scoped stylesheet: auth.css (.auth), agent.css
+   (.ag), track.css (.tk), reports.css (.rp), owner.css (.ow), edge.css (.es)
+   and overlay.css (.cd/.ts).
+
+   This file used to carry literal values with a comment explaining that there
+   was no token sheet to read them from. There is one now — styles/tokens.css —
+   so these globals consume it like every other scope does, and the app no
+   longer has a set of root defaults that can drift away from the palette. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--hl-n25);
+  color: var(--hl-n700);
+  font-family: var(--hl-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: var(--hl-track-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button { font-family: inherit; }
+img { display: block; max-width: 100%; }
+
+/* Links have a defined resting and hover colour at the root, so a link added
+   anywhere later inherits the brand rather than browser-default blue. */
+a { color: var(--hl-brand-deep); }
+a:hover { color: var(--hl-brand-solid); }
+
+/* Anything read digit by digit gets the mono face and tabular figures, so
+   columns of ₹ amounts and timestamps line up without per-table rules. */
+code, kbd, samp, pre { font-family: var(--hl-mono); }
+.hl-num { font-family: var(--hl-mono); font-variant-numeric: tabular-nums; }
+
+/* Keyboard focus only. Each scope overrides the colour to match its own
+   brand; this is the fallback for anything rendered outside one. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 3px solid var(--hl-brand-solid);
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+tr:focus-visible { outline-offset: -2px; }
+::selection { background: var(--hl-brand-ring); color: var(--hl-n900); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Off-screen until focused, then the first thing a keyboard user lands on. */
+.skip-link {
+  position: absolute; left: 16px; top: -60px; z-index: 500;
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  background: var(--hl-n900); color: var(--hl-n0); text-decoration: none;
+  font: 600 13px/1 var(--hl-ui); border-radius: var(--hl-r-ctl);
+  transition: top var(--hl-d-enter) var(--hl-in);
+}
+.skip-link:hover { color: var(--hl-n0); }
+.skip-link:focus-visible { top: 12px; }
