@@ -1,0 +1,807 @@
+/* Owner console — the operations app. Scoped under `.ow`, like auth.css,
+   agent.css, track.css and reports.css, so nothing else in the app shifts.
+
+   Design record: docs/mockups/10-owner-console.html (layout) and
+   docs/mockups/11-owner-states.html (loading / empty / error / offline).
+
+   Refero — every reference below uses a LEFT SIDEBAR:
+     Polar b83e0113 — three-column master-detail. The list stays visible while
+       you read a record, so an owner can scan, open, act and scan again.
+     Polar 3e4f2765 — a SIDE SHEET for create, not a centred modal: the list
+       stays on screen, the form can be tall, and optional settings collapse.
+     Fingerprint 0e472ed6 / Mercury 69c62f45 — dense table with a sticky head.
+     Fibery 0cc2d799 / Boords b325db3c / Reown 9a9ca95d — people rows, with
+       per-row destructive actions behind an OVERFLOW MENU rather than sitting
+       in the row waiting to be mis-clicked.
+
+   Register: this is the third density in the product. The agent app is
+   one-handed and sparse, the customer page is calm and roomy; this is dense,
+   because someone sits at it and triages.
+
+   Contrast: white on each of the seven status hues measures 4.76-7.08:1, all
+   above AA. The "Active" pill is #126b34 on #e7f4ec (5.84) — the obvious
+   #15803d measured 4.43 there and would have failed. */
+
+.ow {
+  --ow-sand: #eeefe9;
+  --ow-paper: #f7f8f4;
+  --ow-card: #fff;
+  --ow-ink: #111827;
+  --ow-body: #374151;
+  --ow-muted: #5c6472;
+  --ow-line: #e2e4dc;
+  --ow-line-2: #cfd2c8;
+  --ow-brand: #1546a8;
+  --ow-brand-deep: #14418f;
+  --ow-brand-soft: #e9eefa;
+
+  --st-assigned: #64748b;
+  --st-picked_up: #0e7490;
+  --st-in_transit: #3f6212;
+  --st-out_for_delivery: #c2410c;
+  --st-delivered: #15803d;
+  --st-failed: #b91c1c;
+  --st-returned: #7e22ce;
+
+  --ow-err: #b91c1c;
+  --ow-err-bg: #fdecea;
+  --ow-warn-bg: #fdf3d8;
+
+  --ow-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --ow-display: 'Instrument Serif', Georgia, serif;
+  --ow-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ONE content measure for the whole console.
+     Measured at 1920 before this existed: the queue's resting pane used 45%
+     of its width, the roster 63%, the account page 36%, and the register and
+     both toolbars used 100% — five different answers on five pages, which is
+     what made a wide screen read as unstructured rather than merely roomy.
+     Page furniture (toolbars, table, rows, dashboards) all stop here.
+     Forms are the one deliberate exception; see .ow-acct. */
+  --ow-measure: 1180px;
+  /* The setup card appears in two places — the empty pane and the resting
+     detail pane — and used to be 620px in one (an inline style) and 1180px in
+     the other. One number, named. */
+  --ow-check-measure: 660px;
+  /* Padding that absorbs everything past the measure, so a full-bleed bar
+     keeps its background and border while its CONTENT still ends where the
+     content below it ends. Without this the page-header button flew to the
+     far screen edge, ~500px from the title it belongs to.
+
+     SYMMETRIC on purpose. It used to be right-only, against a hard 22px on
+     the left: at 1920 that put 22px of air on the left of every page and 502px
+     on the right, so every screen in the console sat hard against the sidebar
+     with a void beside it. One measure, centred, is what makes a wide window
+     read as a page rather than as a column that failed to fill. */
+  --ow-gutter: max(22px, calc((100% - var(--ow-measure)) / 2));
+
+  background: var(--ow-paper);
+  color: var(--ow-body);
+  font-family: var(--ow-ui);
+  font-size: 13.5px;
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
+}
+.ow *, .ow *::before, .ow *::after { box-sizing: border-box; }
+.ow :focus-visible { outline: 3px solid var(--ow-brand); outline-offset: 2px; border-radius: 5px; }
+
+/* ── shell ──────────────────────────────────────────────────── */
+.ow-app { display: grid; grid-template-columns: 216px 1fr; height: 100vh; }
+.ow-side { background: var(--ow-sand); border-right: 1px solid var(--ow-line);
+  display: flex; flex-direction: column; padding: 14px 10px; }
+.ow-brand { display: flex; align-items: center; gap: 9px; padding: 6px 8px 16px; }
+.ow-brand .mk { width: 26px; height: 26px; border-radius: 6px; background: var(--ow-brand);
+  color: #fff; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: none; }
+.ow-brand b { font-size: 14px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.015em;
+  display: block; line-height: 1.2; }
+.ow-brand > span > span { font-size: 11px; color: var(--ow-muted); }
+.ow-navlbl { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ow-muted); padding: 12px 8px 6px; }
+.ow-nav { display: flex; flex-direction: column; gap: 1px; }
+.ow-nav a { display: flex; align-items: center; gap: 10px; padding: 8px 9px; border-radius: 7px;
+  color: var(--ow-body); text-decoration: none; font-size: 13.5px; font-weight: 500; }
+.ow-nav a:hover { background: #e6e8e0; }
+.ow-nav a.active { background: var(--ow-card); color: var(--ow-ink); font-weight: 600;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06); }
+.ow-side-foot { margin-top: auto; border-top: 1px solid var(--ow-line); padding-top: 10px; }
+.ow-who { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 7px;
+  width: 100%; text-align: left; border: 0; background: none; cursor: pointer; }
+.ow-who:hover { background: #e6e8e0; }
+.ow-who .av { width: 28px; height: 28px; border-radius: 50%; background: var(--ow-brand); color: #fff;
+  flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.ow-who b { display: block; font-size: 12.5px; font-weight: 600; color: var(--ow-ink); }
+.ow-who > span > span { font-size: 11px; color: var(--ow-muted); }
+
+.ow-main { overflow: hidden; display: flex; flex-direction: column; background: var(--ow-paper);
+  min-width: 0; }
+
+/* ── page header + toolbar ──────────────────────────────────── */
+.ow-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding: 18px var(--ow-gutter) 14px; border-bottom: 1px solid var(--ow-line);
+  background: var(--ow-card); }
+.ow-head h1 { font-family: var(--ow-display); font-weight: 400; font-size: 27px; line-height: 1.1;
+  letter-spacing: -0.02em; color: var(--ow-ink); margin: 0; }
+.ow-head .sub { font-size: 12.5px; color: var(--ow-muted); margin-top: 5px; }
+.ow-btn { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px;
+  border-radius: 7px; font: 600 13px/1 var(--ow-ui); background: var(--ow-card);
+  border: 1px solid var(--ow-line-2); color: var(--ow-ink); cursor: pointer; text-decoration: none; }
+.ow-btn:hover { background: var(--ow-sand); }
+.ow-btn.pri { background: var(--ow-brand); border-color: var(--ow-brand); color: #fff; }
+.ow-btn.pri:hover { background: var(--ow-brand-deep); }
+.ow-btn.danger { color: #a11a12; border-color: #e8c4c0; }
+.ow-btn.danger:hover { background: var(--ow-err-bg); }
+/* Explicit disabled colours rather than `opacity: .5`. Blanket opacity dims
+   the label and its background together: white on --ow-brand measured 1.65:1
+   that way, which is invisible rather than merely quiet. These measure 5.16:1
+   and 4.83:1. */
+.ow-btn[disabled] { background: var(--ow-sand); border-color: var(--ow-line-2);
+  color: var(--ow-muted); cursor: default; }
+.ow-btn.pri[disabled] { background: var(--ow-sand); border-color: var(--ow-line-2);
+  color: var(--ow-muted); }
+.ow-linky { font: 500 13px/1 var(--ow-ui); color: var(--ow-muted); background: none; border: 0;
+  cursor: pointer; padding: 8px; }
+.ow-linky:hover { color: var(--ow-ink); }
+
+.ow-bar { display: flex; align-items: center; gap: 8px; padding: 11px var(--ow-gutter);
+  border-bottom: 1px solid var(--ow-line); background: var(--ow-card); flex-wrap: wrap; }
+.ow-search { flex: 1; min-width: 180px; max-width: 300px; height: 34px; padding: 0 12px;
+  border-radius: 7px; border: 1px solid var(--ow-line-2); background: var(--ow-card);
+  font: 400 13px/1 var(--ow-ui); color: var(--ow-ink); }
+.ow-search::placeholder { color: #6b7280; }   /* was #8a9082 — 3.29:1, under AA */
+.ow-search:disabled { background: var(--ow-sand); color: var(--ow-muted); }
+.ow-chip { height: 32px; padding: 0 11px; border-radius: 100px; border: 1px solid var(--ow-line-2);
+  background: var(--ow-card); font: 500 12.5px/1 var(--ow-ui); color: var(--ow-body);
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ow-chip[aria-pressed='true'] { background: var(--ow-ink); border-color: var(--ow-ink); color: #fff;
+  font-weight: 600; }
+.ow-chip em { font-style: normal; font-family: var(--ow-mono); font-size: 11px;
+  color: var(--ow-muted); }   /* was opacity .7 — 4.33:1, just under AA */
+.ow-chip[aria-pressed='true'] em { color: #dfe3ea; }
+.ow-chip[disabled] { cursor: default; color: var(--ow-muted); background: var(--ow-sand); }
+.ow-spacer { margin-left: auto; }
+/* Date range in the toolbar. Native date inputs, because the whole control is
+   two dates and a picker component would be more code than the feature. */
+.ow-dates { display: inline-flex; align-items: center; gap: 6px; }
+.ow-dates label { font-size: 12px; color: var(--ow-muted); }
+.ow-dates input { height: 32px; padding: 0 8px; border-radius: 7px;
+  border: 1px solid var(--ow-line-2); background: var(--ow-card);
+  font: 400 12.5px/1 var(--ow-ui); color: var(--ow-ink); }
+
+/* ── master-detail ──────────────────────────────────────────── */
+/* padding-inline matches the header/toolbar's own --ow-gutter padding above
+   it. Without this the split sat flush against the true viewport edge while
+   .ow-head/.ow-bar/.ow-answer were inset by the gutter (370px on a 1920px
+   screen), so the list's left edge — and every row's text inside it — never
+   lined up with the header's left edge one row above it. The most visible
+   version of "header and body don't share a left edge" this app has. */
+.ow-split { display: grid; grid-template-columns: 322px 1fr; flex: 1; min-height: 0;
+  padding-inline: var(--ow-gutter); }
+/* min-width:0 on both tracks. A grid item defaults to min-width:auto, so the
+   list column could not shrink below the min-content width of a row — and
+   .ow-row-a is nowrap, which makes that the full untruncated address. The
+   column overflowed its 322px track on desktop and pushed the whole document
+   past the viewport on a phone. */
+.ow-list { min-width: 0; border-right: 1px solid var(--ow-line); overflow-y: auto;
+  background: var(--ow-card); }
+.ow-row { display: block; width: 100%; text-align: left; padding: 12px 16px;
+  border: 0; border-bottom: 1px solid var(--ow-line); border-left: 3px solid transparent;
+  background: none; cursor: pointer; font: inherit; }
+.ow-row:hover { background: var(--ow-paper); }
+.ow-row.on { background: var(--ow-brand-soft); border-left-color: var(--ow-brand); }
+/* G4 — seven validated status hues existed and appeared almost only inside
+   small badges. The left edge of a queue row is the cheapest place to spend
+   one: it is redundant with the badge beside it, so it adds a scanning cue
+   without becoming the only carrier of meaning. */
+.ow-row.st-failed { border-left-color: var(--st-failed); }
+.ow-row.st-returned { border-left-color: var(--st-returned); }
+.ow-row.st-delivered { border-left-color: var(--st-delivered); }
+.ow-row.st-out_for_delivery { border-left-color: var(--st-out_for_delivery); }
+.ow-row.on.st-failed, .ow-row.on.st-returned,
+.ow-row.on.st-delivered, .ow-row.on.st-out_for_delivery { border-left-color: var(--ow-brand); }
+.ow-row-t { display: flex; justify-content: space-between; gap: 9px; align-items: center; }
+.ow-row-t b { font-size: 13.5px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.01em;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* display:block is load-bearing, not decoration: text-overflow has no effect
+   on an inline box, so as a plain span this never truncated — it just set the
+   row's min-content width to the whole address. */
+.ow-row-a { display: block; min-width: 0; font-size: 12.5px; color: var(--ow-muted);
+  margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ow-row-m { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px;
+  font-family: var(--ow-mono); font-size: 10.5px; color: var(--ow-muted); }
+.ow-row-m span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ow-detail { overflow-y: auto; padding: 20px 24px 40px; }
+/* The record's own sections stop at the measure too, so the detail pane
+   agrees with the toolbar above it and with every other page. Centred, not
+   left-anchored: without margin-inline the cap only ever shrank the box, so
+   on a wide monitor (1598px column, 1180px cap) the content sat flush left
+   with ~394px of dead space on the right — the exact "pinned to one side"
+   defect the top-level toolbar above it was built to avoid.
+   !important is load-bearing, not a shortcut: several children set their own
+   `margin` shorthand below (.ow-dl, .ow-tl, .ow-foot, …), each at the same
+   0-1-0 specificity as this selector, so whichever comes later in the file
+   would otherwise reset margin-left/right back to 0 and silently re-break
+   the centering the next time one of them is edited. */
+.ow-detail > * { max-width: var(--ow-measure); margin-inline: auto !important; }
+.ow-dhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  flex-wrap: wrap; }
+.ow-dhead h2 { font-size: 19px; font-weight: 600; color: var(--ow-ink); margin: 0;
+  letter-spacing: -0.02em; }
+.ow-dhead .tok { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); margin-top: 4px; }
+/* Name and status on one line: the pill describes the record, not the actions. */
+.ow-dtitle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ow-dclose { margin-left: 2px; }
+.ow-foot { font-size: 12px; color: var(--ow-muted); line-height: 1.55; margin: 16px 2px 0;
+  max-width: 62ch; }
+.ow-sec { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--ow-muted); margin: 24px 0 9px; }
+.ow-card { background: var(--ow-card); border: 1px solid var(--ow-line); border-radius: 10px; }
+.ow-dl { display: grid; grid-template-columns: 148px 1fr; margin: 0; }
+.ow-dl dt { padding: 11px 15px; font-size: 12.5px; color: var(--ow-muted);
+  border-bottom: 1px solid var(--ow-line); }
+.ow-dl dd { padding: 11px 15px; margin: 0; font-size: 13.5px; color: var(--ow-ink);
+  border-bottom: 1px solid var(--ow-line); overflow-wrap: anywhere; }
+.ow-dl dd.mono { font-family: var(--ow-mono); font-size: 12.5px; }
+.ow-dl dt:last-of-type, .ow-dl dd:last-of-type { border-bottom: 0; }
+
+.ow-tl { list-style: none; margin: 0; padding: 4px 0; }
+.ow-tl li { display: grid; grid-template-columns: 82px 10px 1fr; gap: 11px; padding: 8px 15px;
+  align-items: start; }
+.ow-tl .t { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); }
+.ow-tl .m { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--ow-line-2));
+  margin-top: 3px; }
+.ow-tl b { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
+.ow-tl em { font-style: normal; font-size: 11.5px; color: var(--ow-muted); line-height: 1.45; }
+
+/* ── badges ─────────────────────────────────────────────────── */
+.ow-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px;
+  background: var(--c); color: #fff; font-size: 10.5px; font-weight: 600; white-space: nowrap;
+  flex: none; }
+.ow-badge.lg { font-size: 12px; padding: 5px 11px; border-radius: 6px; }
+.b-assigned { --c: var(--st-assigned); }
+.b-picked_up { --c: var(--st-picked_up); }
+.b-in_transit { --c: var(--st-in_transit); }
+.b-out_for_delivery { --c: var(--st-out_for_delivery); }
+.b-delivered { --c: var(--st-delivered); }
+.b-failed { --c: var(--st-failed); }
+.b-returned { --c: var(--st-returned); }
+/* #15803d measured 4.43:1 on this tint — below AA. #126b34 is 5.84. */
+.ow-pill { display: inline-flex; justify-content: center; padding: 3px 9px; border-radius: 100px; font-size: 11px;
+  font-weight: 600; white-space: nowrap; }
+.ow-pill.ok { background: #e7f4ec; color: #126b34; }
+.ow-pill.off { background: #eceee7; color: var(--ow-muted); }
+
+/* ── dense table ────────────────────────────────────────────── */
+/* padding-inline matches .ow-head/.ow-bar's own --ow-gutter padding above —
+   without it the table sat flush against the true viewport edge while the
+   "Register" heading and toolbar were inset by the gutter (370px at 1920px
+   wide), so the table's left edge never lined up with the page header above
+   it. The same defect as .ow-split on the shipments queue, fixed the same
+   way. */
+.ow-tablewrap { flex: 1; overflow: auto; background: var(--ow-card); display: flex;
+  flex-direction: column; padding-inline: var(--ow-gutter); }
+.ow-tablewrap table { width: 100%; max-width: var(--ow-measure); border-collapse: collapse;
+  font-size: 12.5px; flex: none; }
+.ow th { position: sticky; top: 0; z-index: 2; background: var(--ow-card); text-align: left;
+  font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--ow-muted); padding: 10px 14px;
+  border-bottom: 1px solid var(--ow-line-2); white-space: nowrap; }
+.ow td { padding: 10px 14px; border-bottom: 1px solid var(--ow-line); vertical-align: middle;
+  color: var(--ow-ink); }
+.ow tbody tr.rw { cursor: pointer; }
+.ow tbody tr.rw:hover td { background: var(--ow-paper); }
+.ow tbody tr.rw:focus-visible { outline: 2px solid var(--ow-brand); outline-offset: -2px; }
+.ow td.mono { font-family: var(--ow-mono); font-size: 11.5px; color: var(--ow-muted); }
+.ow td.r, .ow th.r { text-align: right; }
+/* Sortable column header. The arrow is always rendered, at low opacity until
+   the column is the active one — a header that only reveals its affordance on
+   hover is invisible to anyone who never hovers. */
+.ow-sort { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none;
+  padding: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; }
+/* R1: opacity:0.28 composited to ~1.30:1 on white — fails WCAG non-text 3:1.
+   Explicit colour #8e9399 measures 3.08:1 and still reads as a quiet hint. */
+.ow-sort .hint { color: #8e9399; }
+.ow-sort:hover .hint { color: var(--ow-muted); }
+.ow-sort.on { color: var(--ow-ink); }
+.ow-tablebody { flex: 1; display: flex; }
+
+/* R5: desktop/mobile visibility — moved from inline <style> in OwnerRegisterPage
+   so the rules live in the static stylesheet and are not re-injected on render. */
+.ow-mob { display: none; }
+@media (max-width: 759px) {
+  .ow-desk { display: none; }
+  .ow-mob { display: flex; }
+}
+
+/* R6: named table-cell and toolbar classes — replace inline style= props. */
+/* Customer name column: bold weight. */
+.ow-td-name  { font-weight: 600; }
+/* Address / muted columns. */
+.ow-td-muted { color: var(--ow-muted); }
+/* Row-count label in the toolbar. */
+.ow-row-count { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); }
+/* <select> used as a chip filter — native selects need a right-padding nudge
+   so the chevron does not overlap the text. */
+.ow-chip-select { padding-right: 8px; }
+
+/* R7: skeleton shapes for table cells. Height has two values; width stays
+   inline (seven distinct column widths → seven classes is worse than one prop). */
+.ow-sk-td     { height: 12px; }
+.ow-sk-td-lg  { height: 18px; }  /* status badge skeleton */
+
+/* A2: person name button — reset styles so the <button> reads as inline text. */
+.ow-person-name-btn {
+  border: 0; background: none; text-align: left; cursor: pointer; padding: 0;
+}
+
+/* A4: agent detail-sheet avatar — 44px, matching the detail context.
+   Sits between the 28px sidebar (.ow-who .av) and 52px account (.ow-acct-h .av). */
+.ow-agent-av {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--ow-sand); color: var(--ow-ink);
+  display: grid; place-items: center;
+  font-size: 15px; font-weight: 700; flex: none;
+}
+
+/* A6: hint paragraph immediately after the phone field in the add-agent sheet —
+   small negative pull to tighten the gap below the field above it. */
+.ow-hint-tight { margin-top: -4px; }
+
+/* A7: skeleton shapes for the agent detail sheet. */
+.ow-sk-name-lg  { height: 14px; width: 200px; }
+.ow-sk-card-96  { height: 96px; width: 100%; margin-top: 16px; border-radius: 10px; }
+
+/* ── people rows ────────────────────────────────────────────── */
+/* G1 — the console was tuned around 1200px; past that, rows just stretched.
+   A cap keeps the line length composed on a 1440+ display without changing
+   anything below it. */
+.ow-people { padding: 16px var(--ow-gutter); overflow-y: auto; flex: 1; }
+.ow-people > * { max-width: var(--ow-measure); }
+.ow-person { display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  background: var(--ow-card); border: 1px solid var(--ow-line); border-radius: 10px;
+  margin-bottom: 9px; position: relative; }
+.ow-person .av { width: 38px; height: 38px; border-radius: 50%; background: var(--ow-sand);
+  color: var(--ow-ink); flex: none; display: grid; place-items: center; font-size: 13px;
+  font-weight: 700; }
+/* D1 — measured: in a 1180px row this block was 945px wide, so the name sat at
+   the far left, the pill and the count at the far right, and ~900px of nothing
+   separated a person from their number. Capping it and letting a spacer take
+   the slack makes the row read as columns at any width. */
+.ow-person .who2 { flex: 0 1 340px; min-width: 0; }
+.ow-person .ow-sp { flex: 1; min-width: 12px; }
+.ow-person-ph { flex: 0 1 150px; min-width: 0; font-family: var(--ow-mono); font-size: 12px;
+  color: var(--ow-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 899px) { .ow-person-ph { display: none; } }
+.ow-person > .ow-pill { min-width: 92px; }
+.ow-person .who2 b { display: block; font-size: 14px; font-weight: 600; color: var(--ow-ink);
+  letter-spacing: -0.01em; }
+.ow-person .who2 span { font-size: 12.5px; color: var(--ow-muted); overflow-wrap: anywhere; }
+.ow-load { display: flex; gap: 18px; flex: none; margin: 0; min-width: 64px;
+  justify-content: flex-end; }
+.ow-load > div { text-align: right; }
+.ow-load dt { font-family: var(--ow-mono); font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ow-muted); margin: 0 0 3px; }
+.ow-load dd { margin: 0; font-size: 15px; font-weight: 600; color: var(--ow-ink);
+  font-variant-numeric: tabular-nums; }
+.ow-load .bad dd { color: var(--st-failed); }
+.ow-kebab { width: 32px; height: 32px; border-radius: 7px; display: grid; place-items: center;
+  color: var(--ow-muted); flex: none; border: 0; background: none; cursor: pointer; }
+.ow-kebab:hover { background: var(--ow-sand); color: var(--ow-ink); }
+/* Destructive actions live behind the overflow, not in the row where they wait
+   to be mis-clicked. */
+.ow-menu { position: absolute; right: 12px; top: 52px; z-index: 20; min-width: 176px;
+  background: var(--ow-card); border: 1px solid var(--ow-line-2); border-radius: 9px;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.13); padding: 5px; }
+.ow-menu button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+  padding: 8px 10px; border: 0; background: none; border-radius: 6px; cursor: pointer;
+  font: 500 13px/1.2 var(--ow-ui); color: var(--ow-body); }
+.ow-menu button:hover { background: var(--ow-sand); color: var(--ow-ink); }
+.ow-menu button.danger { color: #a11a12; }
+.ow-menu button.danger:hover { background: var(--ow-err-bg); }
+
+.ow-steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+.ow-steps li { counter-increment: s; position: relative; padding: 0 0 12px 30px; }
+.ow-steps li::before { content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--ow-sand);
+  color: var(--ow-muted); font-family: var(--ow-mono); font-size: 10px; font-weight: 700;
+  display: grid; place-items: center; }
+.ow-steps b { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
+.ow-steps span { display: block; font-size: 12px; line-height: 1.5; color: var(--ow-muted);
+  margin-top: 2px; }
+
+/* ── side sheet ─────────────────────────────────────────────── */
+.ow-scrim { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.42); z-index: 60; }
+.ow-sheet { position: fixed; top: 0; right: 0; bottom: 0; width: 440px; max-width: 92vw;
+  background: var(--ow-card); z-index: 61; display: flex; flex-direction: column;
+  animation: ow-slide 0.26s cubic-bezier(0.32, 0.72, 0, 1); }
+@keyframes ow-slide { from { transform: translateX(101%); } }
+@media (prefers-reduced-motion: reduce) { .ow-sheet { animation: none; } }
+.ow-sheet-h { padding: 20px 22px 4px; display: flex; justify-content: space-between;
+  align-items: center; gap: 12px; }
+.ow-sheet-h b { font-size: 17px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.018em; }
+.ow-x { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--ow-line-2);
+  background: var(--ow-card); display: grid; place-items: center; cursor: pointer;
+  color: var(--ow-body); flex: none; }
+.ow-x:hover { background: var(--ow-sand); }
+.ow-sheet-b { flex: 1; overflow-y: auto; padding: 18px 22px; }
+.ow-f { margin-bottom: 16px; }
+.ow-f label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ow-ink);
+  margin-bottom: 6px; }
+.ow-f input, .ow-f select, .ow-f textarea { width: 100%; min-height: 40px; padding: 9px 12px;
+  border-radius: 7px; border: 1px solid var(--ow-line-2); background: var(--ow-card);
+  font: 400 13.5px/1.4 var(--ow-ui); color: var(--ow-ink); }
+.ow-f textarea { min-height: 74px; resize: vertical; }
+.ow-f input:focus, .ow-f select:focus, .ow-f textarea:focus { outline: 0;
+  border-color: var(--ow-brand); box-shadow: 0 0 0 3px var(--ow-brand-soft); }
+.ow-f input:disabled { background: var(--ow-sand); color: var(--ow-muted); }
+.ow-f .hint { font-size: 11.5px; color: var(--ow-muted); margin: 6px 0 0; line-height: 1.45; }
+.ow-f.bad input, .ow-f.bad select { border-color: var(--ow-err); }
+.ow-f .bad-msg { display: flex; gap: 6px; align-items: flex-start; font-size: 11.5px;
+  color: #a11a12; margin: 6px 0 0; line-height: 1.45; }
+.ow-acc { border: 1px solid var(--ow-line-2); border-radius: 8px; margin-bottom: 10px; }
+.ow-acc summary { padding: 12px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--ow-ink); list-style: none; display: flex; justify-content: space-between;
+  align-items: center; }
+.ow-acc summary::-webkit-details-marker { display: none; }
+.ow-acc summary::after { content: '⌄'; color: var(--ow-muted); font-size: 15px; }
+.ow-acc[open] summary::after { content: '⌃'; }
+.ow-acc .in { padding: 0 14px 14px; border-top: 1px solid var(--ow-line); }
+/* Actions bottom-LEFT, filled then text — Polar's arrangement, which puts the
+   primary action nearest the form's reading edge. */
+.ow-sheet-f { padding: 16px 22px; border-top: 1px solid var(--ow-line); display: flex; gap: 10px;
+  align-items: center; }
+
+.ow-radio { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 8px;
+  border: 1px solid var(--ow-line-2); cursor: pointer; font-size: 13.5px; color: var(--ow-body); }
+/* F4: column of radio options — replaces inline style on the radiogroup wrapper. */
+.ow-radio-list { display: flex; flex-direction: column; gap: 8px; }
+.ow-radio:hover { background: var(--ow-paper); }
+.ow-radio.on { border-color: var(--ow-brand); background: var(--ow-brand-soft); color: var(--ow-ink);
+  font-weight: 600; }
+.ow-radio input { position: absolute; opacity: 0; pointer-events: none; }
+.ow-radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--ow-line-2);
+  flex: none; display: grid; place-items: center; background: var(--ow-card); }
+.ow-radio.on .dot { border-color: var(--ow-brand); }
+.ow-radio.on .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ow-brand); }
+/* The generic `.ow :focus-visible { outline }` rule draws its ring on
+   whatever is actually focused — here that's the input itself, hidden at
+   opacity:0 to make room for .dot's custom circle. An outline on an
+   opacity:0 element is invisible along with everything else on it, so a
+   keyboard user arrowing through this group saw no focus indicator at all.
+   Redirecting the ring to the visible .dot via the sibling combinator (no
+   :has() needed) fixes that without touching the hidden-input pattern. */
+.ow-radio input:focus-visible ~ .dot { outline: 3px solid var(--ow-brand); outline-offset: 2px; }
+
+/* ── tracking link row ──────────────────────────────────────── */
+.ow-link { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px;
+  background: var(--ow-sand); border-radius: 9px; }
+.ow-link code { font-family: var(--ow-mono); font-size: 11.5px; color: var(--ow-ink);
+  overflow-wrap: anywhere; flex: 1; min-width: 140px; }
+
+/* ── states ─────────────────────────────────────────────────── */
+.ow-pane { flex: 1; display: flex; overflow-y: auto; background: var(--ow-card); }
+.ow-state { margin: auto; max-width: 390px; text-align: center; padding: 40px 20px; }
+/* The pane as a column, for the states that stack a card above the message.
+   `.ow-state`'s `margin: auto` centres it in the free space of the column, so
+   with a card above it the message floated to the middle of the leftover
+   height — a ~250px gap that read as a rendering fault. When it is the second
+   block it anchors under the card instead. */
+.ow-pane-col { flex-direction: column; }
+.ow-pane-check { width: 100%; max-width: var(--ow-check-measure); margin: 22px auto 0; }
+.ow-state.ow-state-second { margin: 26px auto 0; }
+.ow-restore { display: block; margin: 0 auto; }
+/* F2 — the empty states across the four scopes had drifted to different icon
+   sizes, headline sizes and spacing. They are aligned on the edge-state
+   metrics (56px tile, 16px radius, 23px display headline) so they read as one
+   family when you move between sections. */
+.ow-state .ic { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  margin: 0 auto 18px; background: var(--ow-sand); color: var(--ow-muted); }
+.ow-state.err .ic { background: var(--ow-err-bg); color: var(--ow-err); }
+.ow-state h2 { font-family: var(--ow-display); font-weight: 400; font-size: 23px;
+  letter-spacing: -0.018em; color: var(--ow-ink); margin: 0 0 8px; }
+.ow-state p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ow-body); }
+.ow-state .acts { display: flex; gap: 9px; justify-content: center; margin-top: 18px;
+  flex-wrap: wrap; }
+.ow-state .fine { margin-top: 14px; font-size: 12px; color: var(--ow-muted); }
+.ow-sk { background: linear-gradient(90deg, #eceee7, #f6f7f2, #eceee7); background-size: 200% 100%;
+  border-radius: 5px; animation: ow-sh 1.3s linear infinite; display: block; }
+@keyframes ow-sh { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .ow-sk { animation: none; } }
+.ow-sk-row { padding: 13px 16px; border-bottom: 1px solid var(--ow-line); }
+/* F3: named geometry classes — replace all inline style= props on ow-sk spans. */
+.ow-sk-name     { height: 14px; width: 118px; }
+.ow-sk-addr     { height: 12px; width: 196px; margin-top: 8px; }
+.ow-sk-meta     { height: 10px; width: 88px;  margin-top: 9px; }
+.ow-sk-title    { height: 20px; width: 150px; }
+.ow-sk-sub      { height: 12px; width: 96px;  margin-top: 8px; }
+.ow-sk-card-sm  { height: 86px;  width: 100%; margin-top: 20px; border-radius: 10px; }
+.ow-sk-card-md  { height: 120px; width: 100%; margin-top: 16px; border-radius: 10px; }
+.ow-sk-card-lg  { height: 140px; width: 100%; margin-top: 22px; border-radius: 10px; }
+.ow-sk-card-xl  { height: 150px; width: 100%; margin-top: 26px; border-radius: 10px; }
+.ow-sk-head-lg  { height: 22px; width: 190px; }
+.ow-inline-err { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+  background: var(--ow-err-bg); border-radius: 9px; font-size: 12.5px; line-height: 1.5;
+  /* F6: margin:0 so the browser-default <p> margin does not need a style= override. */
+  margin: 0; color: #6f3630; }
+.ow-inline-err b { display: block; font-weight: 600; margin-bottom: 2px; color: #7a2019; }
+.ow-inline-err svg { flex: none; margin-top: 1px; color: var(--ow-err); }
+
+/* F7: CreateShipmentModal layout utilities — replace inline style= props. */
+/* Date/time pair row. */
+.ow-window-row { display: flex; gap: 10px; }
+/* Each date or time input fills half the row. */
+.ow-window-input { flex: 1; min-width: 0; }
+/* Submit button in a sticky sheet footer — fills the flex space beside Cancel. */
+.ow-sheet-submit { flex: 1; justify-content: center; }
+/* Hint paragraph inside the Assignment accordion — needs breathing room from
+   the summary above it. */
+.ow-acc-hint { margin-top: 12px; }
+
+/* Go to Agents link inside the inline error — matches the error text weight
+   and colour so it reads as part of the message, not a navigation item. */
+.ow-err-link { font-weight: 600; color: #7a2019; }
+
+.ow-note { display: flex; gap: 9px; align-items: flex-start; padding: 12px 14px;
+  background: var(--ow-brand-soft); border-radius: 9px; font-size: 12.5px; line-height: 1.5;
+  color: var(--ow-body); }
+.ow-note b { color: var(--ow-ink); }
+.ow-note svg { flex: none; margin-top: 1px; color: var(--ow-brand-deep); }
+
+/* AgentInviteSheet layout utilities — replace inline style= props. */
+/* The status paragraph (.ow-inline-err or .ow-note) needs room before the
+   send-options row below it; also resets the <p> default margin, same
+   reason as .ow-inline-err's own margin:0 above. */
+.ow-invite-status { margin: 0 0 18px; }
+/* "Send it with" and the copy-message/copy-link button rows — both wrap on
+   narrow sheets. */
+.ow-invite-row { display: flex; gap: 8px; flex-wrap: wrap; }
+/* The copy-message/copy-link row, below the read-only textarea. */
+.ow-invite-row-mt { margin-top: 8px; }
+.ow-invite-textarea { resize: vertical; font-size: 12.5px; line-height: 1.55; }
+.ow-lock { display: flex; gap: 9px; align-items: flex-start; padding: 11px 13px; border-radius: 9px;
+  background: var(--ow-sand); font-size: 12.5px; line-height: 1.5; color: var(--ow-muted); }
+.ow-lock svg { flex: none; margin-top: 1px; }
+
+/* F4: ShipmentDetailPanel layout utilities — replace inline style= props. */
+/* Title column in .ow-dhead: min-width:0 prevents the flex child from
+   overflowing its track when the customer name is long. */
+.ow-dhead-title { min-width: 0; }
+/* Action button group: flex row, wraps on narrow detail panes. */
+.ow-dhead-acts  { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* .ow-lock spacing variants: after the detail card vs after the link row. */
+.ow-lock-top    { margin-top: 14px; }
+.ow-lock-mid    { margin-top: 16px; }
+.ow-lock-tight  { margin-top: 9px; }
+/* After the KPI/triage block on the resting pane's calm case. */
+.ow-lock-lg     { margin-top: 18px; }
+/* Empty history placeholder inside .ow-card. */
+.ow-tl-empty    { margin: 0; padding: 14px 15px; font-size: 12.5px; color: var(--ow-muted); }
+
+/* ── checklist (first run) ──────────────────────────────────── */
+/* The setup card is the primary content of a first run, so it is typed like
+   it: display face at 21px, one step below the page h1. It used to top out at
+   a 13.5px bold <b>, the smallest heading on a page that existed for it. */
+.ow-check { margin: 14px 16px; border: 1px solid var(--ow-line-2); border-radius: 10px;
+  padding: 18px 18px 14px; background: var(--ow-card); }
+.ow-check-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.ow-check-h h2 { margin: 0; font-family: var(--ow-display); font-weight: 400; font-size: 21px;
+  line-height: 1.15; letter-spacing: -0.018em; color: var(--ow-ink); }
+.ow-check-h .n { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted);
+  white-space: nowrap; }
+.ow-check > p { margin: 8px 0 14px; font-size: 12.5px; line-height: 1.5; color: var(--ow-muted); }
+.ow-check-i { display: flex; gap: 11px; align-items: flex-start; width: 100%; text-align: left;
+  padding: 9px 10px; border: 0; border-radius: 8px; background: none; font: inherit;
+  color: var(--ow-body); }
+.ow-check-i.actionable { cursor: pointer; }
+.ow-check-i.actionable:hover { background: var(--ow-paper); }
+.ow-check-i[disabled] { cursor: default; }
+.ow-check-i[disabled] .tx { color: var(--ow-muted); font-weight: 500; }
+.ow-check-i[disabled] .sb { color: var(--ow-muted); }
+.ow-check-i .mk { width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid;
+  place-items: center; font-family: var(--ow-mono); font-size: 10px; font-weight: 700;
+  background: var(--ow-sand); color: var(--ow-muted); }
+.ow-check-i.done .mk { background: var(--st-delivered); color: #fff; }
+.ow-check-i .tx { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
+.ow-check-i.done .tx { font-weight: 500; color: var(--ow-muted); text-decoration: line-through; }
+.ow-check-i .sb { display: block; font-size: 11.5px; color: var(--ow-muted); margin-top: 3px;
+  line-height: 1.45; }
+/* Step 3 is not startable from here, so it does not pretend to be a control:
+   no hover, and the marker reads as a stage rather than a button. Steps 1 and
+   2 are <button>; this one is a <div>, and now looks like one. */
+.ow-check-i-static { padding-left: 10px; }
+.ow-check-i-static .tx { font-weight: 500; }
+
+/* ── account ────────────────────────────────────────────────── */
+/* The scroller is the whole pane; the CONTENT is what gets capped. This had
+   the max-width on the scroll container itself, which is the one pane in the
+   app that did — so its scrollbar rendered 620px in from the left, hanging in
+   the middle of an empty canvas instead of at the window edge. `.ow-people`
+   and `.ow-pane` already worked this way.
+
+   Two comments here used to disagree — one said the column was centred, the
+   next said it and the header agreed at their LEFT edge — and neither was
+   true: a 620px column sat pinned left inside a left-pinned container, so at
+   1920 it left about 1000px of nothing to its right. That is the "why does
+   this not look like a website" defect, and it was in the file as a
+   description of a fix that had never been applied.
+
+   The account page is a form, so it takes its OWN measure rather than the
+   console's 1180: a column of text inputs has a comfortable maximum and
+   1180px-wide fields would be worse, not better.
+
+   --ow-gutter is REDECLARED here, not just --ow-measure. A custom property's
+   own var() references are substituted where that property is DECLARED, so
+   --ow-gutter on `.ow` had already baked in the 1180 before it inherited down
+   — overriding only the measure on a descendant changed nothing, which the
+   measured padding (22/22 instead of 262/262) showed immediately. Declaring
+   both together resolves the expression against the 660 on this element.
+
+   `.ow-head.narrow` in OwnerAccountPage opts the header into the same number,
+   so the header and the form are one width, centred on one axis. */
+.ow-acct, .ow-head.narrow {
+  --ow-measure: 660px;
+  --ow-gutter: max(22px, calc((100% - var(--ow-measure)) / 2));
+}
+.ow-acct { flex: 1; overflow-y: auto; padding: 24px var(--ow-gutter) 40px; }
+.ow-acct > * { max-width: var(--ow-measure); }
+.ow-acct-h { display: flex; align-items: center; gap: 15px; margin-bottom: 22px; }
+.ow-acct-h .av { width: 52px; height: 52px; border-radius: 50%; background: var(--ow-brand);
+  color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; flex: none; }
+.ow-acct-h h2 { margin: 0; font-family: var(--ow-display); font-weight: 400; font-size: 27px;
+  letter-spacing: -0.02em; color: var(--ow-ink); }
+.ow-acct-h .role { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ow-muted); }
+
+/* ── mobile tab bar ─────────────────────────────────────────────
+   Its own element rather than the sidebar reflowed into a row. The sidebar
+   holds two labelled <nav> groups; as a tab bar those would each claim half
+   the width and space the tabs unevenly, and flattening them with
+   display:contents would drop both navigation landmarks. */
+.ow-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--ow-card); border-top: 1px solid var(--ow-line); }
+.ow-tabs a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  justify-content: center; padding: 9px 4px; font-size: 11px; font-weight: 500;
+  text-decoration: none; color: var(--ow-muted); min-height: 56px; }
+.ow-tabs a.active { color: var(--ow-brand-deep); font-weight: 600; }
+/* Register renders its real desktop table down to 759px (its own
+   breakpoint, below) — narrower than the 1050px the tab bar takes over from
+   the top nav at. Hidden only below 759px, so it's reachable from the tab
+   bar in the 760-1049px band where it's the only nav visible and Register
+   is still genuinely usable. */
+@media (max-width: 759px) { .ow-tabs .ow-tab-desktop-only { display: none; } }
+
+/* ══ RESPONSIVE ════════════════════════════════════════════════
+   The mockup's first draft had no breakpoints. Measured at 820px the detail
+   pane fell to 267px, clipping the status badge to "Out for deliv" and
+   wrapping the address over five lines.
+
+     >=1120   three columns, as designed
+     760-1119 an open RECORD shares the pane with the list and swaps in, with
+              a back control, because neither is usable side by side below
+              ~300px. The resting state (nothing selected) is not a record —
+              the list and the KPI/triage pane below it both fit fine in one
+              column, so they stack instead of the second one disappearing.
+              That used to hide the whole "Today at a glance" pane — its KPIs,
+              the failed-first triage list, and the only bulk-return control
+              this console has — below 1120px entirely, reachable only by
+              opening a specific shipment first, which cannot show them.
+     <760     the sidebar becomes a bottom tab bar and the pane is full width */
+@media (max-width: 1119px) {
+  .ow-split { grid-template-columns: 1fr; }
+  .ow-list { border-right: 0; }
+  .ow-split.detail-open .ow-list { display: none; }
+  .ow-backrow { display: flex; }
+}
+@media (min-width: 1120px) { .ow-backrow { display: none; } }
+.ow-backrow { align-items: center; gap: 9px; margin-bottom: 14px; }
+
+@media (max-width: 759px) {
+  .ow-app { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+  .ow-side { display: none; }
+  .ow-main { overflow: visible; }
+  /* One scroll container on a phone, not three. Left as internal scrollers,
+     the list and the detail size themselves to the flex box and their last
+     rows sit under the fixed tab bar, which the page padding cannot reach. */
+  .ow-list, .ow-detail, .ow-tablewrap, .ow-people { overflow: visible; }
+  .ow-split { min-height: 0; }
+  .ow-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .ow-head .ow-btn { width: 100%; justify-content: center; }
+  .ow-bar { gap: 7px; }
+  .ow-search { max-width: none; }
+  /* F6: chip touch target — 32px is correct for a dense desktop toolbar but
+     below the 44px WCAG 2.5.5 minimum on a phone where it is the only way
+     to filter the queue. */
+  .ow-chip { height: 44px; }
+  .ow-detail { padding: 16px; }
+  .ow-dl { grid-template-columns: 1fr; }
+  .ow-dl dt { padding-bottom: 0; border-bottom: 0; }
+  .ow-dl dd { padding-top: 4px; }
+  .ow-person { flex-wrap: wrap; }
+  .ow-load { width: 100%; justify-content: flex-start; gap: 22px; order: 3; }
+  .ow-sheet { width: 100%; max-width: 100%; }
+  .ow-menu { top: auto; bottom: 12px; }
+}
+
+/* ── resting state (D3) ─────────────────────────────────────────
+   What the detail pane shows before a record is chosen. It used to be three
+   centred lines; it is now the answer to why an owner opened the console. */
+.ow-rest { max-width: var(--ow-measure); }
+.ow-rest-check { max-width: var(--ow-check-measure); margin-bottom: 22px; }
+.ow-rest-check .ow-check { margin: 0; }
+.ow-rest-head { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px; }
+.ow-rest-head h2 { margin: 0; font-family: var(--ow-display); font-weight: 400;
+  font-size: 24px; letter-spacing: -0.02em; color: var(--ow-ink); }
+.ow-rest-head span { font-size: 12.5px; color: var(--ow-muted); }
+.ow-rest-kpis { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0;
+  background: var(--ow-card); border: 1px solid var(--ow-line); border-radius: 12px;
+  overflow: hidden; }
+.ow-rest-kpis > div { padding: 14px 16px; border-right: 1px solid var(--ow-line); }
+.ow-rest-kpis > div:last-child { border-right: 0; }
+.ow-rest-kpis dt { margin: 0 0 7px; font-family: var(--ow-mono); font-size: 9.5px;
+  font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ow-muted); }
+.ow-rest-kpis dd { margin: 0; font-size: 26px; font-weight: 600; line-height: 1;
+  letter-spacing: -0.025em; color: var(--ow-ink); font-variant-numeric: tabular-nums; }
+.ow-rest-kpis dd.bad { color: var(--st-failed); }
+.ow-rest-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 11px 15px; border: 0; border-bottom: 1px solid var(--ow-line); background: none;
+  cursor: pointer; font: inherit; }
+.ow-rest-row:last-child { border-bottom: 0; }
+.ow-rest-row:hover { background: var(--ow-paper); }
+/* F5: status dot in resting rows — use the same --c custom-property pattern
+   as ow-badge, ow-tl and ow-row so colour lives in the stylesheet, not inline.
+   Callers add a st-* class (e.g. st-failed) which sets --c. */
+.ow-rest-row .dot { width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: var(--c, var(--ow-muted)); }
+.ow-rest-row b { font-size: 13.5px; font-weight: 600; color: var(--ow-ink); white-space: nowrap; }
+.ow-rest-row em { font-style: normal; font-size: 12.5px; color: var(--ow-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+.ow-rest-row .go { font-size: 11.5px; color: var(--ow-muted); white-space: nowrap; flex: none; }
+.ow-rest-row:hover .go { color: var(--ow-brand-deep); }
+
+/* ── settings cards (account) ───────────────────────────────────
+   Dub 59a2c8a5, Gladia 46a50798 and Framer 284ea81b all build an account
+   page as a stack of bordered cards: one concern each, a description line,
+   the value, then a tinted footer strip carrying the action or the caveat.
+   That strip is where "you cannot change this here" belongs — under the
+   field it applies to, not as one apology at the bottom of the page. The
+   sign-out card is last and separated, as it is in all three. */
+.ow-scard { background: var(--ow-card); border: 1px solid var(--ow-line); border-radius: 11px;
+  margin-bottom: 14px; overflow: hidden; }
+.ow-scard h3 { margin: 0; padding: 16px 18px 0; font-size: 15px; font-weight: 600; color: var(--ow-ink); }
+.ow-scard .desc { margin: 6px 0 0; padding: 0 18px; font-size: 12.5px; color: var(--ow-muted);
+  line-height: 1.5; }
+/* `.val` is an <input> on the editable cards and a <div> on the locked ones,
+   so it has to read the same either way — same box, same type, and the
+   editable one only gains focus affordances. */
+.ow-scard .val { display: block; width: calc(100% - 36px); margin: 12px 18px 16px;
+  padding: 10px 12px; border: 1px solid var(--ow-line-2); border-radius: 7px;
+  font: 400 13.5px/1.4 var(--ow-ui); color: var(--ow-ink); background: var(--ow-paper);
+  overflow-wrap: anywhere; }
+.ow-scard input.val { background: var(--ow-card); }
+/* Fields inside the merged details card. */
+/* The card's own .desc sits directly above the first label, so the group
+   needs its own leading rather than relying on the description's margin. */
+.ow-scard .desc + .ow-acct-f { margin-top: 16px; }
+.ow-acct-f { padding: 0 18px 14px; }
+.ow-acct-f label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ow-ink);
+  margin-bottom: 6px; }
+.ow-acct-f input { width: 100%; min-height: 40px; padding: 9px 12px; border-radius: 7px;
+  border: 1px solid var(--ow-line-2); background: var(--ow-card);
+  font: 400 13.5px/1.4 var(--ow-ui); color: var(--ow-ink); }
+.ow-acct-f input:focus { outline: 0; border-color: var(--ow-brand);
+  box-shadow: 0 0 0 3px var(--ow-brand-soft); }
+.ow-acct-f .hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ow-muted); }
+.ow-scard input.val:hover { border-color: var(--ow-muted); }
+.ow-scard input.val:focus { outline: 0; border-color: var(--ow-brand);
+  box-shadow: 0 0 0 3px var(--ow-brand-soft); }
+.ow-scard h3 label { cursor: pointer; }
+.ow-scard .foot .ok { display: inline-flex; align-items: center; gap: 5px; color: #126b34;
+  font-weight: 600; }
+.ow-scard .val.mono { font-family: var(--ow-mono); font-size: 12.5px; }
+.ow-scard .foot { padding: 11px 18px; border-top: 1px solid var(--ow-line); background: var(--ow-paper);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  font-size: 12px; color: var(--ow-muted); line-height: 1.5; }
+.ow-scard.danger { border-color: #e8c4c0; }
+.ow-scard.danger .foot { background: var(--ow-err-bg); border-top-color: #f0d4d1; color: #6f3630; }

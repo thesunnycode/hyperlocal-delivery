@@ -1,0 +1,107 @@
+/* App-root overlays: the confirmation dialog and the toast stack.
+   These two are the only components that render OUTSIDE every page scope —
+   a confirm can be raised from `.ag`, `.ow` or `.rp`, and a toast from any of
+   them — so they carry their own palette rather than borrowing one.
+
+   Same values as the scoped sheets, so a dialog raised over the owner console
+   and one raised over the agent app look like the same product. */
+
+.cd, .ts {
+  --ov-card: #fff;
+  --ov-ink: #111827;
+  --ov-body: #374151;
+  --ov-muted: #5c6472;
+  --ov-line: #e2e4dc;
+  --ov-line-2: #cfd2c8;
+  --ov-sand: #eeefe9;
+  --ov-brand: #1546a8;
+  --ov-brand-deep: #14418f;
+  --ov-err: #b91c1c;
+  --ov-err-deep: #a11a12;
+  --ov-err-bg: #fdecea;
+  --ov-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --ov-display: 'Instrument Serif', Georgia, serif;
+}
+.cd *, .cd *::before, .cd *::after { box-sizing: border-box; }
+
+/* ── confirm dialog ─────────────────────────────────────────────
+   Centred, not an edge sheet. The sheets in this app are for reading and
+   filling things in; this one asks a single question and must not look like
+   somewhere you can keep working. It is deliberately narrow. */
+.cd { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  padding: 20px; background: rgba(17, 24, 39, 0.45); font-family: var(--ov-ui); }
+.cd-panel { width: min(400px, 100%); background: var(--ov-card); border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(17, 24, 39, 0.22); padding: 22px;
+  animation: cd-in 0.16s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes cd-in { from { transform: translateY(8px) scale(0.99); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cd-panel { animation: none; } }
+
+.cd-title { font-family: var(--ov-display); font-weight: 400; font-size: 22px;
+  letter-spacing: -0.018em; line-height: 1.2; color: var(--ov-ink); margin: 0 0 9px;
+  text-wrap: balance; }
+/* A title row that also carries its own close button (AgentAccountPage's
+   edit-details dialog) — .cd-title's own margin is dropped so the row
+   controls the spacing instead. */
+.cd-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.cd-head .cd-title { margin: 0; }
+.cd-form { margin-top: 14px; }
+.cd-body { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ov-body);
+  text-wrap: pretty; }
+
+/* Cancel first in the DOM so it is the first tab stop, and confirm last so a
+   stray Enter cannot commit a terminal action. Right-aligned, cancel quiet. */
+.cd-acts { display: flex; gap: 9px; justify-content: flex-end; align-items: center;
+  margin-top: 20px; flex-wrap: wrap; }
+.cd-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 38px; padding: 0 16px; border-radius: 8px; font: 600 13px/1 var(--ov-ui);
+  cursor: pointer; border: 1px solid var(--ov-line-2); background: var(--ov-card);
+  color: var(--ov-ink); }
+.cd-btn:hover { background: var(--ov-sand); }
+.cd-btn.pri { background: var(--ov-brand); border-color: var(--ov-brand); color: #fff; }
+.cd-btn.pri:hover { background: var(--ov-brand-deep); }
+/* A destructive confirm wears the destructive colour. The dialog used to give
+   "Deactivate" and "Mark delivered" the same ink-filled button. */
+.cd-btn.danger { background: var(--ov-err); border-color: var(--ov-err); color: #fff; }
+.cd-btn.danger:hover { background: var(--ov-err-deep); }
+
+/* The dialog can carry a small form (the agent editing their own name and
+   phone). It cannot borrow .ow-f for that: those rules read --ow-* variables
+   declared on the .ow scope root, and this overlay renders outside it, so the
+   inputs would come out unstyled. */
+.cd-field { margin-bottom: 14px; }
+.cd-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ov-ink);
+  margin-bottom: 6px; }
+.cd-field input { width: 100%; height: 40px; padding: 0 12px; border-radius: 7px;
+  border: 1px solid var(--ov-line-2); background: var(--ov-card);
+  font: 400 13.5px/1 var(--ov-ui); color: var(--ov-ink); }
+.cd-field input:focus { outline: 0; border-color: var(--ov-brand);
+  box-shadow: 0 0 0 3px #e9eefa; }
+.cd-field .hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ov-muted); }
+.cd-x { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--ov-line-2);
+  background: var(--ov-card); display: grid; place-items: center; cursor: pointer;
+  color: var(--ov-body); flex: none; }
+.cd-x:hover { background: var(--ov-sand); }
+
+@media (max-width: 439px) {
+  .cd-acts { flex-direction: column-reverse; align-items: stretch; }
+  .cd-btn { width: 100%; }
+}
+
+/* ── toasts ─────────────────────────────────────────────────────
+   Bottom-centre, above the agent's action dock and the owner's tab bar. */
+.ts { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 400;
+  display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none;
+  font-family: var(--ov-ui); }
+.ts-item { pointer-events: auto; display: flex; align-items: center; gap: 10px;
+  max-width: 440px; margin: 0 auto; padding: 12px 14px; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.18); font-size: 13px; line-height: 1.45;
+  background: var(--ov-ink); color: #fff;
+  animation: ts-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes ts-in { from { transform: translateY(10px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ts-item { animation: none; } }
+/* #fecaca on #7f1d1d measures 6.93:1 — the old accent toast put dark red text
+   on a pale red fill, which is the weakest pairing in the set. */
+.ts-item.accent { background: #7f1d1d; color: #fecaca; }
+.ts-close { flex: none; background: none; border: 0; cursor: pointer; color: inherit;
+  opacity: 0.72; padding: 2px; display: flex; }
+.ts-close:hover { opacity: 1; }
