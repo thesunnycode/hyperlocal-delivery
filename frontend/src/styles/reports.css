@@ -1,0 +1,329 @@
+/* Reports — the admin/insight section. Scoped under `.rp`, like auth.css,
+   agent.css and track.css, so nothing else in the app shifts.
+
+   Design record: docs/mockups/12-reports.html
+   Refero: Dub ccc89411/9e5f309a, n8n 7d7bd040, Shopify a2f084ea, Fourthwall
+   9d18c617, Square c93ed1c2 — all share one skeleton: filter toolbar, KPI
+   strip, a wide chart, a grid of breakdown cards, a table.
+   Dub's breakdown card is the specific borrow: a proportional tinted bar
+   behind the label with the count on the right.
+
+   The sidebar this file used to draw is gone: reporting renders inside the
+   owner console (see layouts/ReportingFrame.tsx), which owns navigation. The
+   shell rules, the inspect sheet and the outline status pill went with
+   AdminLayout and AdminRegisterPage.
+
+   ── Why delivered and failed are two charts, not one stack ────────────
+   scripts/validate_palette.js (dataviz skill) rejects the obvious encoding:
+
+     #b91c1c (failed) ↔ #15803d (delivered)   ΔE 4.2 deutan   FAIL
+
+   Red and green are indistinguishable to deuteranopia, and `--pairs all`
+   returns the same 4.2 whatever the order, because a reader compares any two
+   segments and not only neighbours. 4.2 is under the 6 floor, so direct
+   labels and gaps cannot license it either.
+
+   Recolouring the product's statuses would be the wrong fix — the badges
+   carry text, so colour is not their only channel there. Small multiples are
+   the right one: one series per plot means no legend, no adjacency, and no
+   cross-series colour comparison to fail.
+
+   Anti-patterns deliberately avoided (dataviz/references/anti-patterns.md):
+     · figures use the UI sans — a serif on a hero figure reads as decoration
+     · breakdown bars are ONE hue, never darker-where-bigger
+     · gridlines are solid hairlines, never dashed
+     · a 2px surface gap separates bars instead of a border
+     · labels are selective (the peak), never one per bar
+     · plot containers include the axis band, so no nested scrollbar appears */
+
+.rp {
+  --rp-sand: #eeefe9;
+  --rp-paper: #f7f8f4;
+  --rp-card: #fff;
+  --rp-ink: #111827;
+  --rp-body: #374151;
+  --rp-muted: #5c6472;
+  --rp-line: #e2e4dc;
+  --rp-line-2: #cfd2c8;
+  --rp-grid: #e8eae2;
+  --rp-brand: #1546a8;
+  --rp-brand-deep: #14418f;
+  --rp-brand-soft: #e9eefa;
+
+  /* Same status hues the badges use. They are never compared as adjacent
+     fills here, which is the whole point of the small-multiples split. */
+  --rp-delivered: #15803d;
+  --rp-failed: #b91c1c;
+  --rp-neutral: #64748b;
+
+  /* Same measure and the same full-bleed gutter trick as the owner console
+     (see owner.css). Reporting renders inside that shell, so the two must
+     agree or the page furniture jumps as you move between sections.
+
+     This formula was missing the /2 --ow-gutter's has: it computed the
+     FULL leftover width (100% - measure - 22px) rather than half of it, and
+     .rp-head/.rp-bar spent that whole amount as right-only padding against a
+     flat 22px on the left. At 1920px wide that put 718px of padding on the
+     right and 22px on the left — content pinned to the left edge with the
+     rest of a wide monitor sitting empty, instead of a centred 1180px
+     column. */
+  --rp-measure: 1180px;
+  --rp-gutter: max(22px, calc((100% - var(--rp-measure)) / 2));
+
+  --rp-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --rp-display: 'Instrument Serif', Georgia, serif;
+  --rp-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  min-height: 100vh;
+  background: var(--rp-paper);
+  font-family: var(--rp-ui);
+  color: var(--rp-body);
+  font-size: 13.5px;
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
+}
+.rp :focus-visible { outline: 3px solid var(--rp-brand); outline-offset: 2px; border-radius: 5px; }
+
+/* Reporting mounted inside the owner shell (see ReportingFrame). .ow-main is
+   a column flex box that owns the viewport height and hides its own overflow,
+   so the section scrolls here rather than at the window. */
+.rp-embed { flex: 1; min-width: 0; overflow-y: auto; background: var(--rp-paper); }
+.rp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding: 18px var(--rp-gutter) 14px; border-bottom: 1px solid var(--rp-line);
+  background: var(--rp-card); }
+.rp-head h1 { font-family: var(--rp-display); font-weight: 400; font-size: 27px; line-height: 1.1;
+  letter-spacing: -0.02em; color: var(--rp-ink); margin: 0; }
+.rp-head .sub { font-size: 12.5px; color: var(--rp-muted); margin-top: 5px; }
+/* `.rp-btn` started life on <button> only; the empty-state "Manage riders"
+   link reuses it on an <a>, which needed its own text-decoration reset. */
+.rp-btn { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px;
+  border-radius: 7px; font: 600 12.5px/1 var(--rp-ui); background: var(--rp-card);
+  border: 1px solid var(--rp-line-2); color: var(--rp-ink); cursor: pointer; text-decoration: none; }
+.rp-btn:hover { background: var(--rp-sand); }
+.rp-btn[disabled] { opacity: 0.5; cursor: default; }
+.rp-bar { display: flex; align-items: center; gap: 8px; padding: 11px var(--rp-gutter);
+  border-bottom: 1px solid var(--rp-line); background: var(--rp-card); flex-wrap: wrap; }
+.rp-chip { height: 32px; padding: 0 11px; border-radius: 100px; border: 1px solid var(--rp-line-2);
+  background: var(--rp-card); font: 500 12.5px/1 var(--rp-ui); color: var(--rp-body); cursor: pointer; }
+.rp-chip[aria-pressed='true'] { background: var(--rp-ink); border-color: var(--rp-ink); color: #fff; font-weight: 600; }
+.rp-wrap { padding: 20px 22px 44px; max-width: calc(var(--rp-measure) + 44px); margin-inline: auto; }
+/* Toolbar label ("Range", "Series") and the gap before a second group.
+   These three rules, plus .rp-av below, were collateral from removing the
+   AdminLayout/AdminRegisterPage stylesheet block — still referenced in JSX,
+   so the labels rendered as plain body text and the avatar as bare initials
+   jammed against the name. The static audit flagged all three; they were
+   skimmed past. */
+.rp-barlbl { font-family: var(--rp-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--rp-muted); }
+.rp-bar .sp { margin-left: 18px; }
+.rp-chipgroup { display: flex; gap: 6px; }
+.rp-chip-ic { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ── KPI strip ──────────────────────────────────────────────── */
+.rp-kpis { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--rp-card);
+  border: 1px solid var(--rp-line); border-radius: 12px; overflow: hidden; margin: 0; }
+.rp-kpi { padding: 15px 17px; border-right: 1px solid var(--rp-line); }
+.rp-kpi:last-child { border-right: 0; }
+.rp-kpi dt { font-family: var(--rp-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--rp-muted); margin: 0 0 7px; }
+/* UI sans, not the display serif: a serif on a figure reads as decoration. */
+/* E3 — the page headline is 27px and these were 26px, so nothing led. The
+   headline figures are the reason the page exists; giving them clear rank
+   above both the title and the breakdown numbers is what makes the screen
+   read as a hierarchy rather than a list of equal cards. */
+.rp-kpi dd { margin: 0; font-size: 31px; font-weight: 600; color: var(--rp-ink);
+  letter-spacing: -0.025em; font-variant-numeric: tabular-nums; line-height: 1; }
+.rp-kpi dd small { font-size: 16px; font-weight: 500; color: var(--rp-muted); margin-left: 2px; }
+@media (max-width: 1000px) {
+  .rp-kpis { grid-template-columns: repeat(3, 1fr); }
+  .rp-kpi:nth-child(3n) { border-right: 0; }
+  .rp-kpi:nth-child(-n + 3) { border-bottom: 1px solid var(--rp-line); }
+}
+@media (max-width: 620px) {
+  .rp-kpis { grid-template-columns: repeat(2, 1fr); }
+  .rp-kpi { border-right: 1px solid var(--rp-line); border-bottom: 1px solid var(--rp-line); }
+  .rp-kpi:nth-child(2n) { border-right: 0; }
+}
+
+.rp-card { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: 12px; margin-top: 16px; }
+.rp-card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 15px 17px 0; }
+.rp-card-h h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--rp-ink); letter-spacing: -0.012em; }
+.rp-card-h .note { font-size: 11.5px; color: var(--rp-muted); }
+
+/* ── small multiples ────────────────────────────────────────── */
+.rp-multi { padding: 6px 17px 15px; }
+.rp-plot { position: relative; }
+.rp-plot svg { display: block; width: 100%; height: auto; }
+.rp-axis { display: flex; justify-content: space-between; font-family: var(--rp-mono); font-size: 10px;
+  color: var(--rp-muted); padding-top: 6px; }
+.rp-series { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600;
+  color: var(--rp-ink); margin: 12px 0 2px; flex-wrap: wrap; }
+.rp-series i { width: 9px; height: 9px; border-radius: 2px; background: var(--c); flex: none; }
+.rp-series span { font-weight: 400; color: var(--rp-muted); font-variant-numeric: tabular-nums; }
+/* Each plot is scaled to its own maximum. Printing that maximum on the plot
+   is what makes the heights interpretable, and it replaces the paragraph of
+   explanation that used to sit under both chart pages. */
+.rp-scale { margin-left: auto; font-family: var(--rp-mono); font-size: 10px;
+  letter-spacing: 0.04em; color: var(--rp-muted); }
+.rp-tip { position: absolute; pointer-events: none; background: var(--rp-ink); color: #fff;
+  border-radius: 7px; padding: 8px 10px; font-size: 11.5px; line-height: 1.45; white-space: nowrap;
+  opacity: 0; transform: translate(-50%, -115%); transition: opacity 0.1s; z-index: 5; }
+.rp-tip b { font-weight: 600; display: block; font-variant-numeric: tabular-nums; }
+.rp-tip em { font-style: normal; color: rgba(255, 255, 255, 0.65); font-family: var(--rp-mono); font-size: 10px; }
+.rp-plot:hover .rp-tip, .rp-plot:focus-within .rp-tip { opacity: 1; }
+
+/* ── breakdown cards ────────────────────────────────────────── */
+.rp-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 900px) { .rp-grid2 { grid-template-columns: 1fr; } }
+.rp-brk { padding: 6px 17px 16px; }
+/* One hue for every row. A darker-where-bigger ramp would double-encode the
+   bar length as colour and spend the only free channel on nothing. */
+.rp-brow { position: relative; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 9px 10px; margin-bottom: 3px; border-radius: 6px; font-size: 13px;
+  color: var(--rp-ink); isolation: isolate; }
+.rp-brow .fill { position: absolute; inset: 0; background: var(--rp-brand-soft); border-radius: 6px; z-index: -1; }
+.rp-brow .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-brow .n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--rp-body); }
+.rp-brow .pct { font-family: var(--rp-mono); font-size: 10.5px; color: var(--rp-muted); margin-left: 8px; }
+
+/* ── table ──────────────────────────────────────────────────── */
+/* `position: relative` is load-bearing, not decoration. `.sr-only` is
+   position:absolute, and the sortable headers put one inside this table. With
+   no positioned ancestor it resolved against the initial containing block —
+   landing ~790px into the page and dragging the document's scroll width with
+   it, so the whole page scrolled sideways on a phone while the table itself
+   was scrolling correctly inside here. Containing block fixes it. */
+.rp-tablewrap { padding: 8px 4px 6px; overflow-x: auto; position: relative; }
+.rp table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+/* `.rp table` in front of every th/td rule below is load-bearing, not
+   decoration. Reports tables render nested inside the owner console shell
+   (`.rp.rp-embed` sits under `.ow-app`/`.ow`), and owner.css has its own
+   `.ow th`/`.ow td` at the exact same specificity (one class, one element).
+   Plain `.rp th`/`.rp td` used to tie with those and lose or win depending
+   on which stylesheet the bundler happened to concatenate last — on the
+   running page it was losing, so every reports table header rendered in the
+   UI sans font instead of the mono font every other label in this scope
+   uses, picked up `.ow th`'s sticky positioning and owner-card background,
+   and coloured itself from `--ow-muted` instead of `--rp-muted`. Adding the
+   `table` element makes this selector unambiguously more specific than
+   `.ow th`/`.ow td`, so it wins regardless of import order. */
+.rp table th { position: static; text-align: left; font-family: var(--rp-mono); font-size: 9.5px;
+  font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--rp-muted);
+  padding: 10px 14px; border-bottom: 1px solid var(--rp-line-2); white-space: nowrap; }
+.rp table td { padding: 10px 14px; border-bottom: 1px solid var(--rp-line); color: var(--rp-ink);
+  font-variant-numeric: tabular-nums; }
+.rp table tbody tr:last-child td { border-bottom: 0; }
+.rp table td.name { font-weight: 600; }
+.rp table th.r, .rp table td.r { text-align: right; }
+/* The column the table is sorted by. A tint, not a border: a rule would cut
+   the row in two, and the point is emphasis, not separation. */
+.rp table td.on { background: #f4f6fb; }
+.rp table tbody tr:hover td.on { background: #eaeff9; }
+.rp .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; }
+
+.rp-foot { font-size: 12px; color: var(--rp-muted); line-height: 1.55; margin: 16px 2px 0; max-width: 62ch; }
+/* All series switched off on the trend plot — looser top margin than the
+   empty-breakdown message uses, matching this card's own padding rhythm. */
+.rp-foot-loose { margin: 14px 0 6px; }
+.rp-muted-cell { color: var(--rp-muted); }
+.rp-bold-cell { font-weight: 600; }
+.rp-showall { padding: 4px 17px 15px; }
+.rp-lock-tight { margin: 0 17px 16px; }
+
+/* ── states ─────────────────────────────────────────────────── */
+.rp-state { margin: 40px auto; max-width: 390px; text-align: center; padding: 30px 20px; }
+/* F2 — the empty states across the four scopes had drifted to different icon
+   sizes, headline sizes and spacing. They are aligned on the edge-state
+   metrics (56px tile, 16px radius, 23px display headline) so they read as one
+   family when you move between sections. */
+.rp-state .ic { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  margin: 0 auto 18px; background: var(--rp-sand); color: var(--rp-muted); }
+.rp-state h2 { font-family: var(--rp-display); font-weight: 400; font-size: 23px; letter-spacing: -0.018em;
+  color: var(--rp-ink); margin: 0 0 8px; }
+.rp-state p { margin: 0; font-size: 13.5px; line-height: 1.55; }
+.rp-state .acts { display: flex; gap: 9px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.rp-sk { background: linear-gradient(90deg, #eceee7, #f6f7f2, #eceee7); background-size: 200% 100%;
+  border-radius: 5px; animation: rp-sh 1.3s linear infinite; display: block; }
+@keyframes rp-sh { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .rp-sk { animation: none; } }
+
+/* AdminOverviewPage skeleton shapes — replace inline style= props. */
+.rp-sk-kpi      { height: 24px; width: 56px; }
+.rp-sk-title-1  { height: 14px; width: 190px; margin: 10px 0 14px; }
+.rp-sk-title-2  { height: 14px; width: 160px; margin: 18px 0 14px; }
+.rp-sk-bars-1   { height: 76px; width: 100%; }
+.rp-sk-bars-2   { height: 44px; width: 100%; }
+.rp-sk-trend-title-1 { height: 14px; width: 180px; margin: 10px 0 14px; }
+.rp-sk-trend-title-2 { height: 14px; width: 160px; margin: 18px 0 14px; }
+.rp-sk-trend-bars-1  { height: 72px; width: 100%; }
+.rp-sk-trend-bars-2  { height: 62px; width: 100%; }
+.rp-sk-row-pad  { padding: 17px; }
+.rp-sk-row      { height: 34px; width: 100%; margin-bottom: 8px; }
+/* Empty-breakdown message, tighter than .rp-foot's default margin. */
+.rp-foot-tight  { margin: 6px 0; }
+
+/* ══ MOBILE ════════════════════════════════════════════════════
+   Reporting was drawn desktop-first and had NO mobile layout at all: the
+   216px sidebar kept its column at every width, squeezing the content pane to
+   159px on a phone and pushing the page into horizontal scroll. The tables
+   were innocent — `.rp-tablewrap` was scrolling internally as designed — it
+   was the toolbar and the page header that could not fit.
+
+   This matters because the owner's mobile tab bar links straight here, so a
+   phone WILL land on these screens.
+
+   The sidebar becomes a horizontal, scrollable chip row pinned to the top:
+   analytics sections are a short flat list, and a chip row keeps them all one
+   tap away without spending a bottom bar the owner shell already owns. */
+/* Reporting no longer owns a shell, so the sidebar-to-chip-row rules that
+   used to live here went with AdminLayout — the owner console's own sidebar
+   and bottom tab bar carry navigation at every width now. */
+@media (max-width: 899px) {
+  .rp-head { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 14px 12px; }
+  .rp-bar { padding-right: 14px; }
+  .rp-head .rp-btn { width: 100%; justify-content: center; }
+  .rp-bar { padding: 10px 14px; }
+  .rp-wrap { padding: 14px 14px 40px; }
+  .rp-card-h { flex-wrap: wrap; }
+  /* The plots are already width:100%; give them room to breathe instead. */
+  .rp-multi { padding: 6px 12px 14px; }
+}
+
+/* ── sortable column headers (AD3) ──────────────────────────────
+   The header itself is the control, so the sort affordance costs no extra
+   row. The caret is hidden until hover or active, otherwise eight carets
+   compete with eight labels for the same 9.5px of type. */
+.rp-sort { display: inline-flex; align-items: center; gap: 5px; background: none; border: 0;
+  padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit;
+  cursor: pointer; }
+.rp-sort .ar { opacity: 0; transition: opacity 0.12s; }
+.rp-sort:hover { color: var(--rp-ink); }
+.rp-sort:hover .ar { opacity: 0.45; }
+.rp th[aria-sort='descending'] { color: var(--rp-ink); }
+.rp th[aria-sort='descending'] .ar { opacity: 1; }
+
+.rp tbody tr.rw { cursor: pointer; }
+.rp tbody tr.rw:hover td { background: var(--rp-sand); }
+.rp tbody tr.rw:focus-visible { outline: 3px solid var(--rp-brand); outline-offset: -2px; }
+.rp-link { font-size: 11.5px; font-weight: 600; color: var(--rp-brand-deep); text-decoration: none; }
+.rp-link:hover { text-decoration: underline; }
+
+.rp-av { width: 26px; height: 26px; border-radius: 50%; flex: none;
+  background: var(--rp-sand); color: var(--rp-ink);
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
+.rp-who2 { display: flex; align-items: center; gap: 10px; }
+.rp-who2 b { font-weight: 600; font-size: 13px; }
+.rp-who2 em { font-style: normal; display: block; font-family: var(--rp-mono); font-size: 9px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--rp-muted); margin-top: 3px; }
+
+/* Inline magnitude beside its own number — the figure is the label, so the
+   bar adds shape without becoming the only encoding. */
+.rp-mini { display: inline-flex; align-items: center; gap: 9px; justify-content: flex-end; }
+.rp-mini .tr { width: 46px; height: 5px; border-radius: 3px; background: var(--rp-grid); flex: none; }
+.rp-mini .tr i { display: block; height: 100%; border-radius: 3px; background: var(--rp-neutral); }
+
+
+.rp-lock { display: flex; gap: 9px; align-items: flex-start; margin-top: 18px; padding: 11px 13px;
+  border-radius: 9px; background: var(--rp-sand); font-size: 12px; line-height: 1.5; color: var(--rp-muted); }
+.rp-lock svg { flex: none; margin-top: 1px; }
