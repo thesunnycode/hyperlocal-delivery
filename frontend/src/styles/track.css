@@ -1,0 +1,272 @@
+/* Customer tracking — /track/:token. Public, no auth.
+
+   Scoped under `.tk`, like auth.css and agent.css. Nothing else shifts.
+
+   Design record: docs/mockups/09-customer-tracking.html
+   Refero sources:
+     PayPal/DHL 33637751 — single-shipment view: sender mark, status as the
+       largest text, a horizontal checkpoint rail in a card, a muted
+       reassurance line, a small footer note.
+     Uber Eats 49012510 — "What your delivery person sees": the privacy
+       boundary as a designed, visible feature listing the exact fields.
+     Klarna 6343429b + PayPal flow 7255 — the awaiting-update state. Both
+       design for "nothing has happened yet" instead of a stale screen; this
+       page can sit for hours between assigned and out_for_delivery.
+     Fruitful d8a01033 — the register. Calm and reassuring, generous vertical
+       rhythm. The agent app is dense on purpose; a customer page is not.
+
+   The register is deliberately softer than agent.css: larger type, more air,
+   fewer edges. Someone opens this once, from a link, to answer one question.
+
+   STALE, KEPT DELIBERATELY — READ styles/scopes.css FIRST: every `--tk-*`
+   value below is superseded by `scopes.css`, imported after this file, which
+   re-declares each one as a var() onto the shared `--hl-*` tokens (see its
+   header comment, and the same note at the top of auth.css). The blue brand
+   and serif display face below have not rendered since the 2026-09-08
+   redesign — the live brand is `--hl-brand-solid`, the live display face is
+   `--hl-display`. Kept for the two-file revert path scopes.css describes;
+   change scopes.css or tokens.css, not this block, to change what renders. */
+
+.tk {
+  --tk-paper: #fbfaf8;
+  --tk-ink: #111827;
+  --tk-body: #374151;
+  --tk-muted: #5c6472;
+  --tk-line: #e6e7e1;
+  --tk-line-2: #d3d5cc;
+  --tk-brand: #1546a8;
+  --tk-brand-deep: #14418f;
+
+  --tk-assigned: #64748b;
+  --tk-picked_up: #0e7490;
+  --tk-in_transit: #3f6212;
+  --tk-out_for_delivery: #c2410c;
+  --tk-delivered: #15803d;
+  --tk-failed: #b91c1c;
+  --tk-returned: #7e22ce;
+
+  --tk-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --tk-display: 'Instrument Serif', Georgia, serif;
+  --tk-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  min-height: 100vh;
+  background: var(--tk-paper);
+  font-family: var(--tk-ui);
+  color: var(--tk-body);
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+}
+.tk :focus-visible { outline: 3px solid var(--tk-brand); outline-offset: 2px; border-radius: 6px; }
+
+.tk-wrap { width: 100%; max-width: 460px; margin: 0 auto; padding: 22px 20px 48px; }
+
+.tk-s-assigned { --c: var(--tk-assigned); }
+.tk-s-picked_up { --c: var(--tk-picked_up); }
+.tk-s-in_transit { --c: var(--tk-in_transit); }
+.tk-s-out_for_delivery { --c: var(--tk-out_for_delivery); }
+.tk-s-delivered { --c: var(--tk-delivered); }
+.tk-s-failed { --c: var(--tk-failed); }
+.tk-s-returned { --c: var(--tk-returned); }
+
+/* ── sender: who this is from, answered before anything else ─── */
+.tk-sender { display: flex; align-items: center; gap: 12px; }
+.tk-mark {
+  width: 46px; height: 46px; border-radius: 50%; background: var(--tk-brand); color: #fff;
+  flex: none; display: grid; place-items: center; font-size: 16px; font-weight: 700;
+}
+.tk-kick {
+  font-family: var(--tk-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--tk-muted); margin-bottom: 3px;
+}
+.tk-who { font-size: 15px; font-weight: 600; color: var(--tk-ink); letter-spacing: -0.015em; }
+
+/* ── the answer ──────────────────────────────────────────────── */
+/* C2 — the answer to "where is it" was type alone, with the status colour
+   confined to a small chip. A tint of that same hue behind the block makes the
+   state readable before a word is: green when it landed, red when it did not.
+   color-mix at 7% keeps ink contrast far above AA (measured 16.15:1 on the
+   delivered tint), so nothing here depends on colour to be legible. */
+.tk-answer {
+  margin-top: 24px; padding: 20px 20px 22px; border-radius: 16px;
+  background: color-mix(in srgb, var(--c) 7%, #fff);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, #fff);
+}
+.tk-answer .tk-chip { background: #fff; }
+.tk-chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 100px;
+  background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c);
+  font-size: 12px; font-weight: 600;
+}
+.tk-answer h1 {
+  font-family: var(--tk-display); font-weight: 400; font-size: 34px; line-height: 1.08;
+  letter-spacing: -0.02em; color: var(--tk-ink); margin: 13px 0 0; text-wrap: balance;
+}
+.tk-answer p { margin: 11px 0 0; font-size: 14.5px; line-height: 1.55; }
+
+/* ── awaiting update: saying "nothing yet" IS the design ─────── */
+.tk-quiet {
+  display: flex; gap: 11px; align-items: flex-start; margin-top: 18px; padding: 14px 15px;
+  background: #f4f5f0; border: 1px solid var(--tk-line); border-radius: 14px;
+}
+.tk-quiet i {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; margin-top: 4px;
+  animation: tk-pulse 2.4s ease-in-out infinite;
+}
+@keyframes tk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.tk-quiet p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+.tk-quiet b { color: var(--tk-ink); font-weight: 600; }
+
+.tk-updated {
+  margin-top: 14px; font-family: var(--tk-mono); font-size: 11px; letter-spacing: 0.04em;
+  color: var(--tk-muted); display: flex; align-items: center; gap: 8px;
+}
+.tk-refresh {
+  border: 0; background: none; padding: 0; cursor: pointer; color: var(--tk-brand-deep);
+  font: 600 11px/1 var(--tk-mono); letter-spacing: 0.04em; text-decoration: underline;
+}
+
+/* ── checkpoint rail ─────────────────────────────────────────── */
+.tk-rail {
+  background: #fff; border: 1px solid var(--tk-line); border-radius: 16px;
+  padding: 20px 18px 16px; margin-top: 22px; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+}
+.tk-track { display: flex; align-items: center; }
+.tk-node {
+  width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center;
+  background: #fff; border: 2px solid var(--tk-line-2); color: #fff;
+}
+.tk-node.done { background: var(--tk-delivered); border-color: var(--tk-delivered); }
+.tk-node.now {
+  background: var(--c); border-color: var(--c);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 18%, #fff);
+}
+.tk-node.branch { background: var(--c); border-color: var(--c); }
+.tk-seg { flex: 1; height: 3px; background: var(--tk-line-2); }
+.tk-seg.done { background: var(--tk-delivered); }
+.tk-lbls { display: flex; justify-content: space-between; margin-top: 12px; gap: 6px; }
+.tk-lbls span { font-size: 10.5px; color: var(--tk-muted); text-align: center; flex: 1; line-height: 1.25; }
+.tk-lbls span:first-child { text-align: left; }
+.tk-lbls span:last-child { text-align: right; }
+.tk-lbls span.on { color: var(--tk-ink); font-weight: 600; }
+
+/* ── cards ───────────────────────────────────────────────────── */
+.tk-card {
+  background: #fff; border: 1px solid var(--tk-line); border-radius: 16px; margin-top: 14px;
+  overflow: hidden; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+}
+.tk-row { display: flex; gap: 14px; padding: 15px 17px; border-bottom: 1px solid var(--tk-line); }
+.tk-row:last-child { border-bottom: 0; }
+.tk-row dt { flex: none; width: 88px; margin: 0; font-size: 12.5px; color: var(--tk-muted); }
+.tk-row dd { margin: 0; flex: 1; font-size: 14.5px; color: var(--tk-ink); line-height: 1.45; }
+.tk-row dd small { display: block; font-size: 13.5px; color: var(--tk-body); margin-top: 3px; }
+.tk-row dd.tk-mono { font-family: var(--tk-mono); font-size: 13.5px; }
+
+.tk-cta {
+  display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; height: 54px;
+  margin-top: 14px; background: #fff; border: 1px solid var(--tk-line-2); border-radius: 14px;
+  font: 600 15.5px/1 var(--tk-ui); color: var(--tk-ink); text-decoration: none; cursor: pointer;
+}
+.tk-cta:active { background: #f3f4ef; }
+/* Solid only when something has gone wrong — that is the one moment calling
+   the store is the useful action rather than just an option. */
+.tk-cta.tk-solid { background: var(--tk-brand); border-color: var(--tk-brand); color: #fff; }
+
+/* ── secondary disclosures ───────────────────────────────────── */
+/* The privacy card and the full event list are both worth having and neither
+   is the answer to "where is my parcel". Collapsed, they stop pushing the
+   stepper and the call button off a phone screen. */
+.tk-more {
+  margin-top: 14px; border: 1px solid var(--tk-line); border-radius: 16px; background: #fff;
+  overflow: hidden;
+}
+.tk-more > summary {
+  padding: 15px 17px; font-size: 14px; font-weight: 600; color: var(--tk-ink);
+  letter-spacing: -0.012em; cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 52px;
+}
+.tk-more > summary::-webkit-details-marker { display: none; }
+.tk-more > summary::after {
+  content: ''; flex: none; width: 8px; height: 8px; margin-right: 4px;
+  border-right: 2px solid var(--tk-muted); border-bottom: 2px solid var(--tk-muted);
+  transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.15s ease-out;
+}
+.tk-more[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.tk-more .tk-log { padding: 2px 17px 14px; }
+
+.tk-priv {
+  margin-top: 26px; border: 1px solid var(--tk-line); border-radius: 16px; background: #fff;
+  overflow: hidden;
+}
+.tk-priv h2 { display: none; /* rule kept as tombstone — no h2 is rendered inside .tk-priv; the summary element serves as the heading */ }
+.tk-priv .tk-pr {
+  display: flex; align-items: center; gap: 11px; padding: 11px 17px;
+  border-top: 1px solid var(--tk-line); font-size: 13.5px; color: var(--tk-ink);
+}
+.tk-priv .tk-pr svg { flex: none; color: var(--tk-muted); }
+.tk-priv .tk-note {
+  padding: 13px 17px; border-top: 1px solid var(--tk-line); background: #f8f9f5;
+  font-size: 12.5px; line-height: 1.5; margin: 0;
+}
+
+/* ── progress log ────────────────────────────────────────────── */
+.tk-log { list-style: none; margin: 0; padding: 0; }
+.tk-log li { display: grid; grid-template-columns: 68px 11px 1fr; gap: 12px; align-items: start; padding: 9px 0; }
+.tk-log .t { font-family: var(--tk-mono); font-size: 11.5px; color: var(--tk-muted); padding-top: 1px; }
+.tk-log .m { width: 11px; height: 11px; border-radius: 50%; background: var(--c); margin-top: 3px; }
+.tk-log b { display: block; font-size: 13.5px; font-weight: 600; color: var(--tk-ink); }
+
+.tk-foot {
+  margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--tk-line);
+  font-family: var(--tk-mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--tk-muted);
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+
+.tk-offline {
+  display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; padding: 11px 13px;
+  background: #fdf1dc; border: 1px solid #edd9ae; border-radius: 12px;
+  font-size: 12.5px; line-height: 1.45; color: #7a4d00;
+}
+.tk-offline svg { flex: none; margin-top: 1px; }
+
+/* ── edge + skeleton ─────────────────────────────────────────── */
+/* F10: aligned to ow/es metrics (56px / 16px-radius) so all four scopes
+   read as the same family on not-found and empty states. */
+.tk-edge { margin-top: 60px; padding: 34px 24px; background: #fff; border: 1px solid var(--tk-line); border-radius: 16px; text-align: center; }
+.tk-edge-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--tk-paper); display: grid; place-items: center; margin: 0 auto 14px; color: var(--tk-muted); }
+.tk-edge h1 { margin: 0 0 8px; font-family: var(--tk-display); font-weight: 400; font-size: 26px; color: var(--tk-ink); letter-spacing: -0.018em; }
+.tk-edge p { margin: 0; font-size: 13.5px; line-height: 1.55; }
+
+/* F9: display:contents wrapper for stepper node+segment pairs. */
+.tk-rail-item { display: contents; }
+
+/* F6: named skeleton shapes so no inline style= props are needed. */
+.tk-skel { background: linear-gradient(90deg, #eceee7, #f6f7f2, #eceee7); background-size: 200% 100%; border-radius: 6px; animation: tk-shim 1.3s linear infinite; }
+@keyframes tk-shim { to { background-position: -200% 0; } }
+.tk-skel-avatar { width: 46px; height: 46px; border-radius: 50%; flex: none; }
+.tk-skel-line   { display: block; height: 16px; width: 140px; }
+.tk-skel-chip   { display: block; height: 24px; width: 110px; border-radius: 100px; }
+.tk-skel-head   { display: block; height: 34px; width: 85%; margin-top: 14px; }
+.tk-skel-body   { display: block; height: 15px; width: 65%; margin-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) { .tk-quiet i, .tk-skel { animation: none; } }
+
+/* ══ DESKTOP ═══════════════════════════════════════════════════
+   One centred column at every width. This was briefly two columns above
+   1100px on the reasoning that a 460px receipt "left most of the screen
+   unused" — but unused space is not a problem to solve on a page whose whole
+   job is one sentence: where is my parcel. Splitting it moved the details
+   card away from the stepper it belongs to, and the two halves could never
+   balance, so whichever column ran short grew a hole.
+
+   It is a phone page that happens to open on laptops. It stays one column and
+   simply gets a little more room to breathe. */
+@media (min-width: 1100px) {
+  .tk-wrap { max-width: 520px; padding-top: 40px; }
+}
+
+/* The closing flourish, and it sits LAST on purpose: anywhere above the fold
+   it would push the answer, the call button and the details down the page to
+   make room for decoration. Here it costs the reader nothing. */
+.tk-scene { margin: 30px auto 0; max-width: 300px; opacity: 0.9; }
+@media (min-width: 1100px) { .tk-scene { max-width: 360px; } }
