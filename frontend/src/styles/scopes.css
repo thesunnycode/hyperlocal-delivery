@@ -1,0 +1,1013 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Scope bridge — every scoped stylesheet's private tokens, re-pointed at the
+   shared roles in tokens.css.
+
+   HOW THIS WORKS, AND WHY IT IS A SEPARATE FILE
+
+   The six scoped sheets each open with a block of literal hexes:
+
+       .ow { --ow-ink: #111827; --ow-brand: #1546a8; … }
+
+   and then every rule below uses `var(--ow-ink)`. That indirection is the
+   redesign's best seam: repoint the declarations and ~2,300 lines of layout,
+   spacing and state rules re-skin without being touched, which is also why
+   this revamp does not put a single regression near the 54 passing tests.
+
+   This file is imported LAST in main.tsx. Custom-property declarations at
+   equal specificity resolve last-wins, so these override the literals still
+   sitting at the top of owner.css, auth.css and the rest. Those literal blocks
+   are now dead weight and are listed for deletion in REDESIGN-NOTES.md §
+   "Follow-up" — they are left in place in this pass rather than deleted so the
+   diff stays reviewable and a `git revert` of two files restores the old look
+   exactly.
+
+   Nothing here declares a colour. Every value is a var() onto tokens.css.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Owner console (.ow) ─────────────────────────────────────────────── */
+.ow {
+  --ow-sand: var(--hl-n100);
+  --ow-paper: var(--hl-n25);
+  --ow-card: var(--hl-n0);
+  --ow-ink: var(--hl-n900);
+  --ow-body: var(--hl-n700);
+  --ow-muted: var(--hl-n600);
+  --ow-line: var(--hl-n200);
+  --ow-line-2: var(--hl-n300);
+  --ow-brand: var(--hl-brand-solid);
+  --ow-brand-deep: var(--hl-brand-deep);
+  --ow-brand-soft: var(--hl-brand-soft);
+
+  --st-assigned: var(--hl-assigned-solid);
+  --st-picked_up: var(--hl-picked_up-solid);
+  --st-in_transit: var(--hl-in_transit-solid);
+  --st-out_for_delivery: var(--hl-out_for_delivery-solid);
+  --st-delivered: var(--hl-delivered-solid);
+  --st-failed: var(--hl-failed-solid);
+  --st-returned: var(--hl-returned-solid);
+
+  --ow-err: var(--hl-danger);
+  --ow-err-bg: var(--hl-danger-bg);
+  --ow-warn-bg: var(--hl-warn-bg);
+
+  --ow-ui: var(--hl-ui);
+  --ow-display: var(--hl-display);
+  --ow-mono: var(--hl-mono);
+
+  letter-spacing: var(--hl-track-ui);
+}
+
+/* ── Auth (.auth) ────────────────────────────────────────────────────── */
+.auth {
+  --auth-sand: var(--hl-n25);
+  --auth-ink: var(--hl-n900);
+  --auth-body: var(--hl-n700);
+  --auth-muted: var(--hl-n600);
+  --auth-line: var(--hl-n200);
+  --auth-line-2: var(--hl-n300);
+  --auth-brand: var(--hl-brand-solid);
+  --auth-brand-deep: var(--hl-brand-deep);
+  --auth-brand-soft: var(--hl-brand-soft);
+  /* The narrative panel beside the form. It was a mid-navy that fought the
+     old blue brand; against an emerald it reads cleanest as the ink neutral,
+     which also makes the panel the darkest thing in the product and gives the
+     form the contrast it needs to be the focus. */
+  --auth-panel: var(--hl-n900);
+  --auth-red: var(--hl-danger);
+  --auth-red-soft: var(--hl-danger-bg);
+  --auth-ui: var(--hl-ui);
+  --auth-display: var(--hl-display);
+  --auth-mono: var(--hl-mono);
+}
+
+/* ── Rider app (.ag) ─────────────────────────────────────────────────── */
+.ag {
+  --ag-sand: var(--hl-n25);
+  --ag-ink: var(--hl-n900);
+  --ag-body: var(--hl-n700);
+  --ag-muted: var(--hl-n600);
+  --ag-line: var(--hl-n200);
+  --ag-line-2: var(--hl-n300);
+  --ag-brand: var(--hl-brand-solid);
+  --ag-brand-deep: var(--hl-brand-deep);
+  --ag-brand-soft: var(--hl-brand-soft);
+
+  --ag-assigned: var(--hl-assigned-solid);
+  --ag-picked_up: var(--hl-picked_up-solid);
+  --ag-in_transit: var(--hl-in_transit-solid);
+  --ag-out_for_delivery: var(--hl-out_for_delivery-solid);
+  --ag-delivered: var(--hl-delivered-solid);
+  --ag-failed: var(--hl-failed-solid);
+  --ag-returned: var(--hl-returned-solid);
+
+  --ag-warn-bg: var(--hl-warn-bg);
+  --ag-warn-line: var(--hl-warn-line);
+  --ag-warn-ink: var(--hl-warn-ink);
+
+  --ag-ui: var(--hl-ui);
+  --ag-display: var(--hl-display);
+  --ag-mono: var(--hl-mono);
+}
+
+/* ── Customer tracking (.tk) ─────────────────────────────────────────── */
+.tk {
+  --tk-paper: var(--hl-n25);
+  --tk-ink: var(--hl-n900);
+  --tk-body: var(--hl-n700);
+  --tk-muted: var(--hl-n600);
+  --tk-line: var(--hl-n200);
+  --tk-line-2: var(--hl-n300);
+  --tk-brand: var(--hl-brand-solid);
+  --tk-brand-deep: var(--hl-brand-deep);
+
+  --tk-assigned: var(--hl-assigned-solid);
+  --tk-picked_up: var(--hl-picked_up-solid);
+  --tk-in_transit: var(--hl-in_transit-solid);
+  --tk-out_for_delivery: var(--hl-out_for_delivery-solid);
+  --tk-delivered: var(--hl-delivered-solid);
+  --tk-failed: var(--hl-failed-solid);
+  --tk-returned: var(--hl-returned-solid);
+
+  --tk-ui: var(--hl-ui);
+  --tk-display: var(--hl-display);
+  --tk-mono: var(--hl-mono);
+}
+
+/* ── Reports (.rp) ───────────────────────────────────────────────────── */
+.rp {
+  --rp-sand: var(--hl-n100);
+  --rp-paper: var(--hl-n25);
+  --rp-card: var(--hl-n0);
+  --rp-ink: var(--hl-n900);
+  --rp-body: var(--hl-n700);
+  --rp-muted: var(--hl-n600);
+  --rp-line: var(--hl-n200);
+  --rp-line-2: var(--hl-n300);
+  --rp-grid: var(--hl-n200);
+  --rp-brand: var(--hl-brand-solid);
+  --rp-brand-deep: var(--hl-brand-deep);
+  --rp-brand-soft: var(--hl-brand-soft);
+
+  /* The small-multiples decision in reports.css still holds: delivered and
+     failed are never adjacent fills, so they are free to be the product's own
+     status hues rather than a separate chart ramp. */
+  --rp-delivered: var(--hl-delivered-solid);
+  --rp-failed: var(--hl-failed-solid);
+  --rp-neutral: var(--hl-assigned-solid);
+
+  --rp-ui: var(--hl-ui);
+  --rp-display: var(--hl-display);
+  --rp-mono: var(--hl-mono);
+
+  letter-spacing: var(--hl-track-ui);
+}
+
+/* ── Edge states (.es) ───────────────────────────────────────────────── */
+.es {
+  --es-sand: var(--hl-n100);
+  --es-paper: var(--hl-n25);
+  --es-card: var(--hl-n0);
+  --es-ink: var(--hl-n900);
+  --es-body: var(--hl-n700);
+  --es-muted: var(--hl-n600);
+  --es-line: var(--hl-n200);
+  --es-line-2: var(--hl-n300);
+  --es-brand: var(--hl-brand-solid);
+  --es-brand-deep: var(--hl-brand-deep);
+  --es-err: var(--hl-danger);
+  --es-err-bg: var(--hl-danger-bg);
+  --es-ui: var(--hl-ui);
+  --es-display: var(--hl-display);
+  --es-mono: var(--hl-mono);
+
+  letter-spacing: var(--hl-track-ui);
+}
+
+/* ── Overlays (.cd / .ts) ────────────────────────────────────────────── */
+.cd, .ts {
+  --ov-card: var(--hl-n0);
+  --ov-ink: var(--hl-n900);
+  --ov-body: var(--hl-n700);
+  --ov-muted: var(--hl-n600);
+  --ov-line: var(--hl-n200);
+  --ov-line-2: var(--hl-n300);
+  --ov-sand: var(--hl-n100);
+  --ov-brand: var(--hl-brand-solid);
+  --ov-brand-deep: var(--hl-brand-deep);
+  --ov-err: var(--hl-danger);
+  --ov-err-deep: var(--hl-danger-deep);
+  --ov-err-bg: var(--hl-danger-bg);
+  --ov-ui: var(--hl-ui);
+  --ov-display: var(--hl-display);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Typographic corrections that the alias layer cannot express.
+
+   Repointing a font token swaps the FACE but keeps the old face's metrics —
+   Instrument Serif was set at weight 400 everywhere because it had no other
+   weight, and Bricolage Grotesque at 400 reads as a draft. The rules below
+   restate weight, size and tracking for the display slots, so the new pairing
+   lands on the scale declared in tokens.css rather than inheriting a scale
+   tuned for a serif.
+
+   This is also where the brief's "inverted type hierarchy" audit finding gets
+   its structural fix: the page answer is now the largest thing on the page.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ow-head h1,
+.rp-head h1 {
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: var(--hl-track-tight);
+}
+.ow-acct-h h2 { font-weight: 700; font-size: 28px; letter-spacing: var(--hl-track-tight); }
+.ow-rest-head h2 { font-weight: 700; font-size: 25px; letter-spacing: -0.026em; }
+.ow-check-h h2 { font-weight: 700; font-size: 22px; letter-spacing: -0.024em; }
+.ow-state h2 { font-weight: 700; font-size: 23px; letter-spacing: -0.022em; }
+
+/* Mono is a real face now, so the tracked-out uppercase kickers that were
+   compensating for the system stack's looseness can tighten to the scale. */
+.ow-sec, .ow-navlbl, .ow-check-h .n, .ow-load dt, .ow-rest-kpis dt, .ow th,
+.ow-acct-h .role {
+  font-family: var(--hl-ui);
+  letter-spacing: var(--hl-track-caps);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Motion — the feedback layer.
+
+   The brief's bar is "would a product designer defend this in review", so
+   these are all state feedback and none of them are decoration: a press, a
+   hover, a panel arriving, a skeleton resolving, a status advancing. Every
+   duration comes from tokens.css, where prefers-reduced-motion collapses all
+   five to 1ms — so this whole block is guarded at the source and the explicit
+   guards further down are belt-and-braces for the keyframe animations.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ow-btn, .ag-cta, .ag-secondary, .ag-fork button, .ag-iconbtn,
+.tk-cta, .tk-refresh, .auth-cta, .es-btn, .rp-btn, .cd-btn {
+  transition:
+    background var(--hl-d-press) var(--hl-in),
+    border-color var(--hl-d-press) var(--hl-in),
+    color var(--hl-d-press) var(--hl-in),
+    transform var(--hl-d-press) var(--hl-in);
+}
+.ow-btn:active, .tk-cta:active, .auth-cta:active,
+.es-btn:active, .rp-btn:active, .cd-btn:active { transform: scale(0.985); }
+
+.ow-row, .ow-rest-row, .ow-person, .ow tbody tr.rw td, .ow-chip,
+.ow-nav a, .ow-menu button, .ow-check-i, .ow-kebab, .ow-radio {
+  transition:
+    background var(--hl-d-hover) var(--hl-in),
+    border-color var(--hl-d-hover) var(--hl-in),
+    color var(--hl-d-hover) var(--hl-in);
+}
+
+/* The record arriving beside the list. It slides a short distance from the
+   right and fades; the list itself never moves, which is the whole point of
+   master-detail. */
+@keyframes hl-detail-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.ow-detail > * { animation: hl-detail-in var(--hl-d-enter) var(--hl-in); }
+
+/* Skeleton → content. The skeleton boxes already match the real blocks'
+   geometry, so this is a cross-fade in place with no reflow. */
+@keyframes hl-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.ow-people > *, .ow-tablewrap tbody tr, .ag-row, .ag-card, .rp-kpis, .rp-card {
+  animation: hl-fade-in var(--hl-d-enter) var(--hl-in);
+}
+
+/* A shipment advancing should feel like it advanced. The rail segment fills
+   left-to-right and the badge cross-fades — the one animation a customer
+   watches on purpose, on the one screen where a little delight is earned. */
+.tk-seg, .tk-node, .ag-flow i {
+  transition: background var(--hl-d-sheet) var(--hl-in);
+}
+.tk-chip, .ow-badge, .ag-badge {
+  transition:
+    background var(--hl-d-sheet) var(--hl-in),
+    color var(--hl-d-sheet) var(--hl-in);
+}
+
+/* Focus. The ring fades in at its offset rather than snapping, which stops
+   keyboard tabbing through a dense table from strobing. */
+.ow :focus-visible, .ag :focus-visible, .tk :focus-visible,
+.rp :focus-visible, .auth :focus-visible, .es :focus-visible {
+  transition: outline-color var(--hl-d-hover) var(--hl-in);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-detail > *, .ow-people > *, .ow-tablewrap tbody tr,
+  .ag-row, .ag-card, .rp-kpis, .rp-card { animation: none; }
+  .ow-btn:active, .tk-cta:active, .auth-cta:active,
+  .es-btn:active, .rp-btn:active, .cd-btn:active { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Literal overrides.
+
+   The alias layer above re-skins everything that goes through a var(). These
+   are the rules in the six scoped sheets that hardcode a hex instead — mostly
+   warm neutrals from the old ramp (#e6e8e0, #eceee7, #f4f5f0), the old blue
+   brand, and a handful of one-off reds. Left alone they would show as beige
+   hover states and navy focus rings scattered through an otherwise cool,
+   emerald product, which is exactly the "new accent on the same bones" failure
+   the brief calls out.
+
+   Every replacement below is measured; ratios are in the comments.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Owner console ───────────────────────────────────────────────────── */
+.ow-nav a:hover, .ow-who:hover { background: var(--hl-n50); }
+.ow-search::placeholder { color: var(--hl-n600); }            /* 5.50:1      */
+.ow-chip[aria-pressed='true'] em { color: var(--hl-n300); }
+.ow-btn.danger, .ow-menu button.danger,
+.ow-f .bad-msg { color: var(--hl-danger-ink); }               /* 7.77:1      */
+.ow-btn.danger { border-color: var(--hl-danger-line); }
+.ow-pill.ok { background: var(--hl-brand-soft); color: var(--hl-ok-ink); }  /* 5.75:1 */
+.ow-pill.off { background: var(--hl-n50); color: var(--hl-n600); }
+/* The sort arrow is a non-text affordance, so its floor is 3:1, and it must be
+   visible before hover — a header that only reveals its affordance on hover is
+   invisible to anyone who never hovers. */
+.ow-sort .hint { color: var(--hl-n400); }                     /* 3.41:1      */
+.ow-sort:hover .hint { color: var(--hl-n600); }
+.ow-inline-err { color: var(--hl-danger-ink); }
+.ow-inline-err b, .ow-err-link { color: var(--hl-danger-ink); }
+.ow-scard.danger { border-color: var(--hl-danger-line); }
+.ow-scard.danger .foot {
+  background: var(--hl-danger-bg);
+  border-top-color: var(--hl-danger-line);
+  color: var(--hl-danger-ink);
+}
+.ow-scard .foot .ok { color: var(--hl-ok-ink); }
+.ow-sk {
+  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
+  background-size: 200% 100%;
+}
+.ow-menu { box-shadow: var(--hl-e2); }
+.ow-scrim { background: var(--hl-scrim); }
+.ow-sheet { box-shadow: var(--hl-e3); }
+.ow-card, .ow-person, .ow-scard { box-shadow: var(--hl-e1); }
+
+/* ── Rider app ───────────────────────────────────────────────────────── */
+/* The dark summary strip. It was the auth panel's navy; the two still agree,
+   because both are now the ink neutral. */
+.ag-strip { background: var(--hl-n900); }
+.ag-strip .ag-hot dd { color: #ffb4a0; }                      /* 10.45:1     */
+.ag-skel {
+  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
+  background-size: 200% 100%;
+}
+.ag-fork button.ag-danger, .ag-signout {
+  color: var(--hl-danger-ink); border-color: var(--hl-danger-line);
+}
+.ag-signout:active, .ag-fork button.ag-danger:active { background: var(--hl-danger-bg); }
+.ag-sheet-err { background: var(--hl-danger-bg); color: var(--hl-danger-ink); }
+.ag-card, .ag-row { box-shadow: var(--hl-e1); }
+.ag-sheet { box-shadow: var(--hl-e3); }
+
+/* ── Auth ────────────────────────────────────────────────────────────── */
+.auth-field input::placeholder { color: var(--hl-n600); }
+.auth-msg span { color: var(--hl-danger-ink); }
+/* The two tracked-out kickers on the dark panel were set with opacity, which
+   the brief's audit flags as a disabled-style anti-pattern. Composited they
+   measured 6.64:1 and 7.41:1 — legible, but arrived at by accident. Explicit
+   values at the same apparent lightness make them a decision. */
+.auth-wordmark, .auth-hero-wm { opacity: 1; color: #a4a7ae; }  /* 7.41:1    */
+
+/* ── Reports ─────────────────────────────────────────────────────────── */
+/* The active-sort column tint. Was a pale blue from the old brand; it is the
+   brand's own tint now, so "this is the column you sorted by" reads as the
+   same signal as every other active state in the product. */
+.rp table td.on { background: var(--hl-brand-soft); }
+.rp table tbody tr:hover td.on { background: var(--hl-brand-ring); }
+.rp-sk {
+  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
+  background-size: 200% 100%;
+}
+.rp-tip { box-shadow: var(--hl-e2); }
+
+/* ── Customer tracking ───────────────────────────────────────────────── */
+.tk-quiet { background: var(--hl-n50); }
+.tk-priv .tk-note { background: var(--hl-n25); }
+.tk-cta:active { background: var(--hl-n50); }
+.tk-offline {
+  background: var(--hl-warn-bg);
+  border-color: var(--hl-warn-line);
+  color: var(--hl-warn-ink);                                  /* 6.88:1      */
+}
+.tk-skel {
+  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
+  background-size: 200% 100%;
+}
+.tk-card, .tk-rail, .tk-edge { box-shadow: var(--hl-e1); }
+
+/* ── Overlays ────────────────────────────────────────────────────────── */
+.cd { background: var(--hl-scrim); }
+.cd-panel { box-shadow: var(--hl-e3); }
+.cd-btn:focus-visible, .cd input:focus { box-shadow: 0 0 0 3px var(--hl-brand-ring); }
+/* The destructive toast. #7f1d1d/#fecaca measured 6.93:1 and still does, but
+   it was the only surface in the product using a maroon that appears nowhere
+   else; on the danger tokens it is 7.77:1 and part of the system. */
+.ts-item.accent {
+  background: var(--hl-danger-bg);
+  color: var(--hl-danger-ink);
+  border: 1px solid var(--hl-danger-line);
+}
+.ts-item { box-shadow: var(--hl-e2); }
+
+/* ── Radius alignment ────────────────────────────────────────────────────
+   Six sheets had drifted to eleven different corner radii (6, 7, 8, 9, 10, 11,
+   12, 14, 16, 20, 100). The scale in tokens.css is five steps; these pull the
+   outliers onto it so a card in the rider app and a card in the console are
+   recognisably the same object. */
+.ow-card, .ow-scard, .ow-check, .ow-rest-kpis,
+.ag-card, .ag-row, .ag-edge,
+.tk-card, .tk-answer, .tk-edge, .tk-rail, .rp-card { border-radius: var(--hl-r-card); }
+.ow-sheet-h, .cd-panel, .ag-sheet { border-radius: var(--hl-r-sheet); }
+.ag-sheet { border-radius: var(--hl-r-sheet) var(--hl-r-sheet) 0 0; }
+.ow-btn, .ag-cta, .ag-secondary, .tk-cta, .cd-btn, .rp-btn,
+.ow-f input, .ow-f select, .ow-f textarea,
+.ow-acct-f input, .ow-scard .val, .ow-search { border-radius: var(--hl-r-ctl); }
+.ow-chip, .ag-chip, .rp-chip, .ow-pill { border-radius: var(--hl-r-pill); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Audit fixes the brief names explicitly (§2, "Where this design is coming
+   from"). These are not restyling — they are the failure modes the redesign
+   is supposed to design away from, and three of them survived into the
+   current code.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* "Nothing important behind hover alone" (§4) — the reports sort arrow was
+   opacity:0 until hover, so on a touch screen the table gave no signal that
+   its columns were sortable at all. owner.css had already fixed exactly this
+   on .ow-sort and left a comment about it; reports.css never got the same
+   treatment. Same remedy, same 3:1 non-text floor. */
+.rp-sort .ar { opacity: 1; color: var(--hl-n400); transition: color var(--hl-d-hover) var(--hl-in); }
+.rp-sort:hover .ar { opacity: 1; color: var(--hl-n600); }
+/* `aria-sort` lives on the <th>, not on the .rp-sort button inside it
+   (AdminAgentPerformancePage puts it there, which is where the spec wants it),
+   so `.rp-sort[aria-sort]` matched nothing and neither did `.rp-sort.on` —
+   nothing sets that class. Measured on the running page: all nine arrows
+   rgb(128,140,158), the sorted one included. Combined with the rule above
+   making every arrow permanently visible, that left the table with NO signal
+   for which column it was sorted by — the previous behaviour at least showed
+   only the sorted arrow. Retargeted at the <th>, which is the pattern
+   reports.css itself already uses. */
+.rp th[aria-sort='ascending'] .rp-sort,
+.rp th[aria-sort='descending'] .rp-sort { color: var(--hl-n900); }
+.rp th[aria-sort='ascending'] .ar,
+.rp th[aria-sort='descending'] .ar { color: var(--hl-brand-solid); }
+
+/* "opacity as a disabled style, dimming labels to 1.65:1" (§2). The rider's
+   log-attempt button is the one control left doing this, and it is the most
+   consequential button in the field app. Explicit colours instead: 5.02:1. */
+.ag-sheet-cta button[disabled] {
+  opacity: 1;
+  background: var(--hl-n50);
+  color: var(--hl-n600);
+  cursor: default;
+}
+
+/* Same pattern on the rider's status chips. */
+.ag-chip em { opacity: 1; color: var(--hl-n600); }
+.ag-chip[aria-pressed='true'] em { color: var(--hl-n300); }
+
+/* The tracking-page illustration sat at opacity .9 over a tinted answer card,
+   which is a composite nobody chose. Full strength; if it needs to recede it
+   should do so in its own palette (styles/rider.css). */
+.tk-scene { opacity: 1; }
+
+/* Touch targets. §4 sets a 44px floor at 375px, and three controls in the
+   rider app and the tracking page — the only two phone-first surfaces —
+   were under it.
+
+   The owner console was left out of that pass on the reasoning that it isn't
+   phone-first — but OwnerLayout ships its own bottom tab bar and a full
+   single-column layout below 759px, so it is used on a phone too, just not
+   primarily. .ow-btn (36px), .ow-seg (31px) and .ow-x (32px, the side
+   sheets' close button) are under the floor there. Same for the riders
+   roster's `.ow-kebab` (32px, the per-row overflow menu trigger) and
+   `.ow-send` (32px, the promoted "Send link" action — the one control that
+   unblocks a newly-created rider).
+   .ow-seg and .ow-send need !important: their own unscoped base rules
+   (`.ow-seg { height: 31px }`, `.ow-send { height: 32px }`) live further
+   down this same file (same 0-1-0 specificity) and would otherwise win
+   regardless of viewport width, being later in source order. */
+@media (max-width: 480px) {
+  .ag-sheet-x, .ag-iconbtn { width: 44px; height: 44px; }
+  .tk-refresh { min-height: 44px; }
+  .ag-chip { min-height: 44px; }
+  .auth-reveal { min-height: 44px; min-width: 44px; }
+  .ow-btn { height: 44px; }
+  .ow-x { width: 44px; height: 44px; }
+  .ow-seg { height: 44px !important; }
+  .ow-kebab { width: 44px; height: 44px; }
+  /* min-width, not width: the label span is only hidden below 899px (see
+     .ow-send's own responsive rule further down), so this still needs to
+     grow for whatever text it's showing above 480px — it's only icon-only
+     (31-33px wide) in the narrow band this query targets. */
+  .ow-send { height: 44px !important; min-width: 44px !important; justify-content: center; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   The shell — sidebar to top bar.
+
+   owner.css still declares `.ow-app { grid-template-columns: 216px 1fr }` and
+   a full `.ow-side` block. Those rules are superseded here rather than deleted,
+   for the same reviewability reason as the token literals: two files revert the
+   whole change. `.ow-side` is no longer rendered by OwnerLayout.tsx at all.
+
+   Everything the sidebar did still exists — both nav landmarks with their
+   distinct names, the account button, the mobile tab bar — laid out on one
+   56px row instead of a 216px column.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ow-app {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+.ow-side { display: none; }
+
+.ow-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--hl-n0);
+  border-bottom: 1px solid var(--hl-n200);
+}
+/* The bar's CONTENT obeys the console measure, so the brand at the far left
+   and the account button at the far right line up with the page furniture
+   below them. A full-bleed bar with content that runs to the window edge is
+   the same "22 on the left, 502 on the right" defect in a different axis. */
+.ow-top-in {
+  display: flex;
+  align-items: center;
+  gap: var(--hl-s2);
+  height: 56px;
+  padding: 0 var(--ow-gutter);
+}
+.ow-top .ow-brand { padding: 0; margin-right: var(--hl-s4); flex: none; }
+.ow-top .ow-brand .mk {
+  width: 28px; height: 28px; border-radius: var(--hl-r-sm);
+  background: var(--hl-n900); color: var(--hl-n0);
+  font: 600 12px/1 var(--hl-ui); letter-spacing: 0.01em;
+}
+.ow-top .ow-brand b { font-family: var(--hl-display); font-size: 15px; font-weight: 700;
+  letter-spacing: -0.018em; }
+
+.ow-topnav { display: flex; align-items: center; gap: 2px; }
+.ow-topnav a {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 34px; padding: 0 11px;
+  border-radius: var(--hl-r-sm);
+  color: var(--hl-n600);
+  text-decoration: none;
+  font: 500 13px/1 var(--hl-ui);
+  white-space: nowrap;
+  transition: background var(--hl-d-press) var(--hl-in),
+              color var(--hl-d-press) var(--hl-in);
+}
+.ow-topnav a:hover { background: var(--hl-n50); color: var(--hl-n900); }
+/* Active is the brand tint plus weight, not a bottom rule: a 2px underline
+   under a 34px pill reads as a tab strip, and this bar is not tabs — the
+   sections are peers, not views of one thing. */
+.ow-topnav a.active {
+  background: var(--hl-brand-soft);
+  color: var(--hl-brand-deep);
+  font-weight: 600;
+}
+.ow-top-sep {
+  width: 1px; height: 20px; flex: none;
+  background: var(--hl-n200);
+  margin: 0 var(--hl-s2);
+}
+
+.ow-top .ow-who {
+  margin-left: auto;
+  flex: none;
+  width: auto;
+  gap: 9px;
+  padding: 5px 10px 5px 6px;
+  border-radius: var(--hl-r-pill);
+}
+.ow-top .ow-who:hover { background: var(--hl-n50); }
+.ow-top .ow-who .av {
+  width: 28px; height: 28px;
+  background: var(--hl-brand-soft);
+  color: var(--hl-brand-deep);
+  font: 600 11.5px/1 var(--hl-ui);
+}
+.ow-top .ow-who b { font-size: 12.5px; }
+.ow-top .ow-who > span > span { font-size: 10.5px; letter-spacing: var(--hl-track-caps);
+  text-transform: uppercase; font-weight: 600; }
+
+/* The page header sat directly under the sidebar's top edge and needed its own
+   bottom border to separate from the toolbar. Under a bar that already has one,
+   two hairlines 70px apart read as a mistake. */
+.ow-head { border-bottom: 0; background: transparent; padding-top: 26px; }
+.ow-bar { background: transparent; }
+.ow-main { background: var(--hl-n25); }
+
+/* Below the tab-bar breakpoint the top bar keeps the brand and the account
+   button only — the destinations are in the tab bar, and repeating them in a
+   row that scrolls sideways is two navigations for six links.
+   1050px, not 899px: measured at 900px wide, .ow-top-in needed 975px for the
+   nav links plus the account button but only had 926px, causing the page to
+   scroll horizontally — the same overflow the tab bar exists to avoid. 899px
+   was the tab-bar's own breakpoint, not a measurement of when this row
+   actually fits; 1050px is.
+   The tab bar itself has to appear at this same breakpoint, not its old one
+   (759px, still used for unrelated single-column stacking in owner.css) —
+   otherwise hiding the top nav here while the tab bar waited until 759px
+   left a 291px-wide dead zone (760-1050px) with no way to reach Register,
+   Riders or Reports at all. owner.css's own padding-bottom:64px (clearing
+   the fixed tab bar) moves here with it, for the same reason. */
+@media (max-width: 1050px) {
+  .ow-topnav, .ow-top-sep { display: none; }
+  .ow-tabs { display: flex; }
+  .ow-app { padding-bottom: 64px; }
+}
+@media (max-width: 759px) {
+  .ow-app { grid-template-rows: auto 1fr; height: auto; min-height: 100vh; padding-bottom: 64px; }
+  .ow-top-in { height: 52px; }
+  .ow-top .ow-who > span { display: none; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Page-level redesign — the parts that are new structure rather than a
+   re-skin. Everything above this line repoints existing rules; everything
+   below adds markup that did not exist before.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Toast action (Undo) ──────────────────────────────────────────────
+   A ghost button inside the toast. It borrows the toast's own foreground so
+   it works on both the default dark pill and the danger-tinted one without a
+   second rule per tone. */
+.ts-msg { flex: 1; min-width: 0; }
+.ts-act {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 11px;
+  border: 1px solid currentColor;
+  border-radius: var(--hl-r-sm);
+  background: transparent;
+  color: inherit;
+  font: 600 12.5px/1 var(--hl-ui);
+  cursor: pointer;
+  opacity: 0.92;
+  transition: background var(--hl-d-press) var(--hl-in), opacity var(--hl-d-press) var(--hl-in);
+}
+.ts-act:hover { opacity: 1; background: rgba(127, 127, 127, 0.18); }
+
+/* ── The page answer ──────────────────────────────────────────────────────
+   §2 of the brief calls out an inverted type hierarchy: the biggest text on
+   the console was the word "Shipments", which nobody opens the console to
+   read. The answer to "what needs me this morning" was a 13px sub-line and a
+   number in a KPI cell on the right.
+
+   This block puts the answer at display-1 and demotes the section name to a
+   kicker above it. When nothing has failed the same slot says so in the calm
+   variant, because "all clear" is also an answer and deserves the same
+   position — a page whose hero only appears on bad days trains the owner to
+   read its absence as "not loaded yet". */
+.ow-answer { padding: 26px var(--ow-gutter) 0; }
+.ow-answer .kick {
+  display: block;
+  font: var(--hl-t-kicker);
+  letter-spacing: var(--hl-track-caps);
+  text-transform: uppercase;
+  color: var(--hl-n600);
+}
+.ow-answer h1 {
+  margin: 10px 0 0;
+  font: var(--hl-t-display-1);
+  letter-spacing: var(--hl-track-tight);
+  color: var(--hl-n900);
+  text-wrap: pretty;
+}
+.ow-answer h1 .n { color: var(--hl-danger); }
+.ow-answer .lede {
+  margin: 9px 0 0;
+  max-width: 62ch;
+  font: var(--hl-t-body-1);
+  color: var(--hl-n700);
+}
+.ow-answer .acts { display: flex; align-items: center; gap: var(--hl-s3); margin-top: var(--hl-s5); flex-wrap: wrap; }
+
+/* ── Bulk selection ───────────────────────────────────────────────────────
+   Three failures is three separate open-act-close journeys, and on a bad
+   morning it is more. The select bar turns that into one.
+
+   It only ever appears over the failed set. A checkbox on every row of a
+   200-row register would be a data-management affordance on a screen whose
+   job is triage — and there is exactly one bulk action worth having, because
+   there is exactly one thing an owner does to a failure. */
+.ow-bulk {
+  display: flex; align-items: center; gap: var(--hl-s3);
+  margin: 0 0 10px;
+  padding: 9px var(--hl-s4);
+  background: var(--hl-n0);
+  border: 1px solid var(--hl-n200);
+  border-radius: 11px;
+}
+.ow-bulk .lbl { font: 500 13px/1 var(--hl-ui); color: var(--hl-n700); }
+.ow-bulk .sp { margin-left: auto; display: flex; align-items: center; gap: var(--hl-s2); }
+.ow-box {
+  width: 20px; height: 20px; flex: none;
+  display: grid; place-items: center;
+  border: 1.5px solid var(--hl-n300);
+  border-radius: 6px;
+  background: var(--hl-n0);
+  color: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--hl-d-hover) var(--hl-in), border-color var(--hl-d-hover) var(--hl-in);
+}
+.ow-box:hover { border-color: var(--hl-n400); }
+.ow-box[aria-checked='true'] {
+  background: var(--hl-brand-solid);
+  border-color: var(--hl-brand-solid);
+  color: #fff;
+}
+/* The selected row reads as picked without moving: a brand hairline plus the
+   ring, no fill. A fill behind a row that already carries a status edge
+   produces two competing colour signals in the same 40px. */
+.ow-rest-row.sel {
+  border-color: var(--hl-brand-solid);
+  box-shadow: 0 0 0 3px var(--hl-brand-ring);
+}
+.ow-rest-row .pick { margin-right: 2px; }
+
+/* ── Range + saved views ──────────────────────────────────────────────────
+   One control governs every figure on the page. Two date pickers that each
+   filtered half a screen was the single most confusing thing in the audit. */
+.ow-scope { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: var(--hl-s4); }
+.ow-scope .sep { width: 1px; height: 20px; background: var(--hl-n200); margin: 0 4px; }
+.ow-scope .note { font: 400 12px/1 var(--hl-ui); color: var(--hl-n600); margin-left: 4px; }
+.ow-seg {
+  height: 31px; padding: 0 12px;
+  border: 1px solid var(--hl-n300);
+  border-radius: var(--hl-r-pill);
+  background: var(--hl-n0);
+  color: var(--hl-n700);
+  font: 500 12.5px/1 var(--hl-ui);
+  cursor: pointer;
+  transition: background var(--hl-d-press) var(--hl-in), border-color var(--hl-d-press) var(--hl-in), color var(--hl-d-press) var(--hl-in);
+}
+.ow-seg:hover { border-color: var(--hl-n400); color: var(--hl-n900); }
+.ow-seg[aria-pressed='true'] {
+  background: var(--hl-n900); border-color: var(--hl-n900); color: var(--hl-n0); font-weight: 600;
+}
+
+@media (max-width: 759px) {
+  .ow-answer h1 { font-size: 27px; }
+  .ow-bulk { flex-wrap: wrap; }
+  .ow-bulk .sp { margin-left: 0; width: 100%; }
+}
+
+/* ── Edge-state support contact ───────────────────────────────────────────
+   Sits below the actions, separated by a rule, because it is the path you
+   take when the actions above did not work — not a third action. Renders only
+   when the build has VITE_SUPPORT_EMAIL / VITE_SUPPORT_PHONE set. */
+.es-support {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: var(--hl-s5);
+  padding-top: var(--hl-s4);
+  border-top: 1px solid var(--hl-n200);
+  font: var(--hl-t-body-2);
+  color: var(--hl-n700);
+}
+.es-support > svg { flex: none; margin-top: 2px; color: var(--hl-n600); }
+.es-support a { color: var(--hl-brand-deep); }
+.es-support a:hover { color: var(--hl-brand-solid); }
+.es-support-tel { font-family: var(--hl-mono); font-weight: 500; }
+.es-support-hrs { color: var(--hl-n600); }
+/* On the accent (500) card the hairline is the danger line, or it reads as a
+   grey seam laid across a red card. */
+.es-card.accent .es-support { border-top-color: var(--hl-danger-line); }
+
+/* ── Rider roster row ─────────────────────────────────────────────────────
+   Two corrections.
+
+   The kebab was already rendered at all times — the audit note claiming it was
+   hover-only was true of the mockup, not of this code. What it lacked was a
+   resting EDGE: a bare glyph on a white row reads as a label until you happen
+   to hover it. A hairline makes it a control without adding weight. */
+.ow-kebab { border: 1px solid transparent; }
+.ow-kebab:hover { border-color: var(--hl-n200); background: var(--hl-n0); }
+
+/* "Send sign-in link" is promoted out of the overflow menu for active riders.
+   The account exists the moment it is created but the rider cannot discover
+   it — the owner IS the delivery channel — so the one action that unblocks a
+   new rider should not be two clicks behind a kebab. It stays in the menu too,
+   for deactivated riders and for anyone who looks there first. */
+.ow-send {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 12px;
+  border: 1px solid var(--hl-n300);
+  border-radius: var(--hl-r-sm);
+  background: var(--hl-n0);
+  color: var(--hl-n700);
+  font: 600 12.5px/1 var(--hl-ui);
+  cursor: pointer;
+  transition: background var(--hl-d-press) var(--hl-in),
+              border-color var(--hl-d-press) var(--hl-in),
+              color var(--hl-d-press) var(--hl-in);
+}
+.ow-send:hover { border-color: var(--hl-n400); color: var(--hl-n900); background: var(--hl-n50); }
+@media (max-width: 899px) { .ow-send span { display: none; } .ow-send { padding: 0 9px; } }
+
+/* ── Caps Lock hint ───────────────────────────────────────────────────────
+   Warning ink, not danger: nothing has failed yet. Sits under the password
+   field, inside the field group, so it reads as a note about that input
+   rather than about the form. */
+.auth-caps {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border: 1px solid var(--hl-warn-line);
+  border-radius: var(--hl-r-sm);
+  background: var(--hl-warn-bg);
+  color: var(--hl-warn-ink);
+  font: 500 12.5px/1.5 var(--hl-ui);
+}
+.auth-caps > svg { flex: none; }
+
+/* ── Register: table cell roles ───────────────────────────────────────────
+   These were inline style= props on <td> elements, which put presentation in
+   the component and made them unthemeable — the address colour was a literal
+   var() in JSX, so a token change could not reach it. */
+.ow-tablewrap td.c-name { font-weight: 600; }
+.ow-tablewrap td.c-addr { color: var(--ow-muted); }
+
+/* Skeleton cells. The widths were seven magic numbers in an inline array;
+   they are column-shaped here, next to the columns they imitate. */
+.ow-sk-c1 { width: 104px; height: 12px; }
+.ow-sk-c2 { width: 186px; height: 12px; }
+.ow-sk-c3 { width: 78px;  height: 18px; }
+.ow-sk-c4 { width: 84px;  height: 12px; }
+.ow-sk-c5 { width: 96px;  height: 12px; }
+.ow-sk-c6 { width: 82px;  height: 12px; }
+.ow-sk-c7 { width: 82px;  height: 12px; }
+
+/* Register: desktop-only gate. Was a <style> element rendered inside the
+   component, which ships a duplicate copy of these two rules into the DOM on
+   every mount and cannot be overridden by anything in the cascade. */
+.ow-mob { display: none; }
+@media (max-width: 759px) {
+  .ow-desk { display: none; }
+  .ow-mob { display: flex; }
+}
+
+/* ── Register: active-filter count ────────────────────────────────────────
+   "Clear filters" appeared with no indication of how many were on, so an
+   owner looking at a short register could not tell whether they were seeing
+   a narrow slice or an empty business. */
+.ow-fcount {
+  display: inline-flex; align-items: center;
+  height: 20px; padding: 0 7px;
+  margin-right: 2px;
+  border-radius: var(--hl-r-sm);
+  background: var(--hl-brand-subtle);
+  color: var(--hl-brand-deep);
+  font: 600 11.5px/1 var(--hl-ui);
+}
+
+/* ── Roster: skeletons and sheet bits ─────────────────────────────────────
+   All of these were inline style= objects in OwnerAgentsPage. The avatar in
+   the detail sheet was the worst of them: nine properties inline, including
+   two var() lookups, duplicating .av from owner.css at a larger size. */
+.ow-sk-av { width: 38px; height: 38px; border-radius: 50%; }
+.ow-sk-nm { width: 128px; height: 14px; }
+.ow-sk-em { width: 186px; height: 12px; margin-top: 7px; }
+.ow-sk-line { width: 200px; height: 14px; }
+.ow-sk-block { width: 100%; height: 96px; margin-top: 16px; border-radius: var(--hl-r-md); }
+
+/* The row's name+email block is a button; it should not look like one. */
+.ow-person .who2 {
+  border: 0; background: none; text-align: left; cursor: pointer; padding: 0;
+}
+
+.ow-sheet-id { display: flex; align-items: center; gap: 13px; margin-bottom: 6px; }
+/* .av at sheet scale, rather than a second inline copy of it. */
+.ow-sheet-id .av { width: 44px; height: 44px; font-size: 15px; }
+
+/* Sheet footer primary fills the row; the cancel link sits beside it. */
+.ow-sheet-f .ow-btn.grow { flex: 1; justify-content: center; }
+.ow-hint-tight { margin-top: -4px; }
+
+/* ── Account: sticky save bar ─────────────────────────────────────────────
+   The footer carrying Save was the last thing in a form four fields tall. On
+   a laptop viewport, editing the business phone put the button below the
+   fold — so the owner typed, then had to go looking for the way to keep it.
+   It pins to the bottom of the viewport while the form is on screen.
+
+   position:sticky, not fixed: it stays inside the card, so it spans the
+   card's width and stops being sticky when the card scrolls past. A fixed bar
+   would hang over the Email and Sign-out cards below, which it has nothing to
+   do with. */
+.ow-scard .foot.ow-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  /* Opaque, not tinted-transparent: text scrolling underneath a translucent
+     action bar reads as a rendering fault. */
+  background: var(--hl-n50);
+  border-top: 1px solid var(--hl-n200);
+  /* Lifts only while it is actually pinned — a permanent shadow on a footer
+     sitting at the natural end of a short form looks like a mistake. */
+  box-shadow: 0 -8px 18px -14px rgba(15, 23, 42, 0.28);
+}
+/* The dirty marker. A count alone ("2 unsaved changes") is easy to read past;
+   the dot is what catches the eye on a page of otherwise flat grey text. */
+.ow-dirty { display: inline-flex; align-items: center; gap: 8px; }
+.ow-dirty::before {
+  content: '';
+  width: 7px; height: 7px; flex: none;
+  border-radius: 50%;
+  background: var(--hl-warn-solid);
+}
+.ow-foot-acts { display: flex; gap: var(--hl-s2); align-items: center; }
+
+/* Account skeletons — were four inline style objects. */
+.ow-sk-avatar-lg { width: 52px; height: 52px; border-radius: 50%; }
+.ow-sk-name-lg { width: 210px; height: 26px; margin-top: 16px; }
+.ow-sk-card-1 { width: 100%; height: 120px; margin-top: 24px; border-radius: 11px; }
+.ow-sk-card-2 { width: 100%; height: 120px; margin-top: 14px; border-radius: 11px; }
+
+/* Card body padding, for the two cards whose content is a lone button. */
+.ow-scard .ow-scard-act { padding: 4px 18px 16px; }
+.ow-scard.danger .ow-scard-act { padding: 14px 18px 16px; }
+
+/* ── Tracking: FAQ ────────────────────────────────────────────────────────
+   Reuses .tk-more, so it inherits the disclosure styling the privacy and
+   history blocks already use — a fourth visual treatment on a page this short
+   would be noise. The group gets a section label because three unlabelled
+   disclosures in a row give no clue that the last two are a different kind of
+   thing from the first.
+
+   Placed after the call button and before the illustration: someone who wants
+   the store on the phone should reach that first, and someone with a question
+   the page can answer should not have to call to get it. */
+.tk-faq-h {
+  margin: var(--hl-s6) 0 var(--hl-s2);
+  font: var(--hl-t-kicker);
+  letter-spacing: var(--hl-track-caps);
+  text-transform: uppercase;
+  color: var(--tk-muted, var(--hl-n600));
+}
+.tk-faq p {
+  margin: 0 0 var(--hl-s4);
+  font: var(--hl-t-body-2);
+  color: var(--tk-muted, var(--hl-n700));
+}
+
+/* ── Password strength ────────────────────────────────────────────────────
+   Four segments and a word. The word is the accessible signal; the bars are
+   the glanceable one, which is why they carry aria-hidden and the word
+   carries aria-live.
+
+   Colour runs warning → brand, never through a third hue: this is one axis,
+   and a red-amber-yellow-green ramp would imply four unrelated meanings. Weak
+   is the app's warning ink, good and strong are the brand. Nothing here uses
+   danger red — a weak-but-acceptable password is not an error, and the form
+   does not block on it. */
+.auth-meter {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: var(--hl-s2);
+}
+.auth-meter-bars { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.auth-meter-bars > span {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--hl-n200);
+  transition: background var(--hl-d-enter) var(--hl-in);
+}
+.auth-meter-bars > span.on.s1 { background: var(--hl-warn-solid); }
+.auth-meter-bars > span.on.s2 { background: var(--hl-brand-solid); }
+.auth-meter-bars > span.on.s3 { background: var(--hl-brand-solid); }
+/* Score 0 fills nothing — "too short" is the absence of a bar, not a red one. */
+.auth-meter-bars > span.on.s0 { background: var(--hl-n300); }
+
+.auth-meter-w {
+  flex: none;
+  font: 500 11.5px/1 var(--hl-ui);
+  color: var(--hl-n600);
+}
+.auth-meter-w.s1 { color: var(--hl-warn-ink); }
+.auth-meter-w.s2, .auth-meter-w.s3 { color: var(--hl-brand-deep); }
+.auth-meter-w.s3 { font-weight: 600; }
+
+/* Spam nudge under the OTP resend. Tertiary ink and centred, so it reads as a
+   footnote to the resend control rather than a second instruction. */
+.auth-spam { text-align: center; margin-top: var(--hl-s3); }
