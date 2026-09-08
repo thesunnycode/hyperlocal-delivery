@@ -1,0 +1,1042 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font:13px/1.5 system-ui;background:#f7f9fb}/* The rider illustration — its own scope, because it renders in two very
+   different places: the auth panel and the customer tracking page.
+
+   It used to live entirely inside auth.css: the palette on the `.auth` root,
+   the animation classes named `.auth-*`. That worked while the drawing had one
+   home. Rendering it anywhere else would have meant either dragging the whole
+   auth palette along or keeping a second copy of the same keyframes, so the
+   illustration owns its own tokens and classes instead. Nothing here depends
+   on the surface it sits on.
+
+   ── Redesign notes ─────────────────────────────────────────────────────
+   The palette below now derives from styles/tokens.css rather than carrying
+   its own blues. Two consequences worth knowing:
+
+     · The scooter was #2c437b, a navy chosen to sit on the old navy auth
+       panel. Against the new emerald brand a blue vehicle competed with the
+       primary action for the eye. It is a deep slate now — the same neutral
+       family as the rest of the product — which leaves the hi-vis jacket and
+       the status parcels as the only saturated things in the frame. That is
+       the correct hierarchy: the courier and the cargo are the subject.
+
+     · Every mass now has a -dk and a -hi sibling, because the enhanced drawing
+       shades in two layers. Light comes from up and to the left, everywhere.
+
+   Animation rules (all off under prefers-reduced-motion):
+    - The WHEELS are a separate group and never move. Only `.ri-bob` groups
+      travel, so the scooter reads as suspension rather than hovering.
+    - The ground shadow scales and fades in counter-phase to that bob.
+    - One `--ri-spd` drives everything: wheels and speed streaks share it, the
+      bob is 2x, the parcels 3x, the headlight 4x. Unrelated durations made the
+      wheel spin and the streaks visibly drift apart. */
+
+.ri {
+  /* ── vehicle ── */
+  /* Surface-dependent, like the cargo box. A single mid-slate cannot separate
+     from a #0f172a panel AND from a #f7f9fb page — on the dark one the whole
+     vehicle sank into the background and the drawing read as a rider floating
+     between two wheels. Dark surfaces get the lighter pair. */
+  --ri-scoot: #8391a8;
+  --ri-scoot-hi: #adb9cb;
+  --ri-scoot-dk: #5d6a80;
+  --ri-seat: #232c38;
+  --ri-seat-hi: #4a5769;
+  --ri-tyre: #2a3340;
+  --ri-tread: #39424f;
+  --ri-rim: #9aa5b6;
+  --ri-grip: #454f5e;
+  --ri-lamp: #ffd06b;
+  --ri-mirror: #dfe5ee;
+
+  /* ── rider ──
+     The jacket stays warm and saturated: it is the one thing in the frame
+     that should be found first, and a courier in a dark jacket on a dark
+     scooter is a silhouette rather than a person. */
+  --ri-jacket: #e8912a;
+  --ri-jacket-hi: #ffb457;
+  --ri-jacket-dk: #a8631a;
+  --ri-vest: #f6e05e;
+  --ri-skin: #d9a06a;
+  --ri-skin-dk: #b07c4c;
+  --ri-helmet: #eef1f6;
+  --ri-helmet-hi: #ffffff;
+  --ri-helmet-dk: #b9c3d2;
+  --ri-visor: #3d4a5c;
+  --ri-trouser: #8794a8;
+  --ri-trouser-hi: #aab5c5;
+  --ri-trouser-dk: #5e6a7a;
+
+  /* Generic ink for the shading overlays, so a shadow is one token rather
+     than a rgba() repeated eleven times at three different alphas. */
+  --ri-ink: #0f172a;
+
+  /* The brand square on the cargo box. Read `--auth-brand` before this scope
+     existed, so it drew as a transparent hole anywhere but the auth panel. */
+  --ri-brand: var(--hl-brand-solid, #007a56);
+
+  /* Status hues used by the floating parcels. Same values the app uses
+     inside, so the vocabulary is consistent from the door onwards. */
+  --ri-st-picked: var(--hl-picked_up-solid, #1d4ed8);
+  --ri-st-ofd: var(--hl-out_for_delivery-solid, #b34700);
+  --ri-st-delivered: var(--hl-delivered-solid, #007a56);
+  --ri-st-failed: var(--hl-failed-solid, #c81e1e);
+
+  /* Surface-dependent. The drawing was built for a dark panel, where a white
+     cargo box and pale streaks read fine. Both disappear on a light ground,
+     so they are tokens and `.on-light` retunes them. */
+  --ri-box: #ffffff;
+  --ri-box-hi: #ffffff;
+  --ri-box-line: transparent;
+  --ri-ground: #05070c;
+  --ri-streak: #66748a;
+  --ri-streak-o: 0.4;
+
+  --ri-spd: 1.1s;
+
+  width: 100%;
+  max-width: 660px;
+  height: auto;
+}
+
+@keyframes ri-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ri-shadow { 0%, 100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(0.9, 0.86); opacity: 0.4; } }
+@keyframes ri-spin { to { transform: rotate(360deg); } }
+@keyframes ri-streak { to { transform: translateX(-46px); } }
+@keyframes ri-drift {
+  0%, 100% { transform: translateY(0) rotate(var(--ri-rot, 0deg)); }
+  50% { transform: translateY(-9px) rotate(calc(var(--ri-rot, 0deg) + 4deg)); }
+}
+
+.ri-bob { animation: ri-bob calc(var(--ri-spd) * 2) ease-in-out infinite; }
+.ri-shadow {
+  transform-box: view-box; transform-origin: 280px 356px;
+  animation: ri-shadow calc(var(--ri-spd) * 2) ease-in-out infinite;
+}
+/* view-box + an explicit wheel-centre origin. transform-box:fill-box with a
+   `center` origin only worked here by accident of symmetric rects. */
+.ri-spoke { transform-box: view-box; animation: ri-spin var(--ri-spd) linear infinite; }
+.ri-spoke-rear { transform-origin: 180px 296px; }
+.ri-spoke-front { transform-origin: 382px 296px; }
+.ri-streaks { animation: ri-streak var(--ri-spd) linear infinite; }
+/* fill-box here, NOT view-box: each parcel rotates about its own centre.
+   With view-box they would orbit the middle of the whole drawing. */
+.ri-parcel {
+  transform-box: fill-box; transform-origin: center;
+  transform: rotate(var(--ri-rot, 0deg));
+  animation: ri-drift calc(var(--ri-spd) * 3) ease-in-out infinite;
+}
+
+/* For a light background: the cargo box gains an edge instead of vanishing,
+   the streaks darken enough to read as motion rather than as smudges, and the
+   ground shadow softens to a slate that does not punch a hole in the page. */
+.ri.on-light {
+  --ri-scoot: #58657a;
+  --ri-scoot-hi: #808da2;
+  --ri-scoot-dk: #3c4657;
+  --ri-tyre: #1c2430;
+  --ri-tread: #2a323e;
+  --ri-rim: #8792a3;
+  --ri-grip: #333d4b;
+  --ri-mirror: #ffffff;
+  --ri-box: #f1f5f9;
+  --ri-box-hi: #ffffff;
+  --ri-box-line: #cfd8e4;
+  --ri-ground: #45505f;
+  --ri-streak: #808c9e;
+  --ri-streak-o: 0.5;
+  /* The lamp keeps its warmth on light ground rather than being switched off.
+     With the beam gone there is no glow to fail — a small amber lens inside a
+     white housing reads on both surfaces, and it is the only warm note on the
+     vehicle, which is what makes the front of the bike findable. */
+  --ri-lamp: #f0a92e;
+}
+
+/* `still` is for surfaces that want the drawing without the motion — a
+   delivery that has already finished, or failed, where a scooter tearing
+   along would be saying the wrong thing. */
+.ri.still .ri-bob, .ri.still .ri-shadow, .ri.still .ri-spoke,
+.ri.still .ri-streaks, .ri.still .ri-parcel { animation: none; }
+.ri.still .ri-shadow { opacity: 0.55; }
+/* A stopped scooter has no slipstream. Leaving the streaks in place under
+   `still` was the one thing that gave the state away as a paused animation
+   rather than a parked bike. */
+.ri.still .ri-streaks { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ri-bob, .ri-shadow, .ri-spoke, .ri-streaks, .ri-parcel { animation: none; }
+  .ri-shadow { opacity: 0.55; }
+}
+
+.pane{padding:24px}.dark{background:#0f172a}.grid{display:grid;grid-template-columns:1fr 1fr}
+h3{margin:0 0 8px;font:600 11px/1 system-ui;letter-spacing:.09em;text-transform:uppercase;color:#647082}.dark h3{color:#94a3b8}
+</style></head><body><div class="grid">
+<div class="pane dark"><h3>dark · full</h3><svg viewBox="0 0 540 400" class="ri">      <defs>
+        <clipPath id="dome">
+          <rect x="238" y="66" width="96" height="62" />
+        </clipPath>
+        
+        <radialGradient id="ground" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0.5" />
+          <stop offset="60%" stop-color="#000" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      
+      <g stroke="var(--ri-streak)" stroke-width="6" stroke-linecap="round" opacity="var(--ri-streak-o)">
+        <g class="ri-streaks">
+          <line x1="18" y1="150" x2="92" y2="150" />
+          <line x1="-24" y1="198" x2="44" y2="198" />
+          <line x1="26" y1="246" x2="76" y2="246" />
+          <line x1="64" y1="150" x2="138" y2="150" />
+          <line x1="22" y1="198" x2="90" y2="198" />
+          <line x1="72" y1="246" x2="122" y2="246" />
+        </g>
+      </g>
+
+      
+      <g class="ri-parcel" style="--ri-rot:-14deg;animation-delay:0s">
+        <rect x="60" y="84" width="30" height="30" rx="5" fill="var(--ri-st-ofd)" />
+        <rect x="60" y="84" width="30" height="10" rx="5" fill="#000" opacity=".2" />
+        <rect x="73" y="84" width="4" height="30" fill="#000" opacity=".14" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:12deg;animation-delay:-1.1s">
+        <rect x="446" y="66" width="24" height="24" rx="4" fill="var(--ri-st-delivered)" />
+        <rect x="446" y="66" width="24" height="8" rx="4" fill="#000" opacity=".2" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:-8deg;animation-delay:-2.2s">
+        <rect x="482" y="188" width="18" height="18" rx="3" fill="var(--ri-st-picked)" />
+        <rect x="482" y="188" width="18" height="6" rx="3" fill="#000" opacity=".2" />
+      </g>
+
+      
+      <ellipse class="ri-shadow" cx="282" cy="352" rx="188" ry="20" fill="url(#ground)" />
+
+      
+
+      
+      <g class="ri-bob" opacity=".5">
+        <path d="M252 216 L300 244" stroke="var(--ri-trouser-dk)" stroke-width="25"
+          stroke-linecap="round" fill="none" />
+        <path d="M300 244 L306 268" stroke="var(--ri-trouser-dk)" stroke-width="22"
+          stroke-linecap="round" fill="none" />
+        <path d="M288 168 L364 166" stroke="var(--ri-jacket-dk)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+      </g>
+
+      
+      <path d="M134 264 Q180 234 226 264 L220 276 Q180 250 140 276 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="180" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="180" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-rear">
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+        </g>
+        <circle cx="180" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      <path d="M336 262 Q382 232 428 262 L422 274 Q382 248 342 274 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="382" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="382" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-front">
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+        </g>
+        <circle cx="382" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <path d="M386 208 L380 272" stroke="var(--ri-rim)" stroke-width="9"
+        stroke-linecap="round" fill="none" />
+
+      
+      <g class="ri-bob">
+        
+        <rect x="146" y="216" width="72" height="10" rx="5" fill="var(--ri-tyre)" />
+        <rect x="102" y="140" width="86" height="80" rx="9" fill="var(--ri-box)"
+          stroke="var(--ri-box-line)" stroke-width="2" />
+        <rect x="102" y="140" width="86" height="16" rx="8" fill="var(--ri-helmet-dk)" />
+        <path d="M172 140 L188 140 L188 220 L172 220 Z" fill="#000" opacity=".07" />
+        <rect x="122" y="168" width="32" height="32" rx="7" fill="var(--ri-brand)" />
+        <path d="M130 184 l6 6 l12 -13" stroke="#fff" stroke-width="3.6"
+          stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <rect x="146" y="222" width="18" height="7" rx="3" fill="var(--ri-st-failed)" />
+
+        
+        <path
+          d="M226 218
+             Q252 208 288 212
+             Q308 216 314 240
+             L318 262
+             L360 262
+             Q372 224 386 196
+             Q398 170 418 158
+             L432 152
+             Q410 180 400 214
+             Q390 250 390 286
+             L360 286
+             L262 286
+             Q244 286 238 272
+             L230 246
+             Z"
+          fill="var(--ri-scoot)"
+        />
+        
+        <path d="M226 218 Q252 208 288 212 Q304 215 310 230 L246 232 Q232 230 226 224 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M386 196 Q398 170 418 158 L428 154 Q408 178 398 208 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M262 286 L360 286 L360 276 L262 276 Z" fill="#000" opacity=".16" />
+        <path d="M360 262 Q368 236 378 214 L384 216 Q372 240 366 264 Z" fill="#000" opacity=".1" />
+
+        
+        <rect x="266" y="262" width="94" height="7" rx="3.5" fill="var(--ri-scoot-dk)" />
+        <rect x="268" y="263" width="90" height="3" rx="1.5" fill="var(--ri-scoot-hi)" opacity=".45" />
+
+        
+        <path d="M214 216 Q232 200 270 202 L308 206 Q316 214 308 224 L226 226 Q210 222 214 216 Z"
+          fill="var(--ri-seat)" />
+        <path d="M216 214 Q234 204 270 205 L304 209 Q306 211 304 213 L222 218 Q212 218 216 214 Z"
+          fill="var(--ri-seat-hi)" opacity=".5" />
+
+        
+        <path d="M394 166 L432 154 L444 188 L404 198 Z" fill="var(--ri-helmet)" />
+        <path d="M394 166 L432 154 L436 165 L398 176 Z" fill="var(--ri-helmet-dk)" opacity=".6" />
+        <ellipse cx="425" cy="176" rx="11" ry="14" fill="var(--ri-lamp)"
+          transform="rotate(-16 425 176)" />
+        <ellipse cx="421" cy="170" rx="4" ry="5" fill="#fff" opacity=".8"
+          transform="rotate(-16 421 170)" />
+
+        
+        <rect x="344" y="140" width="82" height="13" rx="6.5" fill="var(--ri-tyre)" />
+        <rect x="340" y="136" width="22" height="22" rx="7" fill="var(--ri-grip)" />
+        <path d="M420 142 L428 122" stroke="var(--ri-tyre)" stroke-width="4.5"
+          stroke-linecap="round" fill="none" />
+        <ellipse cx="430" cy="118" rx="8.5" ry="6" fill="var(--ri-mirror)"
+          stroke="var(--ri-tyre)" stroke-width="2.5" transform="rotate(-20 430 118)" />
+
+        
+        <rect x="214" y="300" width="52" height="12" rx="6" fill="var(--ri-scoot-dk)" />
+        <rect x="206" y="302" width="12" height="8" rx="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <g class="ri-bob">
+        
+        <path d="M248 212 L302 236" stroke="var(--ri-trouser)" stroke-width="28"
+          stroke-linecap="round" fill="none" />
+        <path d="M302 236 L312 266" stroke="var(--ri-trouser)" stroke-width="24"
+          stroke-linecap="round" fill="none" />
+        <path d="M246 204 L298 227" stroke="var(--ri-trouser-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".45" />
+        
+        <path d="M296 258 L338 258 Q346 258 346 265 L346 270 Q346 276 338 276 L300 276
+                 Q292 276 292 268 Z" fill="var(--ri-tyre)" />
+        <rect x="292" y="270" width="54" height="6" rx="3" fill="var(--ri-rim)" opacity=".55" />
+
+        
+        <path d="M248 212 L282 158" stroke="var(--ri-jacket)" stroke-width="50"
+          stroke-linecap="round" fill="none" />
+        
+        <path d="M254 200 L286 176" stroke="var(--ri-vest)" stroke-width="13"
+          stroke-linecap="round" fill="none" />
+        <path d="M262 210 L292 188" stroke="var(--ri-jacket-hi)" stroke-width="6"
+          stroke-linecap="round" fill="none" opacity=".5" />
+        <path d="M272 166 Q286 156 296 160" stroke="var(--ri-jacket-hi)" stroke-width="9"
+          stroke-linecap="round" fill="none" opacity=".45" />
+
+        
+        <path d="M284 162 L318 170" stroke="var(--ri-jacket)" stroke-width="21"
+          stroke-linecap="round" fill="none" />
+        <path d="M318 170 L350 150" stroke="var(--ri-jacket)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+        <circle cx="352" cy="146" r="12" fill="var(--ri-skin)" />
+        <path d="M346 141 Q353 137 359 142" stroke="var(--ri-skin-dk)" stroke-width="2.8"
+          stroke-linecap="round" fill="none" />
+
+        
+        <circle cx="286" cy="122" r="27" fill="var(--ri-skin)" />
+        <path d="M286 95 a27 27 0 0 1 0 54 a19 27 0 0 0 0 -54 Z" fill="var(--ri-skin-dk)" opacity=".4" />
+        <circle cx="284" cy="112" r="33" fill="var(--ri-helmet)" clip-path="url(#dome)" />
+        <path d="M260 92 Q280 79 304 90" stroke="var(--ri-helmet-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".85" />
+        
+        <path d="M250 124 L318 115 L319 124 L250 133 Z" fill="var(--ri-helmet-dk)" />
+        
+        <path d="M298 116 L324 112 Q330 118 326 129 L300 132 Z" fill="var(--ri-visor)" opacity=".65" />
+        <path d="M304 118 L318 116" stroke="var(--ri-helmet-hi)" stroke-width="3"
+          stroke-linecap="round" opacity=".65" />
+        
+        <circle cx="270" cy="122" r="11" fill="var(--ri-helmet-dk)" />
+        <circle cx="270" cy="122" r="4" fill="var(--ri-rim)" opacity=".5" />
+        <path d="M268 134 Q274 152 292 150" stroke="var(--ri-helmet-dk)" stroke-width="5"
+          fill="none" stroke-linecap="round" />
+      </g>
+</svg></div>
+<div class="pane"><h3>light · full</h3><svg viewBox="0 0 540 400" class="ri on-light">      <defs>
+        <clipPath id="dome">
+          <rect x="238" y="66" width="96" height="62" />
+        </clipPath>
+        
+        <radialGradient id="ground" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0.5" />
+          <stop offset="60%" stop-color="#000" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      
+      <g stroke="var(--ri-streak)" stroke-width="6" stroke-linecap="round" opacity="var(--ri-streak-o)">
+        <g class="ri-streaks">
+          <line x1="18" y1="150" x2="92" y2="150" />
+          <line x1="-24" y1="198" x2="44" y2="198" />
+          <line x1="26" y1="246" x2="76" y2="246" />
+          <line x1="64" y1="150" x2="138" y2="150" />
+          <line x1="22" y1="198" x2="90" y2="198" />
+          <line x1="72" y1="246" x2="122" y2="246" />
+        </g>
+      </g>
+
+      
+      <g class="ri-parcel" style="--ri-rot:-14deg;animation-delay:0s">
+        <rect x="60" y="84" width="30" height="30" rx="5" fill="var(--ri-st-ofd)" />
+        <rect x="60" y="84" width="30" height="10" rx="5" fill="#000" opacity=".2" />
+        <rect x="73" y="84" width="4" height="30" fill="#000" opacity=".14" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:12deg;animation-delay:-1.1s">
+        <rect x="446" y="66" width="24" height="24" rx="4" fill="var(--ri-st-delivered)" />
+        <rect x="446" y="66" width="24" height="8" rx="4" fill="#000" opacity=".2" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:-8deg;animation-delay:-2.2s">
+        <rect x="482" y="188" width="18" height="18" rx="3" fill="var(--ri-st-picked)" />
+        <rect x="482" y="188" width="18" height="6" rx="3" fill="#000" opacity=".2" />
+      </g>
+
+      
+      <ellipse class="ri-shadow" cx="282" cy="352" rx="188" ry="20" fill="url(#ground)" />
+
+      
+
+      
+      <g class="ri-bob" opacity=".5">
+        <path d="M252 216 L300 244" stroke="var(--ri-trouser-dk)" stroke-width="25"
+          stroke-linecap="round" fill="none" />
+        <path d="M300 244 L306 268" stroke="var(--ri-trouser-dk)" stroke-width="22"
+          stroke-linecap="round" fill="none" />
+        <path d="M288 168 L364 166" stroke="var(--ri-jacket-dk)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+      </g>
+
+      
+      <path d="M134 264 Q180 234 226 264 L220 276 Q180 250 140 276 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="180" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="180" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-rear">
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+        </g>
+        <circle cx="180" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      <path d="M336 262 Q382 232 428 262 L422 274 Q382 248 342 274 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="382" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="382" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-front">
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+        </g>
+        <circle cx="382" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <path d="M386 208 L380 272" stroke="var(--ri-rim)" stroke-width="9"
+        stroke-linecap="round" fill="none" />
+
+      
+      <g class="ri-bob">
+        
+        <rect x="146" y="216" width="72" height="10" rx="5" fill="var(--ri-tyre)" />
+        <rect x="102" y="140" width="86" height="80" rx="9" fill="var(--ri-box)"
+          stroke="var(--ri-box-line)" stroke-width="2" />
+        <rect x="102" y="140" width="86" height="16" rx="8" fill="var(--ri-helmet-dk)" />
+        <path d="M172 140 L188 140 L188 220 L172 220 Z" fill="#000" opacity=".07" />
+        <rect x="122" y="168" width="32" height="32" rx="7" fill="var(--ri-brand)" />
+        <path d="M130 184 l6 6 l12 -13" stroke="#fff" stroke-width="3.6"
+          stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <rect x="146" y="222" width="18" height="7" rx="3" fill="var(--ri-st-failed)" />
+
+        
+        <path
+          d="M226 218
+             Q252 208 288 212
+             Q308 216 314 240
+             L318 262
+             L360 262
+             Q372 224 386 196
+             Q398 170 418 158
+             L432 152
+             Q410 180 400 214
+             Q390 250 390 286
+             L360 286
+             L262 286
+             Q244 286 238 272
+             L230 246
+             Z"
+          fill="var(--ri-scoot)"
+        />
+        
+        <path d="M226 218 Q252 208 288 212 Q304 215 310 230 L246 232 Q232 230 226 224 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M386 196 Q398 170 418 158 L428 154 Q408 178 398 208 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M262 286 L360 286 L360 276 L262 276 Z" fill="#000" opacity=".16" />
+        <path d="M360 262 Q368 236 378 214 L384 216 Q372 240 366 264 Z" fill="#000" opacity=".1" />
+
+        
+        <rect x="266" y="262" width="94" height="7" rx="3.5" fill="var(--ri-scoot-dk)" />
+        <rect x="268" y="263" width="90" height="3" rx="1.5" fill="var(--ri-scoot-hi)" opacity=".45" />
+
+        
+        <path d="M214 216 Q232 200 270 202 L308 206 Q316 214 308 224 L226 226 Q210 222 214 216 Z"
+          fill="var(--ri-seat)" />
+        <path d="M216 214 Q234 204 270 205 L304 209 Q306 211 304 213 L222 218 Q212 218 216 214 Z"
+          fill="var(--ri-seat-hi)" opacity=".5" />
+
+        
+        <path d="M394 166 L432 154 L444 188 L404 198 Z" fill="var(--ri-helmet)" />
+        <path d="M394 166 L432 154 L436 165 L398 176 Z" fill="var(--ri-helmet-dk)" opacity=".6" />
+        <ellipse cx="425" cy="176" rx="11" ry="14" fill="var(--ri-lamp)"
+          transform="rotate(-16 425 176)" />
+        <ellipse cx="421" cy="170" rx="4" ry="5" fill="#fff" opacity=".8"
+          transform="rotate(-16 421 170)" />
+
+        
+        <rect x="344" y="140" width="82" height="13" rx="6.5" fill="var(--ri-tyre)" />
+        <rect x="340" y="136" width="22" height="22" rx="7" fill="var(--ri-grip)" />
+        <path d="M420 142 L428 122" stroke="var(--ri-tyre)" stroke-width="4.5"
+          stroke-linecap="round" fill="none" />
+        <ellipse cx="430" cy="118" rx="8.5" ry="6" fill="var(--ri-mirror)"
+          stroke="var(--ri-tyre)" stroke-width="2.5" transform="rotate(-20 430 118)" />
+
+        
+        <rect x="214" y="300" width="52" height="12" rx="6" fill="var(--ri-scoot-dk)" />
+        <rect x="206" y="302" width="12" height="8" rx="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <g class="ri-bob">
+        
+        <path d="M248 212 L302 236" stroke="var(--ri-trouser)" stroke-width="28"
+          stroke-linecap="round" fill="none" />
+        <path d="M302 236 L312 266" stroke="var(--ri-trouser)" stroke-width="24"
+          stroke-linecap="round" fill="none" />
+        <path d="M246 204 L298 227" stroke="var(--ri-trouser-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".45" />
+        
+        <path d="M296 258 L338 258 Q346 258 346 265 L346 270 Q346 276 338 276 L300 276
+                 Q292 276 292 268 Z" fill="var(--ri-tyre)" />
+        <rect x="292" y="270" width="54" height="6" rx="3" fill="var(--ri-rim)" opacity=".55" />
+
+        
+        <path d="M248 212 L282 158" stroke="var(--ri-jacket)" stroke-width="50"
+          stroke-linecap="round" fill="none" />
+        
+        <path d="M254 200 L286 176" stroke="var(--ri-vest)" stroke-width="13"
+          stroke-linecap="round" fill="none" />
+        <path d="M262 210 L292 188" stroke="var(--ri-jacket-hi)" stroke-width="6"
+          stroke-linecap="round" fill="none" opacity=".5" />
+        <path d="M272 166 Q286 156 296 160" stroke="var(--ri-jacket-hi)" stroke-width="9"
+          stroke-linecap="round" fill="none" opacity=".45" />
+
+        
+        <path d="M284 162 L318 170" stroke="var(--ri-jacket)" stroke-width="21"
+          stroke-linecap="round" fill="none" />
+        <path d="M318 170 L350 150" stroke="var(--ri-jacket)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+        <circle cx="352" cy="146" r="12" fill="var(--ri-skin)" />
+        <path d="M346 141 Q353 137 359 142" stroke="var(--ri-skin-dk)" stroke-width="2.8"
+          stroke-linecap="round" fill="none" />
+
+        
+        <circle cx="286" cy="122" r="27" fill="var(--ri-skin)" />
+        <path d="M286 95 a27 27 0 0 1 0 54 a19 27 0 0 0 0 -54 Z" fill="var(--ri-skin-dk)" opacity=".4" />
+        <circle cx="284" cy="112" r="33" fill="var(--ri-helmet)" clip-path="url(#dome)" />
+        <path d="M260 92 Q280 79 304 90" stroke="var(--ri-helmet-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".85" />
+        
+        <path d="M250 124 L318 115 L319 124 L250 133 Z" fill="var(--ri-helmet-dk)" />
+        
+        <path d="M298 116 L324 112 Q330 118 326 129 L300 132 Z" fill="var(--ri-visor)" opacity=".65" />
+        <path d="M304 118 L318 116" stroke="var(--ri-helmet-hi)" stroke-width="3"
+          stroke-linecap="round" opacity=".65" />
+        
+        <circle cx="270" cy="122" r="11" fill="var(--ri-helmet-dk)" />
+        <circle cx="270" cy="122" r="4" fill="var(--ri-rim)" opacity=".5" />
+        <path d="M268 134 Q274 152 292 150" stroke="var(--ri-helmet-dk)" stroke-width="5"
+          fill="none" stroke-linecap="round" />
+      </g>
+</svg></div>
+<div class="pane dark"><h3>tight crop</h3><svg viewBox="70 60 420 320" class="ri">      <defs>
+        <clipPath id="dome">
+          <rect x="238" y="66" width="96" height="62" />
+        </clipPath>
+        
+        <radialGradient id="ground" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0.5" />
+          <stop offset="60%" stop-color="#000" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      
+      <g stroke="var(--ri-streak)" stroke-width="6" stroke-linecap="round" opacity="var(--ri-streak-o)">
+        <g class="ri-streaks">
+          <line x1="18" y1="150" x2="92" y2="150" />
+          <line x1="-24" y1="198" x2="44" y2="198" />
+          <line x1="26" y1="246" x2="76" y2="246" />
+          <line x1="64" y1="150" x2="138" y2="150" />
+          <line x1="22" y1="198" x2="90" y2="198" />
+          <line x1="72" y1="246" x2="122" y2="246" />
+        </g>
+      </g>
+
+      
+      <g class="ri-parcel" style="--ri-rot:-14deg;animation-delay:0s">
+        <rect x="60" y="84" width="30" height="30" rx="5" fill="var(--ri-st-ofd)" />
+        <rect x="60" y="84" width="30" height="10" rx="5" fill="#000" opacity=".2" />
+        <rect x="73" y="84" width="4" height="30" fill="#000" opacity=".14" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:12deg;animation-delay:-1.1s">
+        <rect x="446" y="66" width="24" height="24" rx="4" fill="var(--ri-st-delivered)" />
+        <rect x="446" y="66" width="24" height="8" rx="4" fill="#000" opacity=".2" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:-8deg;animation-delay:-2.2s">
+        <rect x="482" y="188" width="18" height="18" rx="3" fill="var(--ri-st-picked)" />
+        <rect x="482" y="188" width="18" height="6" rx="3" fill="#000" opacity=".2" />
+      </g>
+
+      
+      <ellipse class="ri-shadow" cx="282" cy="352" rx="188" ry="20" fill="url(#ground)" />
+
+      
+
+      
+      <g class="ri-bob" opacity=".5">
+        <path d="M252 216 L300 244" stroke="var(--ri-trouser-dk)" stroke-width="25"
+          stroke-linecap="round" fill="none" />
+        <path d="M300 244 L306 268" stroke="var(--ri-trouser-dk)" stroke-width="22"
+          stroke-linecap="round" fill="none" />
+        <path d="M288 168 L364 166" stroke="var(--ri-jacket-dk)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+      </g>
+
+      
+      <path d="M134 264 Q180 234 226 264 L220 276 Q180 250 140 276 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="180" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="180" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-rear">
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+        </g>
+        <circle cx="180" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      <path d="M336 262 Q382 232 428 262 L422 274 Q382 248 342 274 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="382" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="382" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-front">
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+        </g>
+        <circle cx="382" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <path d="M386 208 L380 272" stroke="var(--ri-rim)" stroke-width="9"
+        stroke-linecap="round" fill="none" />
+
+      
+      <g class="ri-bob">
+        
+        <rect x="146" y="216" width="72" height="10" rx="5" fill="var(--ri-tyre)" />
+        <rect x="102" y="140" width="86" height="80" rx="9" fill="var(--ri-box)"
+          stroke="var(--ri-box-line)" stroke-width="2" />
+        <rect x="102" y="140" width="86" height="16" rx="8" fill="var(--ri-helmet-dk)" />
+        <path d="M172 140 L188 140 L188 220 L172 220 Z" fill="#000" opacity=".07" />
+        <rect x="122" y="168" width="32" height="32" rx="7" fill="var(--ri-brand)" />
+        <path d="M130 184 l6 6 l12 -13" stroke="#fff" stroke-width="3.6"
+          stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <rect x="146" y="222" width="18" height="7" rx="3" fill="var(--ri-st-failed)" />
+
+        
+        <path
+          d="M226 218
+             Q252 208 288 212
+             Q308 216 314 240
+             L318 262
+             L360 262
+             Q372 224 386 196
+             Q398 170 418 158
+             L432 152
+             Q410 180 400 214
+             Q390 250 390 286
+             L360 286
+             L262 286
+             Q244 286 238 272
+             L230 246
+             Z"
+          fill="var(--ri-scoot)"
+        />
+        
+        <path d="M226 218 Q252 208 288 212 Q304 215 310 230 L246 232 Q232 230 226 224 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M386 196 Q398 170 418 158 L428 154 Q408 178 398 208 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M262 286 L360 286 L360 276 L262 276 Z" fill="#000" opacity=".16" />
+        <path d="M360 262 Q368 236 378 214 L384 216 Q372 240 366 264 Z" fill="#000" opacity=".1" />
+
+        
+        <rect x="266" y="262" width="94" height="7" rx="3.5" fill="var(--ri-scoot-dk)" />
+        <rect x="268" y="263" width="90" height="3" rx="1.5" fill="var(--ri-scoot-hi)" opacity=".45" />
+
+        
+        <path d="M214 216 Q232 200 270 202 L308 206 Q316 214 308 224 L226 226 Q210 222 214 216 Z"
+          fill="var(--ri-seat)" />
+        <path d="M216 214 Q234 204 270 205 L304 209 Q306 211 304 213 L222 218 Q212 218 216 214 Z"
+          fill="var(--ri-seat-hi)" opacity=".5" />
+
+        
+        <path d="M394 166 L432 154 L444 188 L404 198 Z" fill="var(--ri-helmet)" />
+        <path d="M394 166 L432 154 L436 165 L398 176 Z" fill="var(--ri-helmet-dk)" opacity=".6" />
+        <ellipse cx="425" cy="176" rx="11" ry="14" fill="var(--ri-lamp)"
+          transform="rotate(-16 425 176)" />
+        <ellipse cx="421" cy="170" rx="4" ry="5" fill="#fff" opacity=".8"
+          transform="rotate(-16 421 170)" />
+
+        
+        <rect x="344" y="140" width="82" height="13" rx="6.5" fill="var(--ri-tyre)" />
+        <rect x="340" y="136" width="22" height="22" rx="7" fill="var(--ri-grip)" />
+        <path d="M420 142 L428 122" stroke="var(--ri-tyre)" stroke-width="4.5"
+          stroke-linecap="round" fill="none" />
+        <ellipse cx="430" cy="118" rx="8.5" ry="6" fill="var(--ri-mirror)"
+          stroke="var(--ri-tyre)" stroke-width="2.5" transform="rotate(-20 430 118)" />
+
+        
+        <rect x="214" y="300" width="52" height="12" rx="6" fill="var(--ri-scoot-dk)" />
+        <rect x="206" y="302" width="12" height="8" rx="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <g class="ri-bob">
+        
+        <path d="M248 212 L302 236" stroke="var(--ri-trouser)" stroke-width="28"
+          stroke-linecap="round" fill="none" />
+        <path d="M302 236 L312 266" stroke="var(--ri-trouser)" stroke-width="24"
+          stroke-linecap="round" fill="none" />
+        <path d="M246 204 L298 227" stroke="var(--ri-trouser-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".45" />
+        
+        <path d="M296 258 L338 258 Q346 258 346 265 L346 270 Q346 276 338 276 L300 276
+                 Q292 276 292 268 Z" fill="var(--ri-tyre)" />
+        <rect x="292" y="270" width="54" height="6" rx="3" fill="var(--ri-rim)" opacity=".55" />
+
+        
+        <path d="M248 212 L282 158" stroke="var(--ri-jacket)" stroke-width="50"
+          stroke-linecap="round" fill="none" />
+        
+        <path d="M254 200 L286 176" stroke="var(--ri-vest)" stroke-width="13"
+          stroke-linecap="round" fill="none" />
+        <path d="M262 210 L292 188" stroke="var(--ri-jacket-hi)" stroke-width="6"
+          stroke-linecap="round" fill="none" opacity=".5" />
+        <path d="M272 166 Q286 156 296 160" stroke="var(--ri-jacket-hi)" stroke-width="9"
+          stroke-linecap="round" fill="none" opacity=".45" />
+
+        
+        <path d="M284 162 L318 170" stroke="var(--ri-jacket)" stroke-width="21"
+          stroke-linecap="round" fill="none" />
+        <path d="M318 170 L350 150" stroke="var(--ri-jacket)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+        <circle cx="352" cy="146" r="12" fill="var(--ri-skin)" />
+        <path d="M346 141 Q353 137 359 142" stroke="var(--ri-skin-dk)" stroke-width="2.8"
+          stroke-linecap="round" fill="none" />
+
+        
+        <circle cx="286" cy="122" r="27" fill="var(--ri-skin)" />
+        <path d="M286 95 a27 27 0 0 1 0 54 a19 27 0 0 0 0 -54 Z" fill="var(--ri-skin-dk)" opacity=".4" />
+        <circle cx="284" cy="112" r="33" fill="var(--ri-helmet)" clip-path="url(#dome)" />
+        <path d="M260 92 Q280 79 304 90" stroke="var(--ri-helmet-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".85" />
+        
+        <path d="M250 124 L318 115 L319 124 L250 133 Z" fill="var(--ri-helmet-dk)" />
+        
+        <path d="M298 116 L324 112 Q330 118 326 129 L300 132 Z" fill="var(--ri-visor)" opacity=".65" />
+        <path d="M304 118 L318 116" stroke="var(--ri-helmet-hi)" stroke-width="3"
+          stroke-linecap="round" opacity=".65" />
+        
+        <circle cx="270" cy="122" r="11" fill="var(--ri-helmet-dk)" />
+        <circle cx="270" cy="122" r="4" fill="var(--ri-rim)" opacity=".5" />
+        <path d="M268 134 Q274 152 292 150" stroke="var(--ri-helmet-dk)" stroke-width="5"
+          fill="none" stroke-linecap="round" />
+      </g>
+</svg></div>
+<div class="pane"><h3>light · still</h3><svg viewBox="0 0 540 400" class="ri on-light still">      <defs>
+        <clipPath id="dome">
+          <rect x="238" y="66" width="96" height="62" />
+        </clipPath>
+        
+        <radialGradient id="ground" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0.5" />
+          <stop offset="60%" stop-color="#000" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      
+      <g stroke="var(--ri-streak)" stroke-width="6" stroke-linecap="round" opacity="var(--ri-streak-o)">
+        <g class="ri-streaks">
+          <line x1="18" y1="150" x2="92" y2="150" />
+          <line x1="-24" y1="198" x2="44" y2="198" />
+          <line x1="26" y1="246" x2="76" y2="246" />
+          <line x1="64" y1="150" x2="138" y2="150" />
+          <line x1="22" y1="198" x2="90" y2="198" />
+          <line x1="72" y1="246" x2="122" y2="246" />
+        </g>
+      </g>
+
+      
+      <g class="ri-parcel" style="--ri-rot:-14deg;animation-delay:0s">
+        <rect x="60" y="84" width="30" height="30" rx="5" fill="var(--ri-st-ofd)" />
+        <rect x="60" y="84" width="30" height="10" rx="5" fill="#000" opacity=".2" />
+        <rect x="73" y="84" width="4" height="30" fill="#000" opacity=".14" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:12deg;animation-delay:-1.1s">
+        <rect x="446" y="66" width="24" height="24" rx="4" fill="var(--ri-st-delivered)" />
+        <rect x="446" y="66" width="24" height="8" rx="4" fill="#000" opacity=".2" />
+      </g>
+      <g class="ri-parcel" style="--ri-rot:-8deg;animation-delay:-2.2s">
+        <rect x="482" y="188" width="18" height="18" rx="3" fill="var(--ri-st-picked)" />
+        <rect x="482" y="188" width="18" height="6" rx="3" fill="#000" opacity=".2" />
+      </g>
+
+      
+      <ellipse class="ri-shadow" cx="282" cy="352" rx="188" ry="20" fill="url(#ground)" />
+
+      
+
+      
+      <g class="ri-bob" opacity=".5">
+        <path d="M252 216 L300 244" stroke="var(--ri-trouser-dk)" stroke-width="25"
+          stroke-linecap="round" fill="none" />
+        <path d="M300 244 L306 268" stroke="var(--ri-trouser-dk)" stroke-width="22"
+          stroke-linecap="round" fill="none" />
+        <path d="M288 168 L364 166" stroke="var(--ri-jacket-dk)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+      </g>
+
+      
+      <path d="M134 264 Q180 234 226 264 L220 276 Q180 250 140 276 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="180" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="180" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-rear">
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="176" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+          <rect x="155" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 180 300)" />
+        </g>
+        <circle cx="180" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="180" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      <path d="M336 262 Q382 232 428 262 L422 274 Q382 248 342 274 Z" fill="var(--ri-scoot-dk)" />
+      <g>
+        <circle cx="382" cy="300" r="44" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="36" fill="var(--ri-tread)" />
+        <circle cx="382" cy="300" r="26" fill="var(--ri-rim)" />
+        <g class="ri-spoke ri-spoke-front">
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4" />
+          <rect x="378" y="275" width="8" height="50" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+          <rect x="357" y="296" width="50" height="8" rx="4" fill="var(--ri-tyre)" opacity=".4"
+            transform="rotate(45 382 300)" />
+        </g>
+        <circle cx="382" cy="300" r="10" fill="var(--ri-tyre)" />
+        <circle cx="382" cy="300" r="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <path d="M386 208 L380 272" stroke="var(--ri-rim)" stroke-width="9"
+        stroke-linecap="round" fill="none" />
+
+      
+      <g class="ri-bob">
+        
+        <rect x="146" y="216" width="72" height="10" rx="5" fill="var(--ri-tyre)" />
+        <rect x="102" y="140" width="86" height="80" rx="9" fill="var(--ri-box)"
+          stroke="var(--ri-box-line)" stroke-width="2" />
+        <rect x="102" y="140" width="86" height="16" rx="8" fill="var(--ri-helmet-dk)" />
+        <path d="M172 140 L188 140 L188 220 L172 220 Z" fill="#000" opacity=".07" />
+        <rect x="122" y="168" width="32" height="32" rx="7" fill="var(--ri-brand)" />
+        <path d="M130 184 l6 6 l12 -13" stroke="#fff" stroke-width="3.6"
+          stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <rect x="146" y="222" width="18" height="7" rx="3" fill="var(--ri-st-failed)" />
+
+        
+        <path
+          d="M226 218
+             Q252 208 288 212
+             Q308 216 314 240
+             L318 262
+             L360 262
+             Q372 224 386 196
+             Q398 170 418 158
+             L432 152
+             Q410 180 400 214
+             Q390 250 390 286
+             L360 286
+             L262 286
+             Q244 286 238 272
+             L230 246
+             Z"
+          fill="var(--ri-scoot)"
+        />
+        
+        <path d="M226 218 Q252 208 288 212 Q304 215 310 230 L246 232 Q232 230 226 224 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M386 196 Q398 170 418 158 L428 154 Q408 178 398 208 Z"
+          fill="var(--ri-scoot-hi)" opacity=".42" />
+        <path d="M262 286 L360 286 L360 276 L262 276 Z" fill="#000" opacity=".16" />
+        <path d="M360 262 Q368 236 378 214 L384 216 Q372 240 366 264 Z" fill="#000" opacity=".1" />
+
+        
+        <rect x="266" y="262" width="94" height="7" rx="3.5" fill="var(--ri-scoot-dk)" />
+        <rect x="268" y="263" width="90" height="3" rx="1.5" fill="var(--ri-scoot-hi)" opacity=".45" />
+
+        
+        <path d="M214 216 Q232 200 270 202 L308 206 Q316 214 308 224 L226 226 Q210 222 214 216 Z"
+          fill="var(--ri-seat)" />
+        <path d="M216 214 Q234 204 270 205 L304 209 Q306 211 304 213 L222 218 Q212 218 216 214 Z"
+          fill="var(--ri-seat-hi)" opacity=".5" />
+
+        
+        <path d="M394 166 L432 154 L444 188 L404 198 Z" fill="var(--ri-helmet)" />
+        <path d="M394 166 L432 154 L436 165 L398 176 Z" fill="var(--ri-helmet-dk)" opacity=".6" />
+        <ellipse cx="425" cy="176" rx="11" ry="14" fill="var(--ri-lamp)"
+          transform="rotate(-16 425 176)" />
+        <ellipse cx="421" cy="170" rx="4" ry="5" fill="#fff" opacity=".8"
+          transform="rotate(-16 421 170)" />
+
+        
+        <rect x="344" y="140" width="82" height="13" rx="6.5" fill="var(--ri-tyre)" />
+        <rect x="340" y="136" width="22" height="22" rx="7" fill="var(--ri-grip)" />
+        <path d="M420 142 L428 122" stroke="var(--ri-tyre)" stroke-width="4.5"
+          stroke-linecap="round" fill="none" />
+        <ellipse cx="430" cy="118" rx="8.5" ry="6" fill="var(--ri-mirror)"
+          stroke="var(--ri-tyre)" stroke-width="2.5" transform="rotate(-20 430 118)" />
+
+        
+        <rect x="214" y="300" width="52" height="12" rx="6" fill="var(--ri-scoot-dk)" />
+        <rect x="206" y="302" width="12" height="8" rx="4" fill="var(--ri-rim)" />
+      </g>
+
+      
+      <g class="ri-bob">
+        
+        <path d="M248 212 L302 236" stroke="var(--ri-trouser)" stroke-width="28"
+          stroke-linecap="round" fill="none" />
+        <path d="M302 236 L312 266" stroke="var(--ri-trouser)" stroke-width="24"
+          stroke-linecap="round" fill="none" />
+        <path d="M246 204 L298 227" stroke="var(--ri-trouser-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".45" />
+        
+        <path d="M296 258 L338 258 Q346 258 346 265 L346 270 Q346 276 338 276 L300 276
+                 Q292 276 292 268 Z" fill="var(--ri-tyre)" />
+        <rect x="292" y="270" width="54" height="6" rx="3" fill="var(--ri-rim)" opacity=".55" />
+
+        
+        <path d="M248 212 L282 158" stroke="var(--ri-jacket)" stroke-width="50"
+          stroke-linecap="round" fill="none" />
+        
+        <path d="M254 200 L286 176" stroke="var(--ri-vest)" stroke-width="13"
+          stroke-linecap="round" fill="none" />
+        <path d="M262 210 L292 188" stroke="var(--ri-jacket-hi)" stroke-width="6"
+          stroke-linecap="round" fill="none" opacity=".5" />
+        <path d="M272 166 Q286 156 296 160" stroke="var(--ri-jacket-hi)" stroke-width="9"
+          stroke-linecap="round" fill="none" opacity=".45" />
+
+        
+        <path d="M284 162 L318 170" stroke="var(--ri-jacket)" stroke-width="21"
+          stroke-linecap="round" fill="none" />
+        <path d="M318 170 L350 150" stroke="var(--ri-jacket)" stroke-width="18"
+          stroke-linecap="round" fill="none" />
+        <circle cx="352" cy="146" r="12" fill="var(--ri-skin)" />
+        <path d="M346 141 Q353 137 359 142" stroke="var(--ri-skin-dk)" stroke-width="2.8"
+          stroke-linecap="round" fill="none" />
+
+        
+        <circle cx="286" cy="122" r="27" fill="var(--ri-skin)" />
+        <path d="M286 95 a27 27 0 0 1 0 54 a19 27 0 0 0 0 -54 Z" fill="var(--ri-skin-dk)" opacity=".4" />
+        <circle cx="284" cy="112" r="33" fill="var(--ri-helmet)" clip-path="url(#dome)" />
+        <path d="M260 92 Q280 79 304 90" stroke="var(--ri-helmet-hi)" stroke-width="7"
+          stroke-linecap="round" fill="none" opacity=".85" />
+        
+        <path d="M250 124 L318 115 L319 124 L250 133 Z" fill="var(--ri-helmet-dk)" />
+        
+        <path d="M298 116 L324 112 Q330 118 326 129 L300 132 Z" fill="var(--ri-visor)" opacity=".65" />
+        <path d="M304 118 L318 116" stroke="var(--ri-helmet-hi)" stroke-width="3"
+          stroke-linecap="round" opacity=".65" />
+        
+        <circle cx="270" cy="122" r="11" fill="var(--ri-helmet-dk)" />
+        <circle cx="270" cy="122" r="4" fill="var(--ri-rim)" opacity=".5" />
+        <path d="M268 134 Q274 152 292 150" stroke="var(--ri-helmet-dk)" stroke-width="5"
+          fill="none" stroke-linecap="round" />
+      </g>
+</svg></div>
+</div></body></html>
