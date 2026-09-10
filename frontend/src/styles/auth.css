@@ -146,7 +146,7 @@
   position: relative; z-index: 3;
 }
 @media (min-width: 940px) {
-  .auth-form-col { border-radius: 0; margin-top: 0; padding: 0; justify-content: center; background: var(--auth-sand); }
+  .auth-form-col { border-radius: 0; margin-top: 0; padding: 0; justify-content: flex-start; background: transparent; }
 }
 .auth-logo { display: none; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--auth-ink); margin-bottom: 22px; }
 @media (min-width: 940px) { .auth-logo { display: flex; } }
@@ -165,7 +165,6 @@
    bottom rather than being split equally. Step 1 (5 fields) is tall enough
    that the difference is invisible there. */
 @media (min-width: 940px) { .auth-form-wrap { margin: auto; padding: 18px 0; } }
-
 /* ── type ───────────────────────────────────────────────────── */
 /* No forced <br> in the markup. Headings ranged from "Welcome back" to
    "Create your business account", and a hard break sized for the longest one
@@ -173,11 +172,11 @@
    browser break only when it needs to, and evenly when it does; the max-width
    keeps a long heading from running the full column. */
 .auth h1 {
-  font-family: var(--auth-display); font-weight: 400; font-size: 34px;
+  font-family: var(--auth-display); font-weight: 400; font-size: 30px;
   line-height: 1.05; letter-spacing: -0.016em; color: var(--auth-ink); margin: 0;
   text-wrap: balance; max-width: 15ch;
 }
-@media (min-width: 940px) { .auth h1 { font-size: 40px; } }
+@media (min-width: 940px) { .auth h1 { font-size: 34px; } }
 .auth h1 em { font-style: italic; }
 .auth-lede { margin: 9px 0 0; font-size: 14.5px; line-height: 1.5; }
 /* Email address shown inline in the OTP lede ("Sent to you@…") should read
@@ -186,16 +185,16 @@
 .auth-lede b { color: var(--auth-ink); }
 
 /* ── fields ─────────────────────────────────────────────────── */
-.auth form { margin-top: 22px; }
+.auth form { margin-top: 18px; }
 /* 15px x 5 fields plus a hint and a CTA overflowed a 1440x900 laptop, so the
    submit button on the signup form sat below the fold. 12px here and a
    slightly shorter control brings it onto one screen without crowding. */
-.auth-field { margin-bottom: 16px; }
+.auth-field { margin-bottom: 13px; }
 .auth-field label { display: block; font-size: 13px; font-weight: 600; color: var(--auth-ink); margin-bottom: 6px; }
 .auth-input-wrap { position: relative; display: flex; align-items: center; }
 .auth-field input {
-  width: 100%; height: 50px; padding: 0 15px;
-  font: 400 16px/1 var(--auth-ui); color: var(--auth-ink);
+  width: 100%; height: 46px; padding: 0 15px;
+  font: 400 15px/1 var(--auth-ui); color: var(--auth-ink);
   background: #fff; border: 1px solid var(--auth-line-2); border-radius: 8px;
   transition: border-color 0.14s, box-shadow 0.14s;
 }
@@ -227,10 +226,10 @@
 
 .auth-cta {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; height: 52px; background: var(--auth-brand); color: #fff;
+  width: 100%; height: 48px; background: var(--auth-brand); color: #fff;
   border: 1px solid var(--auth-brand); border-radius: 8px;
-  font: 600 16px/1 var(--auth-ui); cursor: pointer;
-  transition: background 0.14s; margin-top: 8px;
+  font: 600 15px/1 var(--auth-ui); cursor: pointer;
+  transition: background 0.14s; margin-top: 6px;
 }
 .auth-cta:hover:not(:disabled) { background: var(--auth-brand-deep); }
 /* Explicit disabled colours rather than `opacity: .62`. Blanket opacity dims
@@ -257,21 +256,24 @@
 @media (min-width: 940px) {
   .auth-form-col {
     background: linear-gradient(135deg, #e8f0ed 0%, #f0f4f2 40%, #e4eee9 100%);
+    overflow-y: auto;
+    padding: 24px;
+    align-items: center;
   }
   .auth-card {
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border-radius: 20px;
+    border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.9);
     box-shadow:
       0 4px 6px rgba(0, 0, 0, 0.04),
       0 12px 40px rgba(0, 0, 0, 0.10),
-      0 2px 0 rgba(255,255,255,0.8) inset;
-    padding: 44px 48px 48px;
+      0 2px 0 rgba(255, 255, 255, 0.8) inset;
+    padding: 28px 36px 32px;
     width: 100%;
     max-width: 440px;
-    margin: 0 auto;
+    margin: auto;
   }
 }
 
