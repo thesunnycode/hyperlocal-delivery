@@ -64,10 +64,14 @@ export default function AuthShell({
         </aside>
 
         <div className="auth-form-col">
-          <div className="auth-logo" aria-hidden="true">
-            <span className="auth-logo-mark">H</span>Hyperlocal
-          </div>
-          <main className="auth-form-wrap" id="auth-form" tabIndex={-1}>{children}</main>
+          <main className="auth-form-wrap" id="auth-form" tabIndex={-1}>
+            <div className="auth-card">
+              <div className="auth-logo" aria-hidden="true">
+                <span className="auth-logo-mark">H</span>Hyperlocal
+              </div>
+              {children}
+            </div>
+          </main>
         </div>
       </div>
     </div>

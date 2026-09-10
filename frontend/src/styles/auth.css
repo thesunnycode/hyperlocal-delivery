@@ -153,9 +153,9 @@
   position: relative; z-index: 3;
 }
 @media (min-width: 940px) {
-  .auth-form-col { border-radius: 0; margin-top: 0; padding: 30px 56px 34px; justify-content: center; }
+  .auth-form-col { border-radius: 0; margin-top: 0; padding: 0; justify-content: center; background: var(--auth-sand); }
 }
-.auth-logo { display: none; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--auth-ink); }
+.auth-logo { display: none; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--auth-ink); margin-bottom: 22px; }
 @media (min-width: 940px) { .auth-logo { display: flex; } }
 .auth-logo-mark {
   width: 26px; height: 26px; border-radius: 5px; background: var(--auth-brand);
@@ -256,6 +256,27 @@
    top-level error). The default .auth-msg has margin-top:18px which creates
    a gap above a banner that has nothing above it. */
 .auth-msg.auth-msg-top { margin-top: 0; margin-bottom: 18px; }
+
+/* ── form card ──────────────────────────────────────────────── */
+/* Wraps the form content in a floating card on desktop. On mobile it
+   merges with the lifted white sheet so there is no card-inside-card. */
+.auth-card {
+  width: 100%;
+}
+@media (min-width: 940px) {
+  .auth-form-col {
+    background: var(--auth-sand);
+  }
+  .auth-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.08);
+    padding: 40px 44px 44px;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
 
 /* ── rejected ───────────────────────────────────────────────── */
 .auth-msg {

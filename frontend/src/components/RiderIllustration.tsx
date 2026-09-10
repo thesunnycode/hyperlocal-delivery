@@ -73,7 +73,7 @@ export default function RiderIllustration({
 
   return (
     <svg
-      viewBox={crop === 'tight' ? '70 60 420 320' : '0 0 540 400'}
+      viewBox={crop === 'tight' ? '70 60 420 360' : '0 0 540 400'}
       role="img"
       aria-label="A delivery rider on a scooter carrying parcels"
       className={['ri', still && 'still', className].filter(Boolean).join(' ')}
