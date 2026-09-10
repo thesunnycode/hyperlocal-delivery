@@ -58,13 +58,6 @@
   font-family: var(--auth-ui);
   color: var(--auth-body);
   letter-spacing: -0.011em;
-
-  /* The mobile hero is a SIBLING of the split, not a child of it. With the
-     split also asking for 100vh the page came to hero + a full viewport and
-     scrolled by exactly the height of the hero, with the overshoot showing as
-     dead white under the form. Making the root the column that owns the
-     viewport height, and letting the split take what is left, keeps a short
-     form on one screen and still lets a long one grow. */
   display: flex;
   flex-direction: column;
 }
@@ -197,7 +190,7 @@
 /* 15px x 5 fields plus a hint and a CTA overflowed a 1440x900 laptop, so the
    submit button on the signup form sat below the fold. 12px here and a
    slightly shorter control brings it onto one screen without crowding. */
-.auth-field { margin-bottom: 12px; }
+.auth-field { margin-bottom: 16px; }
 .auth-field label { display: block; font-size: 13px; font-weight: 600; color: var(--auth-ink); margin-bottom: 6px; }
 .auth-input-wrap { position: relative; display: flex; align-items: center; }
 .auth-field input {
@@ -258,22 +251,26 @@
 .auth-msg.auth-msg-top { margin-top: 0; margin-bottom: 18px; }
 
 /* ── form card ──────────────────────────────────────────────── */
-/* Wraps the form content in a floating card on desktop. On mobile it
-   merges with the lifted white sheet so there is no card-inside-card. */
 .auth-card {
   width: 100%;
 }
 @media (min-width: 940px) {
   .auth-form-col {
-    background: var(--auth-sand);
+    background: linear-gradient(135deg, #e8f0ed 0%, #f0f4f2 40%, #e4eee9 100%);
   }
   .auth-card {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.08);
-    padding: 40px 44px 44px;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.04),
+      0 12px 40px rgba(0, 0, 0, 0.10),
+      0 2px 0 rgba(255,255,255,0.8) inset;
+    padding: 44px 48px 48px;
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     margin: 0 auto;
   }
 }

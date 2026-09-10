@@ -62,9 +62,9 @@
   --ri-helmet-hi: #ffffff;
   --ri-helmet-dk: #b9c3d2;
   --ri-visor: #3d4a5c;
-  --ri-trouser: #8794a8;
-  --ri-trouser-hi: #aab5c5;
-  --ri-trouser-dk: #5e6a7a;
+  --ri-trouser: #2d3a4a;
+  --ri-trouser-hi: #4a5a6e;
+  --ri-trouser-dk: #1a2530;
 
   /* Generic ink for the shading overlays, so a shadow is one token rather
      than a rgba() repeated eleven times at three different alphas. */

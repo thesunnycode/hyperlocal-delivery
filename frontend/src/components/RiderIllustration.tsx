@@ -289,8 +289,8 @@ export default function RiderIllustration({
           strokeLinecap="round" fill="none" opacity=".45" />
         {/* boot, flat on the deck */}
         <path d="M296 258 L338 258 Q346 258 346 265 L346 270 Q346 276 338 276 L300 276
-                 Q292 276 292 268 Z" fill="var(--ri-tyre)" />
-        <rect x="292" y="270" width="54" height="6" rx="3" fill="var(--ri-rim)" opacity=".55" />
+                 Q292 276 292 268 Z" fill="#1a2530" />
+        <rect x="292" y="270" width="54" height="6" rx="3" fill="#4a5a6e" opacity=".7" />
 
         {/* torso — hip at (248,212) to shoulder at (282,158) */}
         <path d="M248 212 L282 158" stroke="var(--ri-jacket)" strokeWidth="50"
