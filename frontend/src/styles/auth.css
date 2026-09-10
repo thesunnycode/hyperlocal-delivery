@@ -73,13 +73,11 @@
 .auth-split { display: grid; grid-template-columns: 1fr; flex: 1; min-height: 0; }
 @media (min-width: 940px) {
   /* No hero above it at this width, so the split is the whole page again. */
-  .auth-split { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); min-height: 100vh; }
+  .auth-split { grid-template-columns: 1fr 1fr; min-height: 100vh; }
 }
-/* Past ~1280px an even split spends half a wide screen on a drawing while the
-   form stays pinned at 392px. The panel keeps its presence as a fixed band and
-   the extra width goes to the side people are actually working on. */
+/* Past ~1280px keep an even 50/50 split. */
 @media (min-width: 1280px) {
-  .auth-split { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); }
+  .auth-split { grid-template-columns: 1fr 1fr; }
 }
 
 .auth-art {
@@ -155,7 +153,7 @@
   position: relative; z-index: 3;
 }
 @media (min-width: 940px) {
-  .auth-form-col { border-radius: 0; margin-top: 0; padding: 30px 56px 34px; }
+  .auth-form-col { border-radius: 0; margin-top: 0; padding: 30px 56px 34px; justify-content: center; }
 }
 .auth-logo { display: none; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--auth-ink); }
 @media (min-width: 940px) { .auth-logo { display: flex; } }
@@ -173,7 +171,7 @@
    leave a large blank void above the step indicator. Slack accumulates at the
    bottom rather than being split equally. Step 1 (5 fields) is tall enough
    that the difference is invisible there. */
-@media (min-width: 940px) { .auth-form-wrap { margin: 0 auto auto; padding: 18px 0; } }
+@media (min-width: 940px) { .auth-form-wrap { margin: auto; padding: 18px 0; } }
 
 /* ── type ───────────────────────────────────────────────────── */
 /* No forced <br> in the markup. Headings ranged from "Welcome back" to
