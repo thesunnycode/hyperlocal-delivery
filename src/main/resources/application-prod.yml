@@ -40,6 +40,8 @@ app:
   mail:
     reset-link-base-url: ${RESET_LINK_BASE_URL}
     reset-token-ttl-minutes: ${RESET_TOKEN_TTL_MINUTES:30}
+    invite-link-base-url: ${INVITE_LINK_BASE_URL}
+    invite-ttl-hours: ${INVITE_TTL_HOURS:168}
 
 management:
   endpoints:
