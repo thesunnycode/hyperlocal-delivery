@@ -37,26 +37,12 @@
      · plot containers include the axis band, so no nested scrollbar appears */
 
 .rp {
-  --rp-sand: #eeefe9;
-  --rp-paper: #f7f8f4;
-  --rp-card: #fff;
-  --rp-ink: #111827;
-  --rp-body: #374151;
-  --rp-muted: #5c6472;
-  --rp-line: #e2e4dc;
-  --rp-line-2: #cfd2c8;
-  --rp-grid: #e8eae2;
-  --rp-brand: #1546a8;
-  --rp-brand-deep: #14418f;
-  --rp-brand-soft: #e9eefa;
+  /* Colour and font custom properties for this scope are declared in
+     scopes.css, imported after this file — the pre-redesign literal block
+     that used to live here is deleted per REDESIGN-NOTES.md § "Follow-up"
+     item 1; it was overridden, not read.
 
-  /* Same status hues the badges use. They are never compared as adjacent
-     fills here, which is the whole point of the small-multiples split. */
-  --rp-delivered: #15803d;
-  --rp-failed: #b91c1c;
-  --rp-neutral: #64748b;
-
-  /* Same measure and the same full-bleed gutter trick as the owner console
+     Same measure and the same full-bleed gutter trick as the owner console
      (see owner.css). Reporting renders inside that shell, so the two must
      agree or the page furniture jumps as you move between sections.
 
@@ -69,10 +55,6 @@
      column. */
   --rp-measure: 1180px;
   --rp-gutter: max(22px, calc((100% - var(--rp-measure)) / 2));
-
-  --rp-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --rp-display: 'Instrument Serif', Georgia, serif;
-  --rp-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   min-height: 100vh;
   background: var(--rp-paper);

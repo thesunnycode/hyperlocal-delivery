@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Inbox, Users, Check, Filter, SearchX, Undo2 } from 'lucide-react';
-import { listShipments, getShipment, createShipment, reassignShipment } from '../../api/shipmentsApi';
+import { listShipments, getShipment, createShipment, reassignShipment, cancelShipment } from '../../api/shipmentsApi';
 import { listAgents } from '../../api/agentsApi';
 import { useToast } from '../../lib/ToastContext.tsx';
 import { useFatalError } from '../../lib/FatalErrorContext.tsx';
@@ -10,6 +10,7 @@ import { isTerminal, STATUS_META } from '../../utils/statusMachine';
 import ShipmentDetailPanel from '../../components/ShipmentDetailPanel.tsx';
 import CreateShipmentModal from '../../components/CreateShipmentModal.tsx';
 import ReassignAgentModal from '../../components/ReassignAgentModal.tsx';
+import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import type { NewShipmentInput } from '../../components/CreateShipmentModal.tsx';
 import type { AgentSummary, Shipment, ShipmentSummary } from '../../types/api';
 
@@ -113,6 +114,8 @@ export default function OwnerShipmentsPage() {
   const [reassignOpen, setReassignOpen] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
   const [reassignBusy, setReassignBusy] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [setupDismissed, setSetupDismissed] = useState(() => localStorage.getItem(DISMISS_KEY) === '1');
   const [range, setRange] = useState<RangeId>('all');
   /** Ids picked for the one bulk action this console has. */
@@ -267,6 +270,25 @@ export default function OwnerShipmentsPage() {
       else reportError(err);
     } finally {
       setReassignBusy(false);
+    }
+  };
+
+  // ─── Cancel shipment ──────────────────────────────────────────────
+  const doCancel = async () => {
+    if (cancelBusy) return;
+    setCancelBusy(true);
+    try {
+      await cancelShipment(id ?? '');
+      setCancelConfirmOpen(false);
+      toast(`${selected?.customerName ?? 'Shipment'} was cancelled.`, 'default');
+      getShipment(id ?? '').then(setSelected);
+      loadList();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (isActionableError(err)) toast(message || 'Could not cancel this shipment.', 'accent');
+      else reportError(err);
+    } finally {
+      setCancelBusy(false);
     }
   };
 
@@ -560,6 +582,8 @@ export default function OwnerShipmentsPage() {
               onReassignToAssigned={reassignToAssigned}
               onChangeAgent={() => setReassignOpen(true)}
               reassignBusy={reassignBusy}
+              onCancelShipment={() => setCancelConfirmOpen(true)}
+              cancelBusy={cancelBusy}
             />
           ) : missing ? (
             <div className="ow-detail">
@@ -714,6 +738,17 @@ export default function OwnerShipmentsPage() {
         shipmentStatus={selected?.status}
         onReassign={doReassign}
         busy={reassignBusy}
+      />
+
+      <ConfirmDialog
+        open={cancelConfirmOpen}
+        title={`Cancel ${selected?.customerName ?? 'this shipment'}?`}
+        body="This calls it off for good — the rider stops carrying it, the customer's tracking link shows Cancelled, and it cannot be reassigned or delivered afterwards."
+        confirmLabel={cancelBusy ? 'Cancelling…' : 'Cancel shipment'}
+        cancelLabel="Keep it"
+        tone="danger"
+        onCancel={() => setCancelConfirmOpen(false)}
+        onConfirm={doCancel}
       />
     </>
   );

@@ -385,9 +385,9 @@ why a structural change to `OwnerLayout` carries no test risk.
 
 ### Follow-up
 
-1. Delete the dead literal token blocks at the top of `owner.css`, `auth.css`,
+1. ~~Delete the dead literal token blocks at the top of `owner.css`, `auth.css`,
    `agent.css`, `track.css`, `reports.css`, `edge.css` and `overlay.css`, and
-   the `.ow-side` block. They are overridden, not read.
+   the `.ow-side` block. They are overridden, not read.~~ Done (2026-09-11).
 2. Apply the approved page-level structures listed above.
 3. Add the `cashToCollect` field, or drop it from the design.
 4. Wire the dark-mode toggle once the `#fff`-on-fill audit is done.

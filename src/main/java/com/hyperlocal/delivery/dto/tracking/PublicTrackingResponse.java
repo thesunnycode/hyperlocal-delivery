@@ -5,6 +5,7 @@ import java.util.List;
 import com.hyperlocal.delivery.dto.shipment.ShipmentEventDto;
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Public tracking response that deliberately excludes sensitive information:
@@ -53,7 +54,7 @@ public record PublicTrackingResponse(
                     .map(e -> new TimelineItem(
                             e.getToStatus(),
                             ShipmentEventDto.labelFor(e.getToStatus()),
-                            e.getCreatedAt() != null ? e.getCreatedAt().toString() : null))
+                            TimeUtils.toIso(e.getCreatedAt())))
                     .toList();
         }
 
@@ -62,8 +63,8 @@ public record PublicTrackingResponse(
                 s.getStatus(),
                 s.getCustomerName(),
                 s.getDeliveryAddress(),
-                s.getScheduledDeliveryAt() != null ? s.getScheduledDeliveryAt().toString() : null,
-                s.getDeliveredAt() != null ? s.getDeliveredAt().toString() : null,
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getDeliveredAt()),
                 s.getBusiness() != null ? s.getBusiness().getName() : null,
                 s.getBusiness() != null ? s.getBusiness().getPhone() : null,
                 events

@@ -49,5 +49,13 @@ public final class ShipmentStatusSets {
      */
     public static final Set<ShipmentStatus> TERMINAL = EnumSet.of(
             ShipmentStatus.DELIVERED,
-            ShipmentStatus.RETURNED);
+            ShipmentStatus.RETURNED,
+            ShipmentStatus.CANCELLED);
+
+    /**
+     * Statuses from which an owner may cancel the shipment outright. Same
+     * set as {@link #NON_TERMINAL_FOR_REASSIGNMENT} — anything the owner
+     * could still reassign, they can also call off entirely.
+     */
+    public static final Set<ShipmentStatus> CANCELLABLE = NON_TERMINAL_FOR_REASSIGNMENT;
 }

@@ -45,6 +45,7 @@
   --st-delivered: var(--hl-delivered-solid);
   --st-failed: var(--hl-failed-solid);
   --st-returned: var(--hl-returned-solid);
+  --st-cancelled: var(--hl-cancelled-solid);
 
   --ow-err: var(--hl-danger);
   --ow-err-bg: var(--hl-danger-bg);
@@ -99,6 +100,7 @@
   --ag-delivered: var(--hl-delivered-solid);
   --ag-failed: var(--hl-failed-solid);
   --ag-returned: var(--hl-returned-solid);
+  --ag-cancelled: var(--hl-cancelled-solid);
 
   --ag-warn-bg: var(--hl-warn-bg);
   --ag-warn-line: var(--hl-warn-line);
@@ -127,6 +129,7 @@
   --tk-delivered: var(--hl-delivered-solid);
   --tk-failed: var(--hl-failed-solid);
   --tk-returned: var(--hl-returned-solid);
+  --tk-cancelled: var(--hl-cancelled-solid);
 
   --tk-ui: var(--hl-ui);
   --tk-display: var(--hl-display);
@@ -199,6 +202,13 @@
   --ov-err-bg: var(--hl-danger-bg);
   --ov-ui: var(--hl-ui);
   --ov-display: var(--hl-display);
+}
+
+/* One shimmer gradient for every scope's skeleton class — previously
+   declared four times, byte-for-byte, once per scope. */
+.ow-sk, .ag-skel, .rp-sk, .tk-skel {
+  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
+  background-size: 200% 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -344,10 +354,6 @@
   color: var(--hl-danger-ink);
 }
 .ow-scard .foot .ok { color: var(--hl-ok-ink); }
-.ow-sk {
-  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
-  background-size: 200% 100%;
-}
 .ow-menu { box-shadow: var(--hl-e2); }
 .ow-scrim { background: var(--hl-scrim); }
 .ow-sheet { box-shadow: var(--hl-e3); }
@@ -358,10 +364,6 @@
    because both are now the ink neutral. */
 .ag-strip { background: var(--hl-n900); }
 .ag-strip .ag-hot dd { color: #ffb4a0; }                      /* 10.45:1     */
-.ag-skel {
-  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
-  background-size: 200% 100%;
-}
 .ag-fork button.ag-danger, .ag-signout {
   color: var(--hl-danger-ink); border-color: var(--hl-danger-line);
 }
@@ -385,10 +387,6 @@
    same signal as every other active state in the product. */
 .rp table td.on { background: var(--hl-brand-soft); }
 .rp table tbody tr:hover td.on { background: var(--hl-brand-ring); }
-.rp-sk {
-  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
-  background-size: 200% 100%;
-}
 .rp-tip { box-shadow: var(--hl-e2); }
 
 /* ── Customer tracking ───────────────────────────────────────────────── */
@@ -399,10 +397,6 @@
   background: var(--hl-warn-bg);
   border-color: var(--hl-warn-line);
   color: var(--hl-warn-ink);                                  /* 6.88:1      */
-}
-.tk-skel {
-  background: linear-gradient(90deg, var(--hl-n50), var(--hl-n25), var(--hl-n50));
-  background-size: 200% 100%;
 }
 .tk-card, .tk-rail, .tk-edge { box-shadow: var(--hl-e1); }
 

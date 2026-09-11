@@ -1,7 +1,5 @@
 package com.hyperlocal.delivery.dto.invite;
 
-import java.time.LocalDateTime;
-
 /**
  * What the owner gets back after issuing an invite.
  *
@@ -11,10 +9,11 @@ import java.time.LocalDateTime;
  * exists outside the recipient's mailbox.
  *
  * @param inviteUrl  the link to send
- * @param expiresAt  when it stops working
+ * @param expiresAt  when it stops working, as a UTC ISO-8601 string (see
+ *                   {@link com.hyperlocal.delivery.util.TimeUtils#toIso})
  * @param emailed    whether the server also sent it (false when SMTP is not
  *                   configured, so the console can tell the owner they must
  *                   deliver it themselves rather than implying it was sent)
  */
-public record InviteResponse(String inviteUrl, LocalDateTime expiresAt, boolean emailed) {
+public record InviteResponse(String inviteUrl, String expiresAt, boolean emailed) {
 }

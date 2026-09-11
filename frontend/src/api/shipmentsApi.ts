@@ -116,3 +116,12 @@ export function reassignShipment(
     body: { agentId: agentId || null, note }
   });
 }
+
+// Owner — cancel outright, legal on any non-terminal shipment (same set as
+// reassignShipment). Once cancelled, a shipment is terminal.
+export function cancelShipment(id: number | string, note?: string | null) {
+  return apiFetch<Shipment>(`/shipments/${id}/cancel`, {
+    method: 'POST',
+    body: { note } satisfies AdvanceBody
+  });
+}

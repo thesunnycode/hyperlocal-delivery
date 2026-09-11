@@ -20,22 +20,10 @@
    meaningful code (an expired session, an empty roster) keep the icon tile. */
 
 .es {
-  --es-sand: #eeefe9;
-  --es-paper: #f7f8f4;
-  --es-card: #fff;
-  --es-ink: #111827;
-  --es-body: #374151;
-  --es-muted: #5c6472;
-  --es-line: #e2e4dc;
-  --es-line-2: #cfd2c8;
-  --es-brand: #1546a8;
-  --es-brand-deep: #14418f;
-  --es-err: #b91c1c;
-  --es-err-bg: #fdecea;
-
-  --es-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --es-display: 'Instrument Serif', Georgia, serif;
-  --es-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Colour and font custom properties for this scope are declared in
+     scopes.css, imported after this file — the pre-redesign literal block
+     that used to live here is deleted per REDESIGN-NOTES.md § "Follow-up"
+     item 1; it was overridden, not read. */
 
   display: flex;
   flex-direction: column;

@@ -2,6 +2,7 @@ package com.hyperlocal.delivery.dto.shipment;
 
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Lightweight shipment summary for paginated list endpoints.
@@ -37,8 +38,8 @@ public record ShipmentSummaryDto(
                 s.getDeliveryAddress(),
                 agent != null ? agent.id() : null,
                 agent != null ? agent.fullName() : null,
-                s.getScheduledDeliveryAt() != null ? s.getScheduledDeliveryAt().toString() : null,
-                s.getCreatedAt() != null ? s.getCreatedAt().toString() : null
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getCreatedAt())
         );
     }
 }

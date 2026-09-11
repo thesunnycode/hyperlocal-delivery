@@ -142,7 +142,7 @@ export default function LoginPage() {
                     <label htmlFor="auth-email">Email</label>
                     <div className="auth-input-wrap">
                       <input
-                        id="auth-email" type="email" inputMode="email" autoComplete="username"
+                        id="auth-email" type="email" inputMode="email" autoComplete="email"
                         placeholder="you@yourbusiness.in" required autoFocus
                         value={email} onChange={(ev) => setEmail(ev.target.value)}
                       />

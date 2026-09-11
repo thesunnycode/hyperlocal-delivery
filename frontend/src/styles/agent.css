@@ -19,33 +19,10 @@
    maximum contrast. */
 
 .ag {
-  --ag-sand: #eeefe9;
-  --ag-ink: #111827;
-  --ag-body: #374151;
-  --ag-muted: #5c6472;
-  --ag-line: #dcded6;
-  --ag-line-2: #c3c6bc;
-  --ag-brand: #1546a8;
-  --ag-brand-deep: #14418f;
-  --ag-brand-soft: #e9eefa;
-
-  /* The seven states. Same hex as auth.css — every one clears AA both as a
-     filled badge and as text on white, so no state needs a second variant. */
-  --ag-assigned: #64748b;
-  --ag-picked_up: #0e7490;
-  --ag-in_transit: #3f6212;
-  --ag-out_for_delivery: #c2410c;
-  --ag-delivered: #15803d;
-  --ag-failed: #b91c1c;
-  --ag-returned: #7e22ce;
-
-  --ag-warn-bg: #fdf1dc;
-  --ag-warn-line: #edd9ae;
-  --ag-warn-ink: #7a4d00;
-
-  --ag-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --ag-display: 'Instrument Serif', Georgia, serif;
-  --ag-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Colour and font custom properties for this scope are declared in
+     scopes.css, imported after this file — the pre-redesign literal block
+     that used to live here is deleted per REDESIGN-NOTES.md § "Follow-up"
+     item 1; it was overridden, not read. */
 
   min-height: 100vh;
   background: var(--ag-sand);
@@ -84,6 +61,7 @@
 .ag-s-delivered { --c: var(--ag-delivered); }
 .ag-s-failed { --c: var(--ag-failed); }
 .ag-s-returned { --c: var(--ag-returned); }
+.ag-s-cancelled { --c: var(--ag-cancelled); }
 
 .ag-badge {
   display: inline-flex; align-items: center; gap: 6px;

@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.dto.agent;
 
 import com.hyperlocal.delivery.model.User;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Lightweight agent summary for paginated list endpoints.
@@ -26,7 +27,7 @@ public record AgentSummaryDto(
                 user.getPhone(),
                 user.getIsActive(),
                 openCount,
-                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+                TimeUtils.toIso(user.getCreatedAt())
         );
     }
 }

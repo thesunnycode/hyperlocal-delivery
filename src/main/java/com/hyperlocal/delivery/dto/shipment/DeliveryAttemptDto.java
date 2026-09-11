@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.dto.shipment;
 
 import com.hyperlocal.delivery.model.DeliveryAttempt;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * DTO for a delivery attempt record.
@@ -42,7 +43,7 @@ public record DeliveryAttemptDto(
      */
     public static DeliveryAttemptDto from(DeliveryAttempt a) {
         String reasonLabel = a.getFailureReason() != null ? a.getFailureReason().getLabel() : null;
-        String stamp = a.getAttemptedAt() != null ? a.getAttemptedAt().toString() : null;
+        String stamp = TimeUtils.toIso(a.getAttemptedAt());
         return new DeliveryAttemptDto(
                 a.getId(),
                 a.getShipment() != null ? a.getShipment().getId() : null,

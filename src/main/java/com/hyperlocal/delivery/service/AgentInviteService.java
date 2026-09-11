@@ -19,6 +19,7 @@ import com.hyperlocal.delivery.repository.AgentInviteRepository;
 import com.hyperlocal.delivery.repository.RefreshTokenRepository;
 import com.hyperlocal.delivery.repository.UserRepository;
 import com.hyperlocal.delivery.security.JwtUtil;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -87,7 +88,7 @@ public class AgentInviteService {
 
         return new InviteResponse(
                 MailLinkBuilder.buildInviteLink(mailProperties.inviteLinkBaseUrl(), rawToken),
-                now.plusHours(mailProperties.inviteTtlHours()),
+                TimeUtils.toIso(now.plusHours(mailProperties.inviteTtlHours())),
                 emailed);
     }
 
@@ -103,7 +104,7 @@ public class AgentInviteService {
                 agent.getFullName(),
                 agent.getEmail(),
                 agent.getBusiness() != null ? agent.getBusiness().getName() : null,
-                invite.getExpiresAt());
+                TimeUtils.toIso(invite.getExpiresAt()));
     }
 
     /**

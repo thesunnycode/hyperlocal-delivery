@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isTerminal, canReassignAgent, canRestoreToAssigned, STATUSES, STATUS_META, AGENT_NEXT } from './statusMachine';
+import { isTerminal, canReassignAgent, canRestoreToAssigned, canCancel, STATUSES, STATUS_META, AGENT_NEXT } from './statusMachine';
 
 describe('statusMachine', () => {
   describe('isTerminal', () => {
@@ -9,6 +9,10 @@ describe('statusMachine', () => {
 
     it('returns true for returned', () => {
       expect(isTerminal('returned')).toBe(true);
+    });
+
+    it('returns true for cancelled', () => {
+      expect(isTerminal('cancelled')).toBe(true);
     });
 
     it('returns false for failed (owner can reassign)', () => {
@@ -35,6 +39,23 @@ describe('statusMachine', () => {
     it('returns false for terminal statuses', () => {
       expect(canReassignAgent('delivered')).toBe(false);
       expect(canReassignAgent('returned')).toBe(false);
+      expect(canReassignAgent('cancelled')).toBe(false);
+    });
+  });
+
+  describe('canCancel', () => {
+    it('returns true for all non-terminal statuses', () => {
+      expect(canCancel('assigned')).toBe(true);
+      expect(canCancel('picked_up')).toBe(true);
+      expect(canCancel('in_transit')).toBe(true);
+      expect(canCancel('out_for_delivery')).toBe(true);
+      expect(canCancel('failed')).toBe(true);
+    });
+
+    it('returns false for terminal statuses', () => {
+      expect(canCancel('delivered')).toBe(false);
+      expect(canCancel('returned')).toBe(false);
+      expect(canCancel('cancelled')).toBe(false);
     });
   });
 
@@ -52,8 +73,8 @@ describe('statusMachine', () => {
   });
 
   describe('STATUSES constant', () => {
-    it('contains all 7 statuses', () => {
-      expect(STATUSES).toHaveLength(7);
+    it('contains all 8 statuses', () => {
+      expect(STATUSES).toHaveLength(8);
     });
 
     it('does not include CREATED', () => {
@@ -71,9 +92,10 @@ describe('statusMachine', () => {
       }
     });
 
-    it('marks delivered and returned as systemTerminal', () => {
+    it('marks delivered, returned and cancelled as systemTerminal', () => {
       expect(STATUS_META.delivered.systemTerminal).toBe(true);
       expect(STATUS_META.returned.systemTerminal).toBe(true);
+      expect(STATUS_META.cancelled.systemTerminal).toBe(true);
     });
 
     it('marks failed as agentTerminal (not systemTerminal)', () => {
@@ -94,6 +116,7 @@ describe('statusMachine', () => {
       expect(AGENT_NEXT.delivered).toBeUndefined();
       expect(AGENT_NEXT.returned).toBeUndefined();
       expect(AGENT_NEXT.failed).toBeUndefined();
+      expect(AGENT_NEXT.cancelled).toBeUndefined();
     });
   });
 });

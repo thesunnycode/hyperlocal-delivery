@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.dto.auth;
 
 import com.hyperlocal.delivery.model.User;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Public-facing representation of a user profile. Includes the user's
@@ -33,7 +34,7 @@ public record UserResponse(
                 user.getBusiness().getName(),
                 user.getBusiness().getPhone(),
                 user.getIsActive(),
-                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+                TimeUtils.toIso(user.getCreatedAt())
         );
     }
 }

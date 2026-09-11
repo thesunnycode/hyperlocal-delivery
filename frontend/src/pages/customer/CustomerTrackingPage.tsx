@@ -36,21 +36,22 @@ import RiderIllustration from '../../components/RiderIllustration.tsx';
  */
 
 const POLL_SECONDS = 30;
-const CLOSED: ShipmentStatus[] = ['delivered', 'returned'];
+const CLOSED: ShipmentStatus[] = ['delivered', 'returned', 'cancelled'];
 
 /** States where something is actually moving, and the scooter may animate. */
 const MOVING: ShipmentStatus[] = ['in_transit', 'out_for_delivery'];
 /** States that get no scooter at all. A drawing of a rider mid-flight — even
  *  a frozen one, the speed streaks still say motion — under "We could not
  *  complete the delivery" is cheerful at exactly the wrong moment. */
-const NO_SCENE: ShipmentStatus[] = ['failed', 'returned'];
+const NO_SCENE: ShipmentStatus[] = ['failed', 'returned', 'cancelled'];
 
 /** Short label per state. `failed`/`returned` get customer-facing wording:
  *  "Failed" reads like the customer did something wrong. */
 const CHIP: Record<ShipmentStatus, string> = {
   assigned: 'Assigned', picked_up: 'Picked up', in_transit: 'In transit',
   out_for_delivery: 'Out for delivery', delivered: 'Delivered',
-  failed: 'Delivery attempted', returned: 'Returned to store'
+  failed: 'Delivery attempted', returned: 'Returned to store',
+  cancelled: 'Cancelled'
 };
 
 /**
@@ -101,6 +102,11 @@ function heroCopy(s: PublicTracking): { title: string; note: string } {
       return {
         title: 'Your order went back to the store',
         note: `After the attempts allowed, the order was returned to ${biz}. Call them to arrange redelivery or a refund.`
+      };
+    case 'cancelled':
+      return {
+        title: 'This delivery was cancelled',
+        note: `${biz} cancelled this delivery. Contact them if you have questions about your order.`
       };
     case 'failed':
       return {
@@ -283,7 +289,7 @@ export default function CustomerTrackingPage() {
 
   const hero = heroCopy(shipment);
   const quiet = QUIET[shipment.status];
-  const branched = shipment.status === 'failed' || shipment.status === 'returned';
+  const branched = shipment.status === 'failed' || shipment.status === 'returned' || shipment.status === 'cancelled';
   const reached = branched ? 4 : (STATUS_META[shipment.status]?.step ?? 1);
   const lastEvent = (shipment.events ?? [])[0];
   const cls = `tk-s-${shipment.status}`;

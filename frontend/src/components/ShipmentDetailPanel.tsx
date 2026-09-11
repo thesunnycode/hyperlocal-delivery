@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X } from 'lucide-react';
+import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X, XCircle } from 'lucide-react';
 import { formatDateTime, formatTime } from '../utils/format';
-import { STATUS_META, isTerminal, canReassignAgent, canRestoreToAssigned } from '../utils/statusMachine';
+import { STATUS_META, isTerminal, canReassignAgent, canRestoreToAssigned, canCancel } from '../utils/statusMachine';
 import type { Shipment } from '../types/api';
 
 /**
@@ -23,7 +23,9 @@ export default function ShipmentDetailPanel({
   onClose,
   onReassignToAssigned,
   onChangeAgent,
-  reassignBusy
+  reassignBusy,
+  onCancelShipment,
+  cancelBusy
 }: {
   shipment: Shipment | null;
   /** Deselect and go back to the resting "Today at a glance" pane. Without
@@ -32,6 +34,10 @@ export default function ShipmentDetailPanel({
   onReassignToAssigned?: () => void;
   onChangeAgent?: () => void;
   reassignBusy?: boolean;
+  /** Opens the confirm dialog — cancelling is terminal and irreversible,
+   *  unlike the two mutations above, so it is not fired directly. */
+  onCancelShipment?: () => void;
+  cancelBusy?: boolean;
 }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -42,6 +48,7 @@ export default function ShipmentDetailPanel({
   const meta = STATUS_META[shipment.status];
   const canChangeAgent = canReassignAgent(shipment.status);
   const canRestore = canRestoreToAssigned(shipment.status);
+  const canCancelShipment = canCancel(shipment.status);
   const attempts = shipment.attempts || [];
   const events = shipment.events || [];
 
@@ -133,6 +140,11 @@ export default function ShipmentDetailPanel({
           {canChangeAgent && (
             <button type="button" className="ow-btn" onClick={onChangeAgent}>
               <UserCog size={14} strokeWidth={2.1} /> Change rider
+            </button>
+          )}
+          {canCancelShipment && (
+            <button type="button" className="ow-btn danger" onClick={onCancelShipment} disabled={cancelBusy}>
+              <XCircle size={14} strokeWidth={2.1} /> Cancel shipment
             </button>
           )}
           {onClose && (

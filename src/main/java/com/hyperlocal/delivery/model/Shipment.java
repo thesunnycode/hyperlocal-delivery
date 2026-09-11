@@ -67,7 +67,7 @@ public class Shipment {
     @Enumerated(EnumType.STRING)
     @Column(
             nullable = false,
-            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED')"
+            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED','CANCELLED')"
     )
     private ShipmentStatus status = ShipmentStatus.ASSIGNED;
 

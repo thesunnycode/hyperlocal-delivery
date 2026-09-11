@@ -9,10 +9,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * <p>The declaration order matches the canonical forward progression of the
  * shipment state machine: {@code ASSIGNED → PICKED_UP → IN_TRANSIT →
  * OUT_FOR_DELIVERY → DELIVERED}, with {@code FAILED} and {@code RETURNED}
- * as terminal alternative outcomes. A shipment is auto-assigned and starts
- * life directly in {@code ASSIGNED} — there is no {@code CREATED} state.
- * Persisted as a MySQL {@code ENUM} column and mapped via
- * {@code @Enumerated(EnumType.STRING)}.
+ * as terminal alternative outcomes, and {@code CANCELLED} as a terminal
+ * outcome the owner can trigger directly from any non-terminal status. A
+ * shipment is auto-assigned and starts life directly in {@code ASSIGNED} —
+ * there is no {@code CREATED} state. Persisted as a MySQL {@code ENUM}
+ * column and mapped via {@code @Enumerated(EnumType.STRING)}.
  *
  * <p>Serializes to/from JSON as lowercase snake_case ({@code assigned},
  * {@code picked_up}, etc.) via {@link #getWireValue()} /
@@ -26,7 +27,8 @@ public enum ShipmentStatus {
     OUT_FOR_DELIVERY("out_for_delivery"),
     DELIVERED("delivered"),
     FAILED("failed"),
-    RETURNED("returned");
+    RETURNED("returned"),
+    CANCELLED("cancelled");
 
     private final String wireValue;
 

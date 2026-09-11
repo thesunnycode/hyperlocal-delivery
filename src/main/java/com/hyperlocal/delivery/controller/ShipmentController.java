@@ -22,6 +22,7 @@ import com.hyperlocal.delivery.dto.common.ApiSuccess;
 import com.hyperlocal.delivery.dto.common.ApiSuccessPage;
 import com.hyperlocal.delivery.dto.shipment.AdvanceRequest;
 import com.hyperlocal.delivery.dto.shipment.CreateShipmentRequest;
+import com.hyperlocal.delivery.dto.shipment.CancelShipmentRequest;
 import com.hyperlocal.delivery.dto.shipment.ReassignRequest;
 import com.hyperlocal.delivery.dto.shipment.ShipmentResponseDto;
 import com.hyperlocal.delivery.dto.shipment.ShipmentSummaryDto;
@@ -246,5 +247,23 @@ public class ShipmentController {
             @Valid @RequestBody ReassignRequest request) {
         return ResponseBuilder.success(
                 shipmentService.reassign(principal.getBusinessId(), principal.getUserId(), id, request));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @Operation(summary = "Owner cancels a shipment outright from any non-terminal status")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Shipment cancelled successfully"),
+        @ApiResponse(responseCode = "404", description = "Shipment not found"),
+        @ApiResponse(responseCode = "422",
+                description = "Shipment is already in a terminal status "
+                        + "(DELIVERED, RETURNED, or CANCELLED)")
+    })
+    public ApiSuccess<ShipmentResponseDto> cancel(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long id,
+            @Valid @RequestBody CancelShipmentRequest request) {
+        return ResponseBuilder.success(
+                shipmentService.cancel(principal.getBusinessId(), principal.getUserId(), id, request));
     }
 }

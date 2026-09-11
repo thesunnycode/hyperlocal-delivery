@@ -89,6 +89,9 @@
   --hl-returned-solid: #6d28d9;  --hl-returned-bg: #f0e9fe;
   --hl-returned-ink:   #6d28d9;  --hl-returned-line: #ddd0fb;
 
+  --hl-cancelled-solid: #55606e; --hl-cancelled-bg: #eef1f4;
+  --hl-cancelled-ink:   #55606e; --hl-cancelled-line: #d7dde3;
+
   /* ── Semantic (non-status) ──────────────────────────────────────────── */
   --hl-danger:      #c81e1e;   /* 5.74:1 with white                        */
   --hl-danger-deep: #8c1c16;
@@ -219,6 +222,9 @@
 
   --hl-returned-solid: #c4a5ff;  --hl-returned-bg: #1f1830;
   --hl-returned-ink:   #c4a5ff;  --hl-returned-line: #392c55;
+
+  --hl-cancelled-solid: #9aa7b6; --hl-cancelled-bg: #1c232c;
+  --hl-cancelled-ink:   #9aa7b6; --hl-cancelled-line: #2c3743;
 
   --hl-danger: #ff9189;   --hl-danger-deep: #ffb4ae;
   --hl-danger-bg: #2e1210; --hl-danger-line: #55211d; --hl-danger-ink: #ff9189;

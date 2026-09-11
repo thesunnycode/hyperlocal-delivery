@@ -54,7 +54,7 @@ public class ShipmentEvent {
     @Enumerated(EnumType.STRING)
     @Column(
             name = "from_status",
-            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED')"
+            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED','CANCELLED')"
     )
     private ShipmentStatus fromStatus;
 
@@ -62,7 +62,7 @@ public class ShipmentEvent {
     @Column(
             name = "to_status",
             nullable = false,
-            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED')"
+            columnDefinition = "ENUM('ASSIGNED','PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED','RETURNED','CANCELLED')"
     )
     private ShipmentStatus toStatus;
 

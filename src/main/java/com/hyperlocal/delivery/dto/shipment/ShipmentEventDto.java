@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.hyperlocal.delivery.model.ShipmentEvent;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * DTO for a single shipment status-transition event.
@@ -40,13 +41,14 @@ public record ShipmentEventDto(
         STATUS_LABELS.put(ShipmentStatus.DELIVERED, "Delivered");
         STATUS_LABELS.put(ShipmentStatus.FAILED, "Failed");
         STATUS_LABELS.put(ShipmentStatus.RETURNED, "Returned");
+        STATUS_LABELS.put(ShipmentStatus.CANCELLED, "Cancelled");
     }
 
     /**
      * Build from a shipment event entity.
      */
     public static ShipmentEventDto from(ShipmentEvent e) {
-        String iso = e.getCreatedAt() != null ? e.getCreatedAt().toString() : null;
+        String iso = TimeUtils.toIso(e.getCreatedAt());
         return new ShipmentEventDto(
                 e.getFromStatus(),
                 e.getToStatus(),

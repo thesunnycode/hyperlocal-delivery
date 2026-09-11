@@ -13,7 +13,8 @@ import type { AgentSummary, ShipmentStatus, ShipmentSummary } from '../../types/
 const STATUS_OPTIONS: ['all' | ShipmentStatus, string][] = [
   ['all', 'All statuses'], ['assigned', 'Assigned'], ['picked_up', 'Picked up'],
   ['in_transit', 'In transit'], ['out_for_delivery', 'Out for delivery'],
-  ['delivered', 'Delivered'], ['failed', 'Failed'], ['returned', 'Returned']
+  ['delivered', 'Delivered'], ['failed', 'Failed'], ['returned', 'Returned'],
+  ['cancelled', 'Cancelled']
 ];
 
 /**

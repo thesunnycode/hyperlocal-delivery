@@ -12,7 +12,8 @@ export const STATUSES: ShipmentStatus[] = [
   'out_for_delivery',
   'delivered',
   'failed',
-  'returned'
+  'returned',
+  'cancelled'
 ];
 
 /** How the hero and badge tint themselves for a given status. */
@@ -30,7 +31,8 @@ export type StatusIconName =
   | 'Navigation'
   | 'CheckCircle2'
   | 'AlertTriangle'
-  | 'Undo2';
+  | 'Undo2'
+  | 'XCircle';
 
 export type StatusMeta = {
   label: string;
@@ -51,7 +53,8 @@ export const STATUS_META: Record<ShipmentStatus, StatusMeta> = {
   out_for_delivery: { label: 'Out for delivery', icon: 'Navigation', step: 4, stateClass: 'live' },
   delivered: { label: 'Delivered', icon: 'CheckCircle2', step: 5, stateClass: 'terminal', systemTerminal: true },
   failed: { label: 'Failed', icon: 'AlertTriangle', step: 4, stateClass: 'exception', agentTerminal: true },
-  returned: { label: 'Returned', icon: 'Undo2', step: 5, stateClass: 'terminal', systemTerminal: true }
+  returned: { label: 'Returned', icon: 'Undo2', step: 5, stateClass: 'terminal', systemTerminal: true },
+  cancelled: { label: 'Cancelled', icon: 'XCircle', step: 5, stateClass: 'terminal', systemTerminal: true }
 };
 
 // The 5-segment progress strip used on the customer + agent status heroes.
@@ -93,15 +96,19 @@ export const FAILURE_REASONS: FailureReason[] = [
 ];
 
 export function isTerminal(status: ShipmentStatus): boolean {
-  return status === 'delivered' || status === 'returned';
+  return status === 'delivered' || status === 'returned' || status === 'cancelled';
 }
 
 // Owner mutation #1 — plain reassignment, legal on ANY non-terminal shipment
 // (not just Failed). Owner mutation #2 — the one status transition an owner
-// may perform: Failed back to Assigned.
+// may perform: Failed back to Assigned. Owner mutation #3 — cancel outright,
+// legal on the same set of statuses as reassignment.
 export function canReassignAgent(status: ShipmentStatus): boolean {
   return !isTerminal(status);
 }
 export function canRestoreToAssigned(status: ShipmentStatus): boolean {
   return status === 'failed';
+}
+export function canCancel(status: ShipmentStatus): boolean {
+  return !isTerminal(status);
 }

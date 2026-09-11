@@ -41,6 +41,21 @@ public final class TimeUtils {
     }
 
     /**
+     * Format a {@link LocalDateTime} as an ISO-8601 UTC string with a
+     * {@code Z} suffix (e.g. {@code 2024-01-15T10:30:00Z}).
+     *
+     * <p>Every {@code LocalDateTime} in this codebase represents a UTC
+     * instant (see class doc) but carries no timezone marker of its own, so
+     * {@link LocalDateTime#toString()} produces an offset-less string that
+     * browsers parse as local time instead of UTC. Route every
+     * entity-to-DTO timestamp conversion through here instead of calling
+     * {@code toString()} directly.
+     */
+    public static String toIso(LocalDateTime dateTime) {
+        return dateTime != null ? toIso(dateTime.toInstant(ZoneOffset.UTC)) : null;
+    }
+
+    /**
      * Today's date in UTC.
      */
     public static LocalDate today() {

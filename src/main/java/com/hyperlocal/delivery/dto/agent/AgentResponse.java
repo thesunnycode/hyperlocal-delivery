@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.dto.agent;
 
 import com.hyperlocal.delivery.model.User;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Full agent response DTO with optional delivery statistics.
@@ -31,8 +32,8 @@ public record AgentResponse(
                 openCount,
                 deliveredCount,
                 failedCount,
-                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null,
-                user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null
+                TimeUtils.toIso(user.getCreatedAt()),
+                TimeUtils.toIso(user.getUpdatedAt())
         );
     }
 

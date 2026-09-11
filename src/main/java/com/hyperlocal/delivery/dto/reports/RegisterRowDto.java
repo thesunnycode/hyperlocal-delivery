@@ -2,6 +2,7 @@ package com.hyperlocal.delivery.dto.reports;
 
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * One row of the admin register list, reshaped for {@code
@@ -32,8 +33,8 @@ public record RegisterRowDto(
                 s.getCustomerName(),
                 s.getDeliveryAddress(),
                 s.getAssignedAgent() != null ? s.getAssignedAgent().getFullName() : null,
-                s.getScheduledDeliveryAt() != null ? s.getScheduledDeliveryAt().toString() : null,
-                s.getDeliveredAt() != null ? s.getDeliveredAt().toString() : null
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getDeliveredAt())
         );
     }
 }

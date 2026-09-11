@@ -18,37 +18,13 @@
    The register is deliberately softer than agent.css: larger type, more air,
    fewer edges. Someone opens this once, from a link, to answer one question.
 
-   STALE, KEPT DELIBERATELY — READ styles/scopes.css FIRST: every `--tk-*`
-   value below is superseded by `scopes.css`, imported after this file, which
-   re-declares each one as a var() onto the shared `--hl-*` tokens (see its
-   header comment, and the same note at the top of auth.css). The blue brand
-   and serif display face below have not rendered since the 2026-09-08
-   redesign — the live brand is `--hl-brand-solid`, the live display face is
-   `--hl-display`. Kept for the two-file revert path scopes.css describes;
-   change scopes.css or tokens.css, not this block, to change what renders. */
+   Colour and font custom properties for this scope are declared in
+   scopes.css, imported after this file — the pre-redesign literal block
+   that used to live here (blue brand, serif display face, old status
+   palette) is deleted per REDESIGN-NOTES.md § "Follow-up" item 1; it was
+   overridden, not read. */
 
 .tk {
-  --tk-paper: #fbfaf8;
-  --tk-ink: #111827;
-  --tk-body: #374151;
-  --tk-muted: #5c6472;
-  --tk-line: #e6e7e1;
-  --tk-line-2: #d3d5cc;
-  --tk-brand: #1546a8;
-  --tk-brand-deep: #14418f;
-
-  --tk-assigned: #64748b;
-  --tk-picked_up: #0e7490;
-  --tk-in_transit: #3f6212;
-  --tk-out_for_delivery: #c2410c;
-  --tk-delivered: #15803d;
-  --tk-failed: #b91c1c;
-  --tk-returned: #7e22ce;
-
-  --tk-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --tk-display: 'Instrument Serif', Georgia, serif;
-  --tk-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-
   min-height: 100vh;
   background: var(--tk-paper);
   font-family: var(--tk-ui);
@@ -67,6 +43,7 @@
 .tk-s-delivered { --c: var(--tk-delivered); }
 .tk-s-failed { --c: var(--tk-failed); }
 .tk-s-returned { --c: var(--tk-returned); }
+.tk-s-cancelled { --c: var(--tk-cancelled); }
 
 /* ── sender: who this is from, answered before anything else ─── */
 .tk-sender { display: flex; align-items: center; gap: 12px; }

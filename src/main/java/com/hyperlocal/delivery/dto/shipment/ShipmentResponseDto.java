@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Full shipment detail response including events and delivery attempts.
@@ -53,14 +54,14 @@ public record ShipmentResponseDto(
                 s.getCustomerName(),
                 s.getCustomerPhone(),
                 s.getDeliveryAddress(),
-                s.getScheduledDeliveryAt() != null ? s.getScheduledDeliveryAt().toString() : null,
-                s.getDeliveredAt() != null ? s.getDeliveredAt().toString() : null,
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getDeliveredAt()),
                 agent != null ? agent.id() : null,
                 agent != null ? agent.fullName() : null,
                 eventDtos,
                 attemptDtos,
-                s.getCreatedAt() != null ? s.getCreatedAt().toString() : null,
-                s.getUpdatedAt() != null ? s.getUpdatedAt().toString() : null
+                TimeUtils.toIso(s.getCreatedAt()),
+                TimeUtils.toIso(s.getUpdatedAt())
         );
     }
 }

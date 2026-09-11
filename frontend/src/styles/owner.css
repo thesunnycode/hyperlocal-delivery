@@ -23,35 +23,14 @@
    #15803d measured 4.43 there and would have failed. */
 
 .ow {
-  --ow-sand: #eeefe9;
-  --ow-paper: #f7f8f4;
-  --ow-card: #fff;
-  --ow-ink: #111827;
-  --ow-body: #374151;
-  --ow-muted: #5c6472;
-  --ow-line: #e2e4dc;
-  --ow-line-2: #cfd2c8;
-  --ow-brand: #1546a8;
-  --ow-brand-deep: #14418f;
-  --ow-brand-soft: #e9eefa;
+  /* Colour and font custom properties for this scope (--ow-sand, --ow-ink,
+     --st-*, --ow-ui, etc.) are declared in scopes.css, imported after this
+     file — see that file's header for why the indirection exists. The
+     pre-redesign literal block that used to live here (old navy brand,
+     IBM Plex Sans, the old status palette) is deleted per REDESIGN-NOTES.md
+     § "Follow-up" item 1 — it was overridden, not read.
 
-  --st-assigned: #64748b;
-  --st-picked_up: #0e7490;
-  --st-in_transit: #3f6212;
-  --st-out_for_delivery: #c2410c;
-  --st-delivered: #15803d;
-  --st-failed: #b91c1c;
-  --st-returned: #7e22ce;
-
-  --ow-err: #b91c1c;
-  --ow-err-bg: #fdecea;
-  --ow-warn-bg: #fdf3d8;
-
-  --ow-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --ow-display: 'Instrument Serif', Georgia, serif;
-  --ow-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* ONE content measure for the whole console.
+     ONE content measure for the whole console.
      Measured at 1920 before this existed: the queue's resting pane used 45%
      of its width, the roster 63%, the account page 36%, and the register and
      both toolbars used 100% — five different answers on five pages, which is
@@ -86,24 +65,16 @@
 .ow :focus-visible { outline: 3px solid var(--ow-brand); outline-offset: 2px; border-radius: 5px; }
 
 /* ── shell ──────────────────────────────────────────────────── */
-.ow-app { display: grid; grid-template-columns: 216px 1fr; height: 100vh; }
-.ow-side { background: var(--ow-sand); border-right: 1px solid var(--ow-line);
-  display: flex; flex-direction: column; padding: 14px 10px; }
+/* .ow-app's grid and the old .ow-side (216px left rail) are gone — the shell
+   is a top bar now (see scopes.css § "The shell — sidebar to top bar" and
+   OwnerLayout.tsx). .ow-brand and .ow-who still render there, just in a
+   56px row instead of a column, so those two rules stay below. */
 .ow-brand { display: flex; align-items: center; gap: 9px; padding: 6px 8px 16px; }
 .ow-brand .mk { width: 26px; height: 26px; border-radius: 6px; background: var(--ow-brand);
   color: #fff; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: none; }
 .ow-brand b { font-size: 14px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.015em;
   display: block; line-height: 1.2; }
 .ow-brand > span > span { font-size: 11px; color: var(--ow-muted); }
-.ow-navlbl { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ow-muted); padding: 12px 8px 6px; }
-.ow-nav { display: flex; flex-direction: column; gap: 1px; }
-.ow-nav a { display: flex; align-items: center; gap: 10px; padding: 8px 9px; border-radius: 7px;
-  color: var(--ow-body); text-decoration: none; font-size: 13.5px; font-weight: 500; }
-.ow-nav a:hover { background: #e6e8e0; }
-.ow-nav a.active { background: var(--ow-card); color: var(--ow-ink); font-weight: 600;
-  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06); }
-.ow-side-foot { margin-top: auto; border-top: 1px solid var(--ow-line); padding-top: 10px; }
 .ow-who { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 7px;
   width: 100%; text-align: left; border: 0; background: none; cursor: pointer; }
 .ow-who:hover { background: #e6e8e0; }
@@ -194,9 +165,10 @@
    without becoming the only carrier of meaning. */
 .ow-row.st-failed { border-left-color: var(--st-failed); }
 .ow-row.st-returned { border-left-color: var(--st-returned); }
+.ow-row.st-cancelled { border-left-color: var(--st-cancelled); }
 .ow-row.st-delivered { border-left-color: var(--st-delivered); }
 .ow-row.st-out_for_delivery { border-left-color: var(--st-out_for_delivery); }
-.ow-row.on.st-failed, .ow-row.on.st-returned,
+.ow-row.on.st-failed, .ow-row.on.st-returned, .ow-row.on.st-cancelled,
 .ow-row.on.st-delivered, .ow-row.on.st-out_for_delivery { border-left-color: var(--ow-brand); }
 .ow-row-t { display: flex; justify-content: space-between; gap: 9px; align-items: center; }
 .ow-row-t b { font-size: 13.5px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.01em;
@@ -265,6 +237,7 @@
 .b-delivered { --c: var(--st-delivered); }
 .b-failed { --c: var(--st-failed); }
 .b-returned { --c: var(--st-returned); }
+.b-cancelled { --c: var(--st-cancelled); }
 /* #15803d measured 4.43:1 on this tint — below AA. #126b34 is 5.84. */
 .ow-pill { display: inline-flex; justify-content: center; padding: 3px 9px; border-radius: 100px; font-size: 11px;
   font-weight: 600; white-space: nowrap; }
@@ -411,7 +384,12 @@
 
 /* ── side sheet ─────────────────────────────────────────────── */
 .ow-scrim { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.42); z-index: 60; }
-.ow-sheet { position: fixed; top: 0; right: 0; bottom: 0; width: 440px; max-width: 92vw;
+/* height is intrinsic, capped at the viewport, not stretched to it — a
+   3-field form (add rider) used to force the same 900px panel as a long one
+   (agent detail), stranding its footer ~500px below the last field. Content
+   taller than the viewport still gets a scrollable body via .ow-sheet-b's
+   flex:1 + min-height:0 below. */
+.ow-sheet { position: fixed; top: 0; right: 0; max-height: 100vh; width: 440px; max-width: 92vw;
   background: var(--ow-card); z-index: 61; display: flex; flex-direction: column;
   animation: ow-slide 0.26s cubic-bezier(0.32, 0.72, 0, 1); }
 @keyframes ow-slide { from { transform: translateX(101%); } }
@@ -423,7 +401,7 @@
   background: var(--ow-card); display: grid; place-items: center; cursor: pointer;
   color: var(--ow-body); flex: none; }
 .ow-x:hover { background: var(--ow-sand); }
-.ow-sheet-b { flex: 1; overflow-y: auto; padding: 18px 22px; }
+.ow-sheet-b { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px; }
 .ow-f { margin-bottom: 16px; }
 .ow-f label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ow-ink);
   margin-bottom: 6px; }

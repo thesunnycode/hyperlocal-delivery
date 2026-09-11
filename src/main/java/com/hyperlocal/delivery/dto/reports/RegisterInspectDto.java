@@ -6,6 +6,7 @@ import com.hyperlocal.delivery.dto.shipment.DeliveryAttemptDto;
 import com.hyperlocal.delivery.dto.shipment.ShipmentEventDto;
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.ShipmentStatus;
+import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
  * Single-shipment inspect view for the admin register page's detail panel
@@ -47,9 +48,9 @@ public record RegisterInspectDto(
                 s.getCustomerName(),
                 s.getDeliveryAddress(),
                 s.getStatus(),
-                s.getCreatedAt() != null ? s.getCreatedAt().toString() : null,
-                s.getScheduledDeliveryAt() != null ? s.getScheduledDeliveryAt().toString() : null,
-                s.getDeliveredAt() != null ? s.getDeliveredAt().toString() : null,
+                TimeUtils.toIso(s.getCreatedAt()),
+                TimeUtils.toIso(s.getScheduledDeliveryAt()),
+                TimeUtils.toIso(s.getDeliveredAt()),
                 s.getAssignedAgent() != null ? s.getAssignedAgent().getFullName() : null,
                 events,
                 attempts

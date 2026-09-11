@@ -37,7 +37,8 @@ export type ShipmentStatus =
   | 'out_for_delivery'
   | 'delivered'
   | 'failed'
-  | 'returned';
+  | 'returned'
+  | 'cancelled';
 
 /**
  * `model/UserRole` — the Java constants are `BUSINESS_OWNER` and

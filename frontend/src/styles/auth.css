@@ -1,58 +1,40 @@
-/* Auth shell — the sign-in surface.
+/* ═══════════════════════════════════════════════════════════════════════
+   Authentication surface — scoped under `.auth`
 
-   Everything here is scoped under `.auth`.
+   Design system notes
+   ───────────────────
+   All colour tokens come from scopes.css, which re-maps the --auth-* names
+   below onto the shared --hl-* palette in tokens.css. Nothing in this file
+   uses a literal hex — every value goes through a var() so a single change
+   in tokens.css or scopes.css propagates everywhere.
 
-   Sources for the layout are recorded in docs/mockups/07-auth-v6.html.
+   --auth-sand        page / panel background
+   --auth-ink         primary text
+   --auth-body        secondary text
+   --auth-muted       tertiary text, placeholders
+   --auth-line        hairline border
+   --auth-line-2      control border
+   --auth-brand       primary green (fills, focus ring)
+   --auth-brand-deep  hover / pressed
+   --auth-brand-soft  tinted ring halo (3px)
+   --auth-panel       left-panel background (near-black)
+   --auth-red         error foreground
+   --auth-red-soft    error banner background
+   --auth-ui          Instrument Sans
+   --auth-display     Bricolage Grotesque
+   --auth-mono        JetBrains Mono
+   --auth-spd         base animation speed (1.1s)
 
-   STALE, KEPT DELIBERATELY — READ styles/scopes.css FIRST: the palette and
-   font values declared in the `.auth {}` block right below (and the wordmark
-   opacity a little further down) describe this screen as it looked BEFORE
-   the 2026-09-08 redesign — a blue brand (#1546a8), Instrument Serif, and a
-   system mono stack, none of which render today. scopes.css is imported
-   after this file and re-declares every `--auth-*` variable here as a var()
-   onto the shared `--hl-*` tokens (a green brand, Bricolage Grotesque,
-   JetBrains Mono); last-wins gives scopes.css's values, not these, to every
-   rule in this file. They are kept, unedited, only so the pairing of this
-   file with scopes.css stays a clean two-file `git revert` back to the old
-   look (see scopes.css's own header and REDESIGN-NOTES.md § "Follow-up",
-   which tracks deleting this block once that revert path is no longer
-   needed). Do not tune a color or font here expecting it to change what
-   renders — change scopes.css's `.auth {}` block, or tokens.css, instead. */
+   The stale literal-hex block that lived at the top of this file before the
+   2026-09 redesign is gone. scopes.css is the only source of those values;
+   they are preserved there for the two-file revert path.
+   ═══════════════════════════════════════════════════════════════════════ */
 
+/* ── One speed governs all animations ──────────────────────────────── */
+.auth { --auth-spd: 1.1s; }
+
+/* ── Root shell ─────────────────────────────────────────────────────── */
 .auth {
-  --auth-sand: #eeefe9;
-  --auth-ink: #111827;
-  --auth-body: #374151;
-  --auth-muted: #5c6472;
-  --auth-line: #d7d9d1;
-  --auth-line-2: #c3c6bc;
-
-  /* Superseded by scopes.css (see the note above) — this comment describes
-     the pre-redesign rule that is no longer live. #1546a8 carries white at
-     8.5:1. PostHog's #2f80fa was the first choice and only reaches 3.76:1
-     with white — below AA — so it is not used anywhere text sits on it. */
-  --auth-brand: #1546a8;
-  --auth-brand-deep: #14418f;
-  --auth-brand-soft: #e9eefa;
-  --auth-panel: #15306b;
-
-  /* The rider illustration carries its own palette on `.ri` — see
-     styles/rider.css. It renders on the customer tracking page too now, so it
-     could not keep reading tokens off this panel. */
-
-  --auth-red: #a52a1f;
-  --auth-red-soft: #fdeeec;
-
-  /* Also superseded by scopes.css — the live faces are Instrument Sans,
-     Bricolage Grotesque and JetBrains Mono, all declared in tokens.css. */
-  --auth-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --auth-display: 'Instrument Serif', Georgia, serif;
-  --auth-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* One speed drives every animation; the rest are integer multiples so
-     nothing drifts out of phase. */
-  --auth-spd: 1.1s;
-
   min-height: 100vh;
   background: var(--auth-sand);
   font-family: var(--auth-ui);
@@ -62,17 +44,25 @@
   flex-direction: column;
 }
 
-/* ── layout ─────────────────────────────────────────────────── */
-.auth-split { display: grid; grid-template-columns: 1fr; flex: 1; min-height: 0; }
-@media (min-width: 940px) {
-  /* No hero above it at this width, so the split is the whole page again. */
-  .auth-split { grid-template-columns: 1fr 1fr; min-height: 100vh; }
-}
-/* Past ~1280px keep an even 50/50 split. */
-@media (min-width: 1280px) {
-  .auth-split { grid-template-columns: 1fr 1fr; }
+/* ═══════════════════════════════════════════════════════════════════════
+   LAYOUT — split shell
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  flex: 1;
+  min-height: 0;
 }
 
+@media (min-width: 940px) {
+  .auth-split {
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+}
+
+/* ── Left panel (desktop only) ──────────────────────────────────────── */
 .auth-art {
   background: var(--auth-panel);
   display: none;
@@ -82,307 +72,861 @@
   position: relative;
   overflow: hidden;
 }
-@media (min-width: 940px) { .auth-art { display: flex; } }
-/* The illustration and the copy travel together and stay optically centred as
-   a pair, rather than the drawing floating alone in a very large panel. */
-.auth-art-inner { display: flex; flex-direction: column; gap: 34px;
-  width: 100%; max-width: 520px; }
-/* Sizing lives on `.ri` itself; the hero only overrides the crop. */
+
+@media (min-width: 940px) {
+  .auth-art { display: flex; }
+}
+
+.auth-art-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 480px;
+}
+
+/* Brand wordmark in the top-left corner of the dark panel */
+.auth-wordmark {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  font-family: var(--auth-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  /* scopes.css sets opacity:1 and explicit color #a4a7ae (7.41:1 on panel) */
+  color: #fff;
+  opacity: 0.58;
+}
+
+/* Marketing copy block */
 .auth-pitch h2 {
   margin: 0 0 12px;
-  font-family: var(--auth-display); font-weight: 400; font-size: 30px;
-  line-height: 1.12; letter-spacing: -0.015em; color: #fff;
-  text-wrap: balance; max-width: 17ch;
+  font-family: var(--auth-display);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.14;
+  letter-spacing: -0.022em;
+  color: #fff;
+  text-wrap: balance;
+  max-width: 18ch;
 }
+
 .auth-pitch p {
-  margin: 0; font-size: 14.5px; line-height: 1.6; max-width: 46ch;
-  /* Not pure white: the paragraph must sit under the headline, not beside it. */
-  color: rgba(255, 255, 255, 0.72);
-}
-@media (min-width: 1240px) {
-  .auth-art-inner { max-width: 560px; }
-  .auth-pitch h2 { font-size: 34px; }
-}
-/* Superseded by scopes.css: `.auth-wordmark, .auth-hero-wm { opacity: 1;
-   color: #a4a7ae; }` overrides the opacity and color below and is what
-   actually renders, at a measured 7.41:1 on the panel. The comment this one
-   replaces described the pre-redesign rule — 0.5 opacity white composited to
-   4.32:1, 0.58 to 5.28:1 — neither of which is live. */
-.auth-wordmark {
-  position: absolute; top: 28px; left: 32px;
-  font-family: var(--auth-mono); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.2em; text-transform: uppercase; color: #fff; opacity: 0.58;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+  max-width: 44ch;
+  color: rgba(255, 255, 255, 0.68);
 }
 
-/* Mobile hero — a tighter viewBox, not a squashed copy of the desktop scene.
-   The illustration scales with width (see .ri in rider.css), and width keeps
-   growing right up to the 940px cutoff while the viewport's height budget
-   does not — at 834x1000 (a common tablet-portrait size) that put the hero at
-   640px, 64% of the screen, and pushed the sign-in button and the footer link
-   below the fold. Capping the height and letting overflow:hidden crop the
-   bottom of the scene (the wheels, not the rider) keeps the form above the
-   fold at every width under 940px without touching the phone sizes, which
-   were already fine. */
-.auth-hero { background: var(--auth-panel); position: relative; padding: 16px 0 0; overflow: hidden; max-height: 320px; }
-/* 240px left the longer forms (register's 5 fields + strength meter) ~42px
-   short of fitting at 834x1000 — login had room to spare at 240, so this
-   only needed to come down a little further. */
-@media (min-width: 560px) { .auth-hero { max-height: 200px; } }
+@media (min-width: 1200px) {
+  .auth-art-inner { max-width: 520px; }
+  .auth-pitch h2  { font-size: 30px; }
+}
+
+/* ── Mobile hero strip (hidden at desktop) ──────────────────────────── */
+.auth-hero {
+  background: var(--auth-panel);
+  position: relative;
+  padding: 16px 0 0;
+  overflow: hidden;
+  /* Cap height so a tall phone doesn't hand half its screen to the drawing */
+  max-height: 300px;
+}
+
+@media (min-width: 480px) { .auth-hero { max-height: 200px; } }
 @media (min-width: 940px) { .auth-hero { display: none; } }
+
 .auth-hero .ri { display: block; max-width: none; }
+
 .auth-hero-wm {
-  position: absolute; top: 16px; left: 20px;
-  font-family: var(--auth-mono); font-size: 9.5px; font-weight: 700;
-  letter-spacing: 0.2em; text-transform: uppercase; color: #fff; opacity: 0.62;
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  font-family: var(--auth-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.62;
 }
 
-/* The white sheet lifts over the hero on mobile. */
+/* ── Right panel — form column ──────────────────────────────────────── */
+
+/* Mobile: white sheet lifts over the hero */
 .auth-form-col {
   background: #fff;
-  padding: 24px 22px 40px;
-  display: flex; flex-direction: column;
-  border-radius: 22px 22px 0 0;
-  margin-top: -22px;
-  position: relative; z-index: 3;
+  padding: 28px 22px 48px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px 20px 0 0;
+  margin-top: -20px;
+  position: relative;
+  z-index: 3;
 }
+
+/* Desktop: soft green-tinted background, card floats in the center.
+   `safe center`: centers the card on tall viewports, but falls back to
+   top-aligned (scrollable) once content is taller than the column instead
+   of clipping the top of the card off-screen — the flexbox "safe" keyword
+   exists exactly for this. Older browsers that don't parse `safe center`
+   drop the declaration and keep the initial flex-start, which is the same
+   top-aligned fallback, so this degrades safely. */
 @media (min-width: 940px) {
-  .auth-form-col { border-radius: 0; margin-top: 0; padding: 0; justify-content: flex-start; background: transparent; }
+  .auth-form-col {
+    background: linear-gradient(160deg, #edf5f1 0%, #f3f8f5 50%, #eaf2ee 100%);
+    border-radius: 0;
+    margin-top: 0;
+    padding: 40px 0;
+    justify-content: safe center;
+    align-items: center;
+    overflow-y: auto;
+  }
 }
-.auth-logo { display: none; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--auth-ink); margin-bottom: 22px; }
-@media (min-width: 940px) { .auth-logo { display: flex; } }
-.auth-logo-mark {
-  width: 26px; height: 26px; border-radius: 5px; background: var(--auth-brand);
-  color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700;
-}
-.auth-form-wrap { width: 100%; max-width: 392px; padding: 10px 0 0; }
-/* 44px here plus the tallest form (register, five fields) put the page 54px
-   over a 1440x900 laptop — a scrollbar for a footer link. 28px clears it. */
-/* 28px here plus the column's own 44px bottom padding pushed a five-field
-   signup 22px past a 900px laptop — not enough to hide the button, enough to
-   put a scrollbar on a first-run screen. */
-/* Top-align the form content so step 2 (sparse: h1 + lede + OTP row) does not
-   leave a large blank void above the step indicator. Slack accumulates at the
-   bottom rather than being split equally. Step 1 (5 fields) is tall enough
-   that the difference is invisible there. */
-@media (min-width: 940px) { .auth-form-wrap { margin: auto; padding: 18px 0; } }
-/* ── type ───────────────────────────────────────────────────── */
-/* No forced <br> in the markup. Headings ranged from "Welcome back" to
-   "Create your business account", and a hard break sized for the longest one
-   split the shortest into two lopsided lines. `text-wrap: balance` lets the
-   browser break only when it needs to, and evenly when it does; the max-width
-   keeps a long heading from running the full column. */
-.auth h1 {
-  font-family: var(--auth-display); font-weight: 400; font-size: 30px;
-  line-height: 1.05; letter-spacing: -0.016em; color: var(--auth-ink); margin: 0;
-  text-wrap: balance; max-width: 15ch;
-}
-@media (min-width: 940px) { .auth h1 { font-size: 34px; } }
-.auth h1 em { font-style: italic; }
-.auth-lede { margin: 9px 0 0; font-size: 14.5px; line-height: 1.5; }
-/* Email address shown inline in the OTP lede ("Sent to you@…") should read
-   as content, not as a label. --auth-ink over the lede's inherited --auth-body
-   gives it just enough contrast to stand out without a style= prop. */
-.auth-lede b { color: var(--auth-ink); }
 
-/* ── fields ─────────────────────────────────────────────────── */
-.auth form { margin-top: 18px; }
-/* 15px x 5 fields plus a hint and a CTA overflowed a 1440x900 laptop, so the
-   submit button on the signup form sat below the fold. 12px here and a
-   slightly shorter control brings it onto one screen without crowding. */
-.auth-field { margin-bottom: 13px; }
-.auth-field label { display: block; font-size: 13px; font-weight: 600; color: var(--auth-ink); margin-bottom: 6px; }
-.auth-input-wrap { position: relative; display: flex; align-items: center; }
-.auth-field input {
-  width: 100%; height: 46px; padding: 0 15px;
-  font: 400 15px/1 var(--auth-ui); color: var(--auth-ink);
-  background: #fff; border: 1px solid var(--auth-line-2); border-radius: 8px;
-  transition: border-color 0.14s, box-shadow 0.14s;
-}
-/* #949a92 measured 2.83:1 on white — below AA for body text. #6f766d measures
-   4.52:1 and still reads as clearly secondary relative to the filled value. */
-.auth-field input::placeholder { color: #6f766d; }
-.auth-field input:focus {
-  outline: 0; border-color: var(--auth-brand); box-shadow: 0 0 0 3px var(--auth-brand-soft);
-}
-.auth-reveal {
-  position: absolute; right: 7px; height: 40px; padding: 0 12px; border: 0;
-  background: none; border-radius: 5px; font: 600 13px/1 var(--auth-ui);
-  color: var(--auth-muted); cursor: pointer;
-}
-.auth-reveal:hover { background: var(--auth-sand); color: var(--auth-ink); }
-.auth-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-/* A label inside .auth-label-row already gets spacing from the row; the
-   field-level margin-bottom must not double it. */
-.auth-label-row label { margin: 0; }
-/* Padding, not a taller line-height: at 13px/20px the link previously measured
-   a 20px-tall tap target on the mobile breakpoint, well under the 44px a
-   thumb needs. It sits alone in this row rather than inline in a sentence, so
-   the "link in a block of text" exception to that guidance does not apply. */
-.auth-label-row a {
-  font-size: 13px; font-weight: 500; text-decoration: none; color: var(--auth-brand-deep);
-  padding: 15px 0; line-height: 1;
-}
-.auth-label-row a:hover { text-decoration: underline; }
-
-.auth-cta {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; height: 48px; background: var(--auth-brand); color: #fff;
-  border: 1px solid var(--auth-brand); border-radius: 8px;
-  font: 600 15px/1 var(--auth-ui); cursor: pointer;
-  transition: background 0.14s; margin-top: 6px;
-}
-.auth-cta:hover:not(:disabled) { background: var(--auth-brand-deep); }
-/* Explicit disabled colours rather than `opacity: .62`. Blanket opacity dims
-   the label and the button background together: white on the dimmed brand blue
-   measured 2.15:1, which is invisible rather than merely quiet.
-   These two values together measure 4.60:1 (muted ink on sand). */
-.auth-cta:disabled { background: var(--auth-sand); border-color: var(--auth-line-2); color: var(--auth-muted); cursor: default; }
-
-.auth-foot { margin-top: 22px; font-size: 13.5px; color: var(--auth-muted); line-height: 1.5; }
-.auth-foot a { font-weight: 600; text-decoration: none; color: var(--auth-brand-deep); }
-.auth-foot a:hover { text-decoration: underline; }
-
-.auth :focus-visible { outline: 3px solid var(--auth-brand); outline-offset: 2px; border-radius: 4px; }
-
-/* Error banner when it appears BEFORE the step indicator (ForgotPasswordPage
-   top-level error). The default .auth-msg has margin-top:18px which creates
-   a gap above a banner that has nothing above it. */
-.auth-msg.auth-msg-top { margin-top: 0; margin-bottom: 18px; }
-
-/* ── form card ──────────────────────────────────────────────── */
+/* ── Auth card (desktop only wrapper) ───────────────────────────────── */
 .auth-card {
   width: 100%;
 }
+
 @media (min-width: 940px) {
-  .auth-form-col {
-    background: linear-gradient(135deg, #e8f0ed 0%, #f0f4f2 40%, #e4eee9 100%);
-    overflow-y: auto;
-    padding: 24px;
-    align-items: center;
-  }
   .auth-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.07);
     box-shadow:
-      0 4px 6px rgba(0, 0, 0, 0.04),
-      0 12px 40px rgba(0, 0, 0, 0.10),
-      0 2px 0 rgba(255, 255, 255, 0.8) inset;
-    padding: 28px 36px 32px;
+      0 1px 3px rgba(15, 23, 42, 0.06),
+      0 8px 24px rgba(15, 23, 42, 0.08),
+      0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    padding: 36px 40px 40px;
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
+    /* Vertically center on tall viewports, scroll naturally on short ones */
     margin: auto;
   }
 }
 
-/* ── rejected ───────────────────────────────────────────────── */
-.auth-msg {
-  display: flex; gap: 10px; padding: 13px 14px; border-radius: 8px; margin-top: 18px;
-  font-size: 13.5px; line-height: 1.47; background: var(--auth-red-soft); color: var(--auth-red);
-}
-.auth-msg svg { flex: none; margin-top: 2px; }
-.auth-msg b { display: block; font-weight: 600; margin-bottom: 2px; }
-.auth-msg span { color: #6f3630; }
-
-/* ── handoff ────────────────────────────────────────────────── */
-.auth-route { border: 1px solid var(--auth-line); border-radius: 10px; overflow: hidden; margin-top: 22px; }
-.auth-route-who { display: flex; gap: 12px; align-items: center; padding: 15px; background: var(--auth-sand); }
-.auth-avatar {
-  width: 42px; height: 42px; border-radius: 50%; background: var(--auth-brand);
-  color: #fff; flex: none; display: grid; place-items: center; font-weight: 700; font-size: 15px;
-}
-.auth-route-who b { display: block; font-size: 15px; color: var(--auth-ink); font-weight: 600; }
-.auth-route-who span { display: block; font-size: 13px; color: var(--auth-muted); }
-.auth-rolepill {
-  display: inline-flex; gap: 6px; padding: 3px 9px; border-radius: 9999px;
-  background: var(--auth-brand-soft); color: var(--auth-brand-deep);
-  font-family: var(--auth-mono); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.11em; text-transform: uppercase; margin-top: 5px;
-}
-.auth-bar { height: 3px; background: var(--auth-line); }
-.auth-bar i { display: block; height: 100%; width: 0; background: var(--auth-brand); animation: auth-fill 1.1s ease-out forwards; }
-
-/* ── animation ──────────────────────────────────────────────── */
-@keyframes auth-fill { to { width: 100%; } }
-@keyframes auth-pop { from { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.06); } to { transform: scale(1); opacity: 1; } }
-@keyframes auth-rise { from { transform: translateY(7px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.auth-pop { animation: auth-pop 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) both; }
-.auth-rise { animation: auth-rise 0.45s ease-out both; }
-
-/* Delay helpers used by AuthHandoff — kept here so all animation params live
-   in one place rather than scattered across inline styles in the component. */
-.auth-d1 { animation-delay: .12s; }
-.auth-d2 { animation-delay: .20s; }
-.auth-d3 { animation-delay: .34s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .auth-bar i { animation: none; width: 100%; }
-  .auth-pop, .auth-rise { animation: none; opacity: 1; transform: none; }
+/* ── Logo — appears inside the card on desktop ──────────────────────── */
+.auth-logo {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--auth-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.018em;
+  color: var(--auth-ink);
+  margin-bottom: 24px;
+  text-decoration: none;
 }
 
-/* ── multi-step surfaces: register + password reset ─────────── */
-/* Segments make the length of the flow legible before the label is read. */
-.auth-steps { display: flex; align-items: center; gap: 11px; margin: 0 0 14px; }
-.auth-steps span {
-  font-family: var(--auth-mono); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--auth-muted);
+@media (min-width: 940px) {
+  .auth-logo { display: flex; }
 }
-.auth-steps-bar { display: flex; gap: 4px; }
+
+.auth-logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--auth-brand);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-family: var(--auth-display);
+  font-size: 14px;
+  font-weight: 700;
+  flex: none;
+}
+
+/* ── Form wrap — constrains width on mobile ─────────────────────────── */
+.auth-form-wrap {
+  width: 100%;
+  max-width: 400px;
+  /* Keep the form top-aligned so sparse steps (OTP box only) don't float
+     weirdly when the card is tall. Bottom slack is fine. */
+}
+
+@media (min-width: 940px) {
+  /* The card IS the wrap at desktop; no extra constraint needed */
+  .auth-form-wrap {
+    max-width: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth h1 {
+  font-family: var(--auth-display);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  color: var(--auth-ink);
+  margin: 0;
+  text-wrap: balance;
+  max-width: 16ch;
+}
+
+@media (min-width: 940px) {
+  .auth h1 { font-size: 30px; }
+}
+
+/* Italic accent on key words: "Welcome back", "business account", etc. */
+.auth h1 em {
+  font-style: italic;
+  font-weight: 700;
+}
+
+.auth-lede {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--auth-body);
+}
+
+/* Bold email address inline in "Sent to you@…" */
+.auth-lede b {
+  color: var(--auth-ink);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STEP INDICATOR
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+/* Segment bar — progressbar role lives on this element */
+.auth-steps-bar {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
 .auth-steps-bar i {
-  width: 26px; height: 3px; border-radius: 2px; background: var(--auth-line-2);
-  transition: background 0.2s;
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--auth-line-2);
+  transition: background 0.22s ease;
+  display: block;
 }
-.auth-steps-bar i.on { background: var(--auth-brand); }
-.auth-hint { margin: 7px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--auth-muted); }
-/* The "You will sign in with <email>" hint on the invite/setup path sits
-   between the lede and the password field; it needs more separation than the
-   default 7px top margin to avoid crowding either neighbour. */
-.auth-hint-id { margin: 10px 0 18px; }
 
-/* A button that has to read as a link — used for "Wrong address?" inside a
-   sentence, where an anchor would imply navigation it does not do. */
-.auth-linkish {
-  border: 0; background: none; padding: 0; cursor: pointer;
-  font: 500 inherit/inherit var(--auth-ui); font-size: inherit;
-  color: var(--auth-brand-deep); text-decoration: underline;
+.auth-steps-bar i.on {
+  background: var(--auth-brand);
 }
+
+/* Text label beside the segments */
+.auth-steps-label {
+  font-family: var(--auth-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--auth-muted);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FORM CONTROLS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth form { margin-top: 20px; }
+
+.auth-field { margin-bottom: 14px; }
+
+.auth-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--auth-ink);
+  margin-bottom: 6px;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Text inputs ────────────────────────────────────────────────────── */
+.auth-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  font: 400 15px/1 var(--auth-ui);
+  color: var(--auth-ink);
+  background: #fff;
+  border: 1.5px solid var(--auth-line-2);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  /* Ensure password field doesn't clip the Show/Hide button */
+}
+
+/* Password fields have extra right padding for the Show/Hide button */
+.auth-field input[type='password'],
+.auth-field input[type='text'].auth-pw-visible {
+  padding-right: 68px;
+}
+
+/* Placeholder — must be clearly secondary, not competing with labels */
+/* scopes.css sets this to var(--hl-n600) = #5e6a7a at 5.5:1 */
+.auth-field input::placeholder { color: var(--auth-muted); }
+
+/* Hover */
+.auth-field input:hover:not(:focus):not(:disabled) {
+  border-color: var(--auth-line-2);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04);
+}
+
+/* Focus */
+.auth-field input:focus {
+  border-color: var(--auth-brand);
+  box-shadow: 0 0 0 3px var(--auth-brand-soft);
+}
+
+/* Error state on input */
+.auth-field.has-error input {
+  border-color: var(--auth-red);
+}
+
+.auth-field.has-error input:focus {
+  border-color: var(--auth-red);
+  box-shadow: 0 0 0 3px rgba(200, 30, 30, 0.12);
+}
+
+/* Disabled */
+.auth-field input:disabled {
+  background: var(--auth-sand);
+  color: var(--auth-muted);
+  cursor: not-allowed;
+}
+
+/* ── Inline field error message ─────────────────────────────────────── */
+.auth-field-err {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--auth-red);
+  line-height: 1.4;
+}
+
+/* ── Password Show/Hide toggle ──────────────────────────────────────── */
+.auth-reveal {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100%;
+  padding: 0 14px;
+  border: 0;
+  background: none;
+  border-radius: 0 8px 8px 0;
+  font: 600 13px/1 var(--auth-ui);
+  color: var(--auth-muted);
+  cursor: pointer;
+  /* Accessible tap target */
+  min-width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.14s ease,
+    background 0.14s ease;
+}
+
+.auth-reveal:hover {
+  color: var(--auth-ink);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.auth-reveal:focus-visible {
+  outline: 2px solid var(--auth-brand);
+  outline-offset: -2px;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ── Label row (label + "Forgot password?" side by side) ────────────── */
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.auth-label-row label { margin: 0; }
+
+.auth-label-row a {
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--auth-brand-deep);
+  /* Large enough tap target without affecting layout */
+  padding: 12px 0 12px 8px;
+  line-height: 1;
+}
+
+.auth-label-row a:hover { text-decoration: underline; }
+
+/* ── Caps Lock warning ──────────────────────────────────────────────── */
+.auth-caps {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--auth-muted);
+  line-height: 1.4;
+}
+
+.auth-caps svg { flex: none; color: var(--auth-muted); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CTA BUTTON
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 46px;
+  background: var(--auth-brand);
+  color: #fff;
+  border: 1.5px solid var(--auth-brand);
+  border-radius: 8px;
+  font: 600 14.5px/1 var(--auth-ui);
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 8px;
+  /* scopes.css adds transition */
+}
+
+.auth-cta:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--auth-brand-deep);
+  border-color: var(--auth-brand-deep);
+  color: #fff;
+}
+
+.auth-cta:focus-visible {
+  outline: 2px solid var(--auth-brand);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Disabled — explicit colours, never opacity (fails contrast when dimmed) */
+.auth-cta:disabled,
+.auth-cta[aria-disabled='true'] {
+  background: var(--auth-sand);
+  border-color: var(--auth-line-2);
+  color: var(--auth-muted);
+  cursor: default;
+}
+
+/* ── Spinner inside the button ──────────────────────────────────────── */
+.auth-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: auth-spin 0.7s linear infinite;
+  flex: none;
+}
+
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FOOTER LINK
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-foot {
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: var(--auth-muted);
+  line-height: 1.5;
+}
+
+.auth-foot a {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--auth-brand-deep);
+}
+
+.auth-foot a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ERROR / STATUS BANNERS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-msg {
+  display: flex;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  background: var(--auth-red-soft);
+  color: var(--auth-red);
+  border: 1px solid rgba(200, 30, 30, 0.14);
+}
+
+.auth-msg svg { flex: none; margin-top: 1px; }
+.auth-msg b { display: block; font-weight: 600; margin-bottom: 2px; }
+/* scopes.css sets this to var(--hl-danger-ink) */
+.auth-msg span { color: var(--auth-red); }
+
+/* When the banner appears before any step indicator (ForgotPasswordPage
+   top-level error), default margin-top would create an orphaned gap */
+.auth-msg.auth-msg-top {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* ── Inline link-style button inside an error banner ────────────────── */
+.auth-linkish {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: 500 inherit/inherit var(--auth-ui);
+  font-size: inherit;
+  color: var(--auth-brand-deep);
+  text-decoration: underline;
+}
+
 .auth-linkish:hover { color: var(--auth-brand); }
 
-.auth-otp { margin-top: 22px; }
-/* OtpInput DOM structure — three wrapper classes so the component carries no
-   inline styles and auth.css owns the full OTP layout. */
-.auth-otp-wrap { display: flex; flex-direction: column; gap: 16px; }
-.auth-otp-group { display: flex; gap: 8px; justify-content: flex-start; }
-.auth-otp-count {
-  font: 600 13px/1 var(--auth-ui); min-height: 13px;
-  /* colour is applied by .expired / default state in the component via a
-     class swap rather than an inline style; the defaults sit here. */
+.auth-linkish:focus-visible {
+  outline: 2px solid var(--auth-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HELPER TEXT & HINTS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-hint {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
   color: var(--auth-muted);
 }
-.auth-otp-count.expired { color: var(--auth-red); }
-.auth-otp-box {
-  flex: 1; min-width: 0; max-width: 60px; height: 58px;
-  text-align: center; font: 700 22px/1 var(--auth-mono);
-  color: var(--auth-ink); caret-color: var(--auth-brand);
-  background: #fff; border: 1px solid var(--auth-line-2); border-radius: 8px;
-  /* outline:0 defers to the :focus-visible rule below; the box-shadow ring
-     replaces the default outline so they do not stack. */
-  outline: 0; transition: border-color 0.14s, box-shadow 0.14s;
-}
-/* :focus-visible, not :focus — mouse clicks must not show the ring.
-   Every other input in this scope follows the same pattern. */
-.auth-otp-box:focus-visible { border-color: var(--auth-brand); box-shadow: 0 0 0 3px var(--auth-brand-soft); }
-.auth-otp-box:disabled { background: var(--auth-sand); color: var(--auth-muted); }
 
-.auth-resend { margin-top: 14px; }
-/* ResendCodeButton used to ship the app-wide .btn styles, which this rule then
-   had to undo declaration by declaration. It owns its own class now. */
-.auth-resend-btn {
-  background: none; border: 1px solid var(--auth-line-2); color: var(--auth-ink);
-  border-radius: 8px; height: 44px; padding: 0 16px; cursor: pointer;
-  font: 600 13.5px/1 var(--auth-ui); display: inline-flex; align-items: center; gap: 8px;
+/* "You will sign in with <email>" on invite path — needs more air above */
+.auth-hint-id {
+  margin: 10px 0 16px;
 }
-.auth-resend-btn:disabled { color: var(--auth-muted); border-color: var(--auth-line); cursor: default; }
-.auth-resend-btn:not(:disabled):hover { background: var(--auth-sand); }
+
+/* "Check spam…" note below OTP resend button */
+.auth-spam {
+  margin-top: 14px;
+  font-size: 12.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PASSWORD STRENGTH METER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  min-height: 16px;
+}
+
+.auth-meter-bars {
+  display: flex;
+  gap: 3px;
+  flex: none;
+}
+
+.auth-meter-bar {
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--auth-line-2);
+  transition: background 0.2s ease;
+}
+
+/* Strength levels: 1=weak, 2=fair, 3=good, 4=strong */
+.auth-meter[data-score='1'] .auth-meter-bar:nth-child(-n+1) { background: var(--auth-red); }
+.auth-meter[data-score='2'] .auth-meter-bar:nth-child(-n+2) { background: #d97706; }
+.auth-meter[data-score='3'] .auth-meter-bar:nth-child(-n+3) { background: #059669; }
+.auth-meter[data-score='4'] .auth-meter-bar:nth-child(-n+4) { background: var(--auth-brand); }
+
+.auth-meter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--auth-muted);
+  transition: color 0.2s ease;
+}
+
+.auth-meter[data-score='1'] .auth-meter-label { color: var(--auth-red); }
+.auth-meter[data-score='2'] .auth-meter-label { color: #d97706; }
+.auth-meter[data-score='3'] .auth-meter-label { color: #059669; }
+.auth-meter[data-score='4'] .auth-meter-label { color: var(--auth-brand); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   OTP INPUT
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-otp { margin-top: 20px; }
+
+.auth-otp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-otp-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* Individual digit boxes */
+.auth-otp-box {
+  flex: 1;
+  min-width: 0;
+  /* Cap size so they don't get enormous on wide screens */
+  max-width: 56px;
+  height: 56px;
+  text-align: center;
+  font: 700 22px/1 var(--auth-mono);
+  color: var(--auth-ink);
+  caret-color: var(--auth-brand);
+  background: #fff;
+  border: 1.5px solid var(--auth-line-2);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.auth-otp-box:focus-visible {
+  border-color: var(--auth-brand);
+  box-shadow: 0 0 0 3px var(--auth-brand-soft);
+}
+
+.auth-otp-box:disabled {
+  background: var(--auth-sand);
+  color: var(--auth-muted);
+}
+
+/* Countdown timer — only shown when ≤60s remain */
+.auth-otp-count {
+  font: 600 12.5px/1 var(--auth-ui);
+  min-height: 14px;
+  color: var(--auth-muted);
+}
+
+.auth-otp-count.expired { color: var(--auth-red); }
+
+/* ── Resend button ──────────────────────────────────────────────────── */
+.auth-resend { margin-top: 12px; }
+
+.auth-resend-btn {
+  background: none;
+  border: 1.5px solid var(--auth-line-2);
+  color: var(--auth-ink);
+  border-radius: 8px;
+  height: 42px;
+  padding: 0 16px;
+  cursor: pointer;
+  font: 600 13px/1 var(--auth-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+
+.auth-resend-btn:disabled {
+  color: var(--auth-muted);
+  border-color: var(--auth-line);
+  cursor: default;
+}
+
+.auth-resend-btn:not(:disabled):hover {
+  background: var(--auth-sand);
+  border-color: var(--auth-line-2);
+}
+
+.auth-resend-btn:focus-visible {
+  outline: 2px solid var(--auth-brand);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   AUTH HANDOFF CARD (sign-in transition)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.auth-route {
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.auth-route-who {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: var(--auth-sand);
+}
+
+.auth-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--auth-brand);
+  color: #fff;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: var(--auth-display);
+}
+
+.auth-route-who b {
+  display: block;
+  font-size: 14.5px;
+  color: var(--auth-ink);
+  font-weight: 600;
+}
+
+.auth-route-who span {
+  display: block;
+  font-size: 12.5px;
+  color: var(--auth-muted);
+}
+
+.auth-rolepill {
+  display: inline-flex;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--auth-brand-soft);
+  color: var(--auth-brand-deep);
+  font-family: var(--auth-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+/* Progress bar at the bottom of the handoff card */
+.auth-bar {
+  height: 3px;
+  background: var(--auth-line);
+}
+
+.auth-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--auth-brand);
+  animation: auth-fill var(--auth-spd) ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes auth-fill { to { width: 100%; } }
+
+@keyframes auth-pop {
+  from { transform: scale(0.62); opacity: 0; }
+  60%  { transform: scale(1.05); }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes auth-rise {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.auth-pop  { animation: auth-pop  0.46s cubic-bezier(0.34, 1.4, 0.5, 1) both; }
+.auth-rise { animation: auth-rise 0.40s ease-out both; }
+
+/* Staggered delay helpers for AuthHandoff */
+.auth-d1 { animation-delay: 0.11s; }
+.auth-d2 { animation-delay: 0.20s; }
+.auth-d3 { animation-delay: 0.33s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-bar i    { animation: none; width: 100%; }
+  .auth-pop,
+  .auth-rise     { animation: none; opacity: 1; transform: none; }
+  .auth-spinner  { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FOCUS — global within .auth scope
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Applied to elements that don't have their own :focus-visible rule above.
+   The per-element rules take precedence via specificity. */
+.auth :focus-visible {
+  outline: 2px solid var(--auth-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile-specific adjustments
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  /* Inputs already 46px; increase touch targets for interactive controls */
+  .auth-reveal    { min-height: 44px; min-width: 44px; }
+  .auth-resend-btn { height: 44px; }
+
+  /* OTP boxes: slightly taller on very small screens */
+  .auth-otp-box { height: 52px; }
+
+  /* Card padding on narrow mobiles */
+  .auth-form-col { padding: 24px 18px 40px; }
+}
+
+@media (max-width: 360px) {
+  /* Smallest phones: reduce OTP box max-width so they all fit */
+  .auth-otp-box { max-width: 44px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DONE STATE (Forgot password / Agent setup final screen)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* The "Go to sign in" link in step=done renders as a full-width button.
+   .auth-cta already covers this — just need the display:flex for the Link */
+a.auth-cta {
+  display: flex;
+  text-decoration: none;
+}

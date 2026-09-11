@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hyperlocal.delivery.dto.shipment.CancelShipmentRequest;
 import com.hyperlocal.delivery.dto.shipment.CreateShipmentRequest;
 import com.hyperlocal.delivery.dto.shipment.ReassignRequest;
 import com.hyperlocal.delivery.dto.shipment.ShipmentResponseDto;
@@ -52,6 +53,7 @@ public class ShipmentService {
     private final TrackingTokenGenerator trackingTokenGenerator;
 
     private static final Set<ShipmentStatus> NON_TERMINAL = ShipmentStatusSets.NON_TERMINAL_FOR_REASSIGNMENT;
+    private static final Set<ShipmentStatus> CANCELLABLE = ShipmentStatusSets.CANCELLABLE;
 
     /**
      * Create a new shipment with auto-assignment to the least-loaded agent.
@@ -304,6 +306,43 @@ public class ShipmentService {
                         .changedBy(userRepository.getReferenceById(actorUserId))
                         .notes(req.notes() != null ? req.notes() : "Reassigned to agent: " + newAgent.getFullName())
                         .build();
+        shipmentEventRepository.save(event);
+
+        Shipment loaded = shipmentRepository.findWithDetailById(shipment.getId())
+                .orElse(shipment);
+        return ShipmentResponseDto.from(loaded);
+    }
+
+    /**
+     * The owner calls off a shipment outright. Available from the same
+     * non-terminal statuses as {@link #reassign} — once CANCELLED, the
+     * shipment is terminal and can never be reassigned or delivered.
+     */
+    @Transactional
+    public ShipmentResponseDto cancel(Long businessId, Long actorUserId, Long shipmentId, CancelShipmentRequest req) {
+        // Same locking rationale as reassign(): prevent a concurrent
+        // advance()/recordInternal() from racing with this cancellation.
+        Shipment shipment = shipmentRepository.lockById(shipmentId)
+                .orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
+        if (!shipment.getBusiness().getId().equals(businessId)) {
+            throw new ShipmentNotFoundException(shipmentId);
+        }
+
+        ShipmentStatus currentStatus = shipment.getStatus();
+        if (!CANCELLABLE.contains(currentStatus)) {
+            throw new InvalidStateTransitionException(currentStatus, ShipmentStatus.CANCELLED);
+        }
+
+        shipment.setStatus(ShipmentStatus.CANCELLED);
+        shipment = shipmentRepository.save(shipment);
+
+        ShipmentEvent event = ShipmentEvent.builder()
+                .shipment(shipment)
+                .fromStatus(currentStatus)
+                .toStatus(ShipmentStatus.CANCELLED)
+                .changedBy(userRepository.getReferenceById(actorUserId))
+                .notes(req.notes())
+                .build();
         shipmentEventRepository.save(event);
 
         Shipment loaded = shipmentRepository.findWithDetailById(shipment.getId())

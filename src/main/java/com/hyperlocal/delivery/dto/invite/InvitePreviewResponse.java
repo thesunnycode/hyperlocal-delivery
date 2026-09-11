@@ -1,7 +1,5 @@
 package com.hyperlocal.delivery.dto.invite;
 
-import java.time.LocalDateTime;
-
 /**
  * What the (unauthenticated) setup screen may know before a password is set.
  *
@@ -13,5 +11,5 @@ public record InvitePreviewResponse(
         String fullName,
         String email,
         String businessName,
-        LocalDateTime expiresAt) {
+        String expiresAt) {
 }

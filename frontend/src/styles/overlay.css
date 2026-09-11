@@ -6,22 +6,10 @@
    Same values as the scoped sheets, so a dialog raised over the owner console
    and one raised over the agent app look like the same product. */
 
-.cd, .ts {
-  --ov-card: #fff;
-  --ov-ink: #111827;
-  --ov-body: #374151;
-  --ov-muted: #5c6472;
-  --ov-line: #e2e4dc;
-  --ov-line-2: #cfd2c8;
-  --ov-sand: #eeefe9;
-  --ov-brand: #1546a8;
-  --ov-brand-deep: #14418f;
-  --ov-err: #b91c1c;
-  --ov-err-deep: #a11a12;
-  --ov-err-bg: #fdecea;
-  --ov-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --ov-display: 'Instrument Serif', Georgia, serif;
-}
+/* Colour and font custom properties for this scope are declared in
+   scopes.css, imported after this file — the pre-redesign literal block
+   that used to live here is deleted per REDESIGN-NOTES.md § "Follow-up"
+   item 1; it was overridden, not read. */
 .cd *, .cd *::before, .cd *::after { box-sizing: border-box; }
 
 /* ── confirm dialog ─────────────────────────────────────────────

@@ -49,7 +49,8 @@ const HEADLINE: Record<ShipmentStatus, string> = {
   out_for_delivery: 'On the final leg',
   delivered: 'Delivered',
   failed: 'Attempt failed',
-  returned: 'Returned to sender'
+  returned: 'Returned to sender',
+  cancelled: 'Cancelled by the business'
 };
 
 export default function AgentShipmentDetailPage() {
@@ -155,10 +156,12 @@ export default function AgentShipmentDetailPage() {
   if (shipment.status === 'delivered') terminalNote = `Closed ${formatDateTime(shipment.deliveredAt)}. Read-only from here.`;
   if (shipment.status === 'failed') terminalNote = 'Attempt logged. Only the owner can reassign this back to Assigned.';
   if (shipment.status === 'returned') terminalNote = 'Returned to the business. Read-only from here.';
+  if (shipment.status === 'cancelled') terminalNote = 'Cancelled by the business. Read-only from here.';
 
-  // failed and returned branch off step 4 — neither ever reached step 5, so
-  // the last segment must stay unlit even though `returned` is terminal.
-  const branched = shipment.status === 'failed' || shipment.status === 'returned';
+  // failed, returned and cancelled branch off step 4 — none of them ever
+  // reached step 5, so the last segment must stay unlit even though
+  // `returned`/`cancelled` are terminal.
+  const branched = shipment.status === 'failed' || shipment.status === 'returned' || shipment.status === 'cancelled';
   const reached = branched ? 4 : cur.step;
 
   return (
