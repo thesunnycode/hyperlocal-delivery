@@ -6,6 +6,8 @@
   public tracking link, with none of that.
 </p>
 
+<p align="center"><sub><b>v1.0</b> — first stable release</sub></p>
+
 <p align="center">
   <img src="https://skillicons.dev/icons?i=java,spring,react,ts,mysql,maven,git&perline=7" alt="Java, Spring Boot, React, TypeScript, MySQL, Maven, Git" />
 </p>
@@ -21,8 +23,8 @@ no app — that updates live and never reveals who's carrying their order.
 
 <table align="center">
 <tr>
-<td align="center"><b>38</b><br><sub>endpoints</sub></td>
-<td align="center"><b>209</b><br><sub>tests</sub></td>
+<td align="center"><b>46</b><br><sub>endpoints</sub></td>
+<td align="center"><b>215</b><br><sub>tests</sub></td>
 <td align="center"><b>11</b><br><sub>tables</sub></td>
 <td align="center"><b>Java 17</b><br><sub>Spring Boot 4</sub></td>
 </tr>
@@ -33,7 +35,7 @@ no app — that updates live and never reveals who's carrying their order.
 ### What it does
 
 - **Owner console** — create shipments, manage the rider roster, reassign
-  failed deliveries, CSV-export reports
+  or cancel a shipment, delete a cancelled one for good, CSV-export reports
 - **Rider app** — a mobile-first flow through pickup → transit →
   delivered / failed / returned
 - **Public tracking** — no login, just the link the customer got by SMS
@@ -106,16 +108,17 @@ Shipments start life already `ASSIGNED` — there's no `CREATED` status. From
 there:
 
 ```
-ASSIGNED → PICKED_UP → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED | FAILED | RETURNED
+ASSIGNED → PICKED_UP → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED | FAILED | RETURNED | CANCELLED
 ```
 
-`DELIVERED` and `RETURNED` are terminal for everyone. `FAILED` is terminal
-for the rider, but the owner can reassign a `FAILED` shipment back to
-`ASSIGNED` — the only transition an owner can trigger. Invalid transitions
-get a clean 422, never a silent no-op. Every transition — including a
-non-terminal reassignment, where the status doesn't change but the rider
-does — appends an immutable event record. The history can never be
-rewritten.
+`DELIVERED`, `RETURNED` and `CANCELLED` are terminal for everyone. `FAILED`
+is terminal for the rider, but the owner can reassign a `FAILED` shipment
+back to `ASSIGNED`, or cancel it outright — the owner's only status
+mutations. Invalid transitions get a clean 422, never a silent no-op.
+Every transition — including a non-terminal reassignment, where the status
+doesn't change but the rider does — appends an immutable event record. A
+cancelled shipment can be deleted permanently by the owner; nothing else
+can. The history can never be rewritten short of that.
 </details>
 
 <details>
@@ -133,17 +136,19 @@ itself is compromised.
 ### API overview
 
 <details>
-<summary>38 endpoints across auth, agents, shipments, delivery attempts, public tracking, and reports — click to expand</summary>
+<summary>46 endpoints across auth, agents, shipments, delivery attempts, public tracking, and reports — click to expand</summary>
 
 | Area | Method | Endpoint | Auth |
 |---|---|---|---|
-| Auth | POST | `/api/auth/register` · `/login` · `/refresh` · `/logout` | Public / JWT |
+| Auth | POST | `/api/auth/register` · `/verify-registration-otp` · `/login` · `/refresh` · `/logout` | Public / JWT |
 | Auth | GET, PATCH | `/api/auth/me` | JWT |
-| Auth | POST | `/api/auth/forgot-password` · `/reset-password` | Public |
+| Auth | POST | `/api/auth/forgot-password` · `/verify-reset-otp` · `/reset-password` · `/resend-otp` | Public |
+| Auth | GET, POST | `/api/auth/invite/{token}`, `/accept-invite` | Public |
 | Agents | POST, GET, PUT | `/api/agents`, `/api/agents/{id}` | Owner |
-| Agents | POST | `/api/agents/{id}/deactivate` · `/reactivate` | Owner |
+| Agents | POST | `/api/agents/{id}/deactivate` · `/reactivate` · `/invite` | Owner |
 | Shipments | POST, GET | `/api/shipments`, `/api/shipments/{id}`, `/api/shipments/mine` | Owner / Agent |
-| Shipments | POST | `/pickup` · `/start-transit` · `/out-for-delivery` · `/deliver` · `/return` · `/fail` · `/reassign` | Agent / Owner |
+| Shipments | POST | `/pickup` · `/start-transit` · `/out-for-delivery` · `/deliver` · `/return` · `/fail` · `/reassign` · `/cancel` | Agent / Owner |
+| Shipments | DELETE | `/api/shipments/{id}` (only when `CANCELLED`) | Owner |
 | Delivery attempts | POST, GET | `/api/shipments/{id}/attempt`, `/attempts` | Agent / Owner + Agent |
 | Public tracking | GET | `/api/track/{token}` | Public |
 | Analytics & reports | GET | `/api/analytics/*`, `/api/reports/*` (overview, trend, agent-performance, register, CSV export) | Owner |
