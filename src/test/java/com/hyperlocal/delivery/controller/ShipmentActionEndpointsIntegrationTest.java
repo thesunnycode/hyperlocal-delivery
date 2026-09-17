@@ -19,6 +19,7 @@ import com.hyperlocal.delivery.model.DeliveryAttempt;
 import com.hyperlocal.delivery.model.FailureReason;
 import com.hyperlocal.delivery.model.Shipment;
 import com.hyperlocal.delivery.model.User;
+import com.hyperlocal.delivery.repository.ShipmentEventRepository;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 
 /**
@@ -34,6 +35,9 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private ShipmentRepository shipmentRepository;
+
+    @Autowired
+    private ShipmentEventRepository shipmentEventRepository;
 
     private Business business;
     private User owner;
@@ -341,5 +345,99 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"agentId\": " + otherAgent.getId() + "}"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void cancel_happyPath_movesToCancelledAndAppendsEvent() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"notes\": \"customer changed their mind\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("cancelled"));
+
+        flushAndClear();
+        Shipment reloaded = shipmentRepository.findById(shipmentId).orElseThrow();
+        assertThat(reloaded.getStatus().name()).isEqualTo("CANCELLED");
+        assertThat(shipmentEventRepository.findByShipment_IdOrderByCreatedAtAsc(shipmentId))
+                .anySatisfy(e -> assertThat(e.getToStatus().name()).isEqualTo("CANCELLED"));
+    }
+
+    @Test
+    void cancel_alreadyDelivered_rejectedWith422() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+        driveToOutForDelivery(agentToken, shipmentId);
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/deliver")
+                        .header("Authorization", "Bearer " + agentToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void cancel_agentToken_returns403() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/cancel")
+                        .header("Authorization", "Bearer " + agentToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void delete_happyPath_removesShipmentAndCascadesEvents() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+        // The cancel event's insert must be flushed before the delete's
+        // cascade runs -- both share this test's persistence context, and
+        // an unflushed pending insert referencing an about-to-be-deleted
+        // parent confuses Hibernate's flush ordering.
+        flushAndClear();
+
+        mockMvc.perform(delete("/api/shipments/" + shipmentId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+
+        flushAndClear();
+        assertThat(shipmentRepository.findById(shipmentId)).isEmpty();
+        assertThat(shipmentEventRepository.findByShipment_IdOrderByCreatedAtAsc(shipmentId)).isEmpty();
+    }
+
+    @Test
+    void delete_notCancelled_rejectedWith422() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+
+        mockMvc.perform(delete("/api/shipments/" + shipmentId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isUnprocessableEntity());
+
+        flushAndClear();
+        assertThat(shipmentRepository.findById(shipmentId)).isPresent();
+    }
+
+    @Test
+    void delete_agentToken_returns403() throws Exception {
+        long shipmentId = createShipmentAssignedTo(agent);
+        mockMvc.perform(post("/api/shipments/" + shipmentId + "/cancel")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+        flushAndClear();
+
+        mockMvc.perform(delete("/api/shipments/" + shipmentId)
+                        .header("Authorization", "Bearer " + agentToken))
+                .andExpect(status().isForbidden());
     }
 }

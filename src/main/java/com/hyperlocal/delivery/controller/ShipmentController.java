@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -265,5 +266,20 @@ public class ShipmentController {
             @Valid @RequestBody CancelShipmentRequest request) {
         return ResponseBuilder.success(
                 shipmentService.cancel(principal.getBusinessId(), principal.getUserId(), id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @Operation(summary = "Owner permanently deletes a CANCELLED shipment, its history and its tracking link")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Shipment deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Shipment not found"),
+        @ApiResponse(responseCode = "422", description = "Shipment is not currently CANCELLED")
+    })
+    public void delete(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long id) {
+        shipmentService.delete(principal.getBusinessId(), id);
     }
 }

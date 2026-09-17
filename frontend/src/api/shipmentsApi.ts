@@ -125,3 +125,9 @@ export function cancelShipment(id: number | string, note?: string | null) {
     body: { note } satisfies AdvanceBody
   });
 }
+
+// Owner — permanently deletes a shipment. The server refuses unless it is
+// currently cancelled; deleting cancels nothing on its own.
+export function deleteShipment(id: number | string) {
+  return apiFetch<void>(`/shipments/${id}`, { method: 'DELETE' });
+}

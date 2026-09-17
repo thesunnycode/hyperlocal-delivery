@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X, XCircle } from 'lucide-react';
+import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X, XCircle, Trash2 } from 'lucide-react';
 import { formatDateTime, formatTime } from '../utils/format';
 import { STATUS_META, isTerminal, canReassignAgent, canRestoreToAssigned, canCancel } from '../utils/statusMachine';
 import type { Shipment } from '../types/api';
@@ -25,7 +25,9 @@ export default function ShipmentDetailPanel({
   onChangeAgent,
   reassignBusy,
   onCancelShipment,
-  cancelBusy
+  cancelBusy,
+  onDeleteShipment,
+  deleteBusy
 }: {
   shipment: Shipment | null;
   /** Deselect and go back to the resting "Today at a glance" pane. Without
@@ -38,6 +40,11 @@ export default function ShipmentDetailPanel({
    *  unlike the two mutations above, so it is not fired directly. */
   onCancelShipment?: () => void;
   cancelBusy?: boolean;
+  /** Opens the confirm dialog — deleting is permanent (the row, its history
+   *  and its tracking link are gone), so it is never fired directly. Only
+   *  offered once the shipment is already CANCELLED. */
+  onDeleteShipment?: () => void;
+  deleteBusy?: boolean;
 }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -49,6 +56,7 @@ export default function ShipmentDetailPanel({
   const canChangeAgent = canReassignAgent(shipment.status);
   const canRestore = canRestoreToAssigned(shipment.status);
   const canCancelShipment = canCancel(shipment.status);
+  const canDeleteShipment = shipment.status === 'cancelled';
   const attempts = shipment.attempts || [];
   const events = shipment.events || [];
 
@@ -147,6 +155,11 @@ export default function ShipmentDetailPanel({
               <XCircle size={14} strokeWidth={2.1} /> Cancel shipment
             </button>
           )}
+          {canDeleteShipment && (
+            <button type="button" className="ow-btn danger" onClick={onDeleteShipment} disabled={deleteBusy}>
+              <Trash2 size={14} strokeWidth={2.1} /> Delete
+            </button>
+          )}
           {onClose && (
             /* F3: "Back to shipment list" — describes the navigation outcome,
                not the visual X metaphor which could be read as "close/terminate
@@ -231,7 +244,9 @@ export default function ShipmentDetailPanel({
 
       {isTerminal(shipment.status) && (
         <p className="ow-foot">
-          This shipment is closed. It stays in the register and in your reports.
+          {canDeleteShipment
+            ? 'This shipment is cancelled. It stays in the register and your reports until you delete it.'
+            : 'This shipment is closed. It stays in the register and in your reports.'}
         </p>
       )}
     </div>

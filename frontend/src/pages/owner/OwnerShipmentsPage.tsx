@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Inbox, Users, Check, Filter, SearchX, Undo2 } from 'lucide-react';
-import { listShipments, getShipment, createShipment, reassignShipment, cancelShipment } from '../../api/shipmentsApi';
+import { listShipments, getShipment, createShipment, reassignShipment, cancelShipment, deleteShipment } from '../../api/shipmentsApi';
 import { listAgents } from '../../api/agentsApi';
 import { useToast } from '../../lib/ToastContext.tsx';
 import { useFatalError } from '../../lib/FatalErrorContext.tsx';
@@ -116,6 +116,8 @@ export default function OwnerShipmentsPage() {
   const [reassignBusy, setReassignBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [setupDismissed, setSetupDismissed] = useState(() => localStorage.getItem(DISMISS_KEY) === '1');
   const [range, setRange] = useState<RangeId>('all');
   /** Ids picked for the one bulk action this console has. */
@@ -289,6 +291,28 @@ export default function OwnerShipmentsPage() {
       else reportError(err);
     } finally {
       setCancelBusy(false);
+    }
+  };
+
+  // ─── Delete shipment ──────────────────────────────────────────────
+  const doDelete = async () => {
+    if (deleteBusy) return;
+    setDeleteBusy(true);
+    try {
+      const name = selected?.customerName ?? 'Shipment';
+      await deleteShipment(id ?? '');
+      setDeleteConfirmOpen(false);
+      toast(`${name} was deleted.`, 'default');
+      // Unlike cancel/reassign, the record no longer exists — re-fetching
+      // it would just 404. Back out to the list instead.
+      navigate('/owner/shipments');
+      loadList();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (isActionableError(err)) toast(message || 'Could not delete this shipment.', 'accent');
+      else reportError(err);
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -584,6 +608,8 @@ export default function OwnerShipmentsPage() {
               reassignBusy={reassignBusy}
               onCancelShipment={() => setCancelConfirmOpen(true)}
               cancelBusy={cancelBusy}
+              onDeleteShipment={() => setDeleteConfirmOpen(true)}
+              deleteBusy={deleteBusy}
             />
           ) : missing ? (
             <div className="ow-detail">
@@ -749,6 +775,17 @@ export default function OwnerShipmentsPage() {
         tone="danger"
         onCancel={() => setCancelConfirmOpen(false)}
         onConfirm={doCancel}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title={`Delete ${selected?.customerName ?? 'this shipment'}?`}
+        body="This permanently removes the shipment, its full history and its tracking link. There is no undo — this is not the same as Cancel."
+        confirmLabel={deleteBusy ? 'Deleting…' : 'Delete permanently'}
+        cancelLabel="Keep it"
+        tone="danger"
+        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={doDelete}
       />
     </>
   );

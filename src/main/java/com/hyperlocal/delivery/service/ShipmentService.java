@@ -19,6 +19,7 @@ import com.hyperlocal.delivery.dto.shipment.ShipmentResponseDto;
 import com.hyperlocal.delivery.dto.shipment.ShipmentSummaryDto;
 import com.hyperlocal.delivery.dto.tracking.PublicTrackingResponse;
 import com.hyperlocal.delivery.exception.InvalidAgentException;
+import com.hyperlocal.delivery.exception.InvalidStateForDeleteException;
 import com.hyperlocal.delivery.exception.InvalidStateTransitionException;
 import com.hyperlocal.delivery.exception.ShipmentNotFoundException;
 import com.hyperlocal.delivery.model.Shipment;
@@ -28,6 +29,7 @@ import com.hyperlocal.delivery.model.ShipmentStatusSets;
 import com.hyperlocal.delivery.model.User;
 import com.hyperlocal.delivery.model.UserRole;
 import com.hyperlocal.delivery.repository.BusinessRepository;
+import com.hyperlocal.delivery.repository.DeliveryAttemptRepository;
 import com.hyperlocal.delivery.repository.ShipmentEventRepository;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 import com.hyperlocal.delivery.repository.ShipmentSpecifications;
@@ -47,6 +49,7 @@ public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final ShipmentEventRepository shipmentEventRepository;
+    private final DeliveryAttemptRepository deliveryAttemptRepository;
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
     private final AgentAssignmentService agentAssignmentService;
@@ -348,6 +351,41 @@ public class ShipmentService {
         Shipment loaded = shipmentRepository.findWithDetailById(shipment.getId())
                 .orElse(shipment);
         return ShipmentResponseDto.from(loaded);
+    }
+
+    /**
+     * The owner permanently deletes a cancelled shipment: the row, its
+     * status history and any delivery attempts. Its public tracking link
+     * stops resolving immediately.
+     *
+     * <p>Children are deleted explicitly rather than relying on the
+     * database's {@code ON DELETE CASCADE} (present in the real schema —
+     * see {@code fk_events_shipments} / {@code fk_attempts_shipments} in
+     * V1__init_schema.sql) because the entity mappings deliberately cascade
+     * only PERSIST/MERGE, never REMOVE, so a stray {@code shipment.remove()}
+     * elsewhere can never take an audit trail down with it by accident;
+     * this is the one place removal is actually intended.
+     *
+     * <p>Deliberately restricted to {@code CANCELLED} — not every terminal
+     * status — so a DELIVERED shipment (a real business record) or a
+     * FAILED one (still reassignable) can never be deleted this way, only
+     * discarded once the owner has already called it off.
+     */
+    @Transactional
+    public void delete(Long businessId, Long shipmentId) {
+        Shipment shipment = shipmentRepository.lockById(shipmentId)
+                .orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
+        if (!shipment.getBusiness().getId().equals(businessId)) {
+            throw new ShipmentNotFoundException(shipmentId);
+        }
+        if (shipment.getStatus() != ShipmentStatus.CANCELLED) {
+            throw new InvalidStateForDeleteException(shipment.getStatus());
+        }
+        deliveryAttemptRepository.deleteAll(
+                deliveryAttemptRepository.findByShipment_IdOrderByAttemptedAtAsc(shipmentId));
+        shipmentEventRepository.deleteAll(
+                shipmentEventRepository.findByShipment_IdOrderByCreatedAtAsc(shipmentId));
+        shipmentRepository.delete(shipment);
     }
 
     /**
