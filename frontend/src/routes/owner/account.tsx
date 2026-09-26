@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { LiveAccount } from "@/components/owner/OwnerLive";
+export const Route = createFileRoute("/owner/account")({ head: () => ({ meta: [{ title: "Account | Hyperlocal Delivery" }, { name: "description", content: "Account in the Hyperlocal Delivery workspace." }, { property: "og:title", content: "Account | Hyperlocal Delivery" }, { property: "og:description", content: "Account in the Hyperlocal Delivery workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: () => <LiveAccount /> });

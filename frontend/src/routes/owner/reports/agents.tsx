@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { LiveReports } from "@/components/owner/OwnerLive";
+export const Route = createFileRoute("/owner/reports/agents")({ head: () => ({ meta: [{ title: "Rider performance | Hyperlocal Delivery" }, { name: "description", content: "Rider performance in the Hyperlocal Delivery workspace." }, { property: "og:title", content: "Rider performance | Hyperlocal Delivery" }, { property: "og:description", content: "Rider performance in the Hyperlocal Delivery workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: () => <LiveReports mode="performance" /> });

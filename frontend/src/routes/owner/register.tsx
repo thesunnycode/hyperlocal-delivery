@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { LiveRegister } from "@/components/owner/OwnerLive";
+export const Route = createFileRoute("/owner/register")({ head: () => ({ meta: [{ title: "Register | Hyperlocal Delivery" }, { name: "description", content: "Register in the Hyperlocal Delivery workspace." }, { property: "og:title", content: "Register | Hyperlocal Delivery" }, { property: "og:description", content: "Register in the Hyperlocal Delivery workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: () => <LiveRegister /> });

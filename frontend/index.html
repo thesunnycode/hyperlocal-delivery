@@ -3,49 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#f7f9fb">
-<title>Hyperlocal</title>
-<meta name="description" content="Assign a rider, watch a shipment move, and send your customer a tracking link that just works — no app to install, no calls asking where it is.">
-<!-- Static, generic OG/Twitter tags: this is a client-rendered SPA with no
-     server-side rendering, so a crawler that does not execute JS (WhatsApp's
-     link-preview bot among them) only ever sees these values, never the
-     per-shipment title CustomerTrackingPage sets via document.title. Genuinely
-     per-shipment previews ("Out for delivery from Nandini Stores") would need
-     SSR or a prerender step for /track/:token specifically — out of scope
-     here, but these at least mean a shared tracking link stops arriving with
-     a blank icon and no name in the preview card. -->
+<title>Hyperlocal Delivery</title>
+<meta name="description" content="Assign, track and deliver local orders with riders and live customer tracking.">
 <meta property="og:site_name" content="Hyperlocal">
 <meta property="og:title" content="Hyperlocal Delivery">
-<meta property="og:description" content="Track your delivery — no app to install, no login needed.">
+<meta property="og:description" content="Assign, track and deliver local orders with riders and live customer tracking.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<!-- SVG favicon: modern, scalable, and this app ships no build step that
-     could generate PNG sizes — see manifest.webmanifest for the same asset
-     reused as the PWA/home-screen icon. -->
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="apple-touch-icon" href="/favicon.svg">
-<link rel="manifest" href="/manifest.webmanifest">
-<!-- Fonts are linked here rather than @imported from CSS, so the request can
-     start in parallel with the stylesheet — it matters most on the public
-     /track/:token page, which arrives cold from a WhatsApp link on mobile data.
-
-     Three faces, each doing one job (see styles/tokens.css):
-       Bricolage Grotesque  display — headlines and figures. Replaces
-         Instrument Serif, which was charming on the auth page and turned to
-         mush at 19px on a rider's phone in sunlight.
-       Instrument Sans      all UI and body copy. Replaces IBM Plex Sans:
-         narrower, so the register's seven columns fit without shrinking.
-       JetBrains Mono       anything read digit by digit — ₹ amounts, +91
-         numbers, tracking tokens, timestamps, table figures.
-
-     Mono is a deliberate reversal of this app's previous "no second face"
-     rule: the system mono stack renders at a different width on every machine,
-     and this product's tables are full of numbers that need to line up.
-     Weights are pruned to the five actually used, so the critical path is not
-     paying for a family it renders three sizes of. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 </head>
 <body>
 <div id="root"></div>

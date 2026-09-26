@@ -1,73 +1,40 @@
-import reactHooks from 'eslint-plugin-react-hooks';
-import tseslint from 'typescript-eslint';
+import js from "@eslint/js";
+import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
 
-// Shared between the JS and TS blocks so the two stay in step while the
-// TypeScript migration is in flight (see TS-MIGRATION-PROMPT.md).
-const languageOptions = {
-  ecmaVersion: 'latest',
-  sourceType: 'module',
-  parserOptions: {
-    ecmaFeatures: { jsx: true },
-  },
-  globals: {
-    window: 'readonly',
-    document: 'readonly',
-    navigator: 'readonly',
-    localStorage: 'readonly',
-    fetch: 'readonly',
-    URL: 'readonly',
-    Blob: 'readonly',
-    setTimeout: 'readonly',
-    clearTimeout: 'readonly',
-    console: 'readonly',
-  },
-};
-
-export default [
+export default tseslint.config(
+  { ignores: ["dist", ".output", ".vinxi"] },
   {
-    files: ['src/**/*.{js,jsx}'],
-    plugins: {
-      'react-hooks': reactHooks,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-    },
-    languageOptions,
-  },
-
-  // TypeScript sources — same rule intent as the JS block above, with
-  // no-unused-vars handed over to the typescript-eslint version (the core
-  // rule misreports on type-only identifiers).
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: ['src/**/*.{ts,tsx}'],
-  })),
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    plugins: {
-      'react-hooks': reactHooks,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-    },
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
-      ...languageOptions,
-      parserOptions: {
-        ...languageOptions.parserOptions,
-        projectService: true,
-      },
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "server-only",
+              message:
+                "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
+            },
+          ],
+        },
+      ],
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
-
-  {
-    ignores: ['node/', 'node_modules/', 'dist/'],
-  },
-];
+  eslintPluginPrettier,
+);
