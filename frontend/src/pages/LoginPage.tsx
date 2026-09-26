@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext.tsx';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 import { ApiError } from '../lib/apiClient';
 import AuthShell from '../components/AuthShell.tsx';
 import AuthHandoff from '../components/AuthHandoff.tsx';
@@ -31,6 +32,7 @@ const destinationFor = (role: string) =>
   role === 'OWNER' ? '/owner/shipments' : '/agent/assignments';
 
 export default function LoginPage() {
+  useDocumentTitle('Sign in');
   const { login } = useAuth();
   const navigate = useNavigate();
 

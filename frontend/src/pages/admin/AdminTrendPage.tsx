@@ -5,6 +5,7 @@ import { useFatalError } from '../../lib/FatalErrorContext.tsx';
 import DayBars from '../../components/DayBars.tsx';
 import { formatDate } from '../../utils/format';
 import type { DayPoint, TrendReport } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * AD2 — shape above, figures below, so the same data reads both ways.
@@ -62,6 +63,7 @@ function padRange(days: DayPoint[], range: number): DayPoint[] {
 }
 
 export default function AdminTrendPage() {
+  useDocumentTitle('Trend');
   const { reportError } = useFatalError();
   const [days, setDays] = useState(90);
   const [data, setData] = useState<TrendReport | null>(null);

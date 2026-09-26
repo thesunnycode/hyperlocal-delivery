@@ -14,6 +14,15 @@ public record RegisterRequest(
         @NotBlank @Size(min = 1, max = 100) String businessName,
         @NotBlank @Size(min = 1, max = 100) String ownerName,
         @NotBlank @Email String email,
-        @NotBlank @Pattern(regexp = "\\+?[\\d\\-]{7,15}") String phone,
+        // Same pattern as every other phone field (CreateAgentRequest,
+        // UpdateAccountRequest, CreateShipmentRequest) — this one used to be
+        // the only one that rejected spaces, so the exact placeholder shown
+        // on the form ("+91 98455 20114") failed its own validation.
+        @NotBlank @Pattern(regexp = "[+\\d\\s\\-]{7,20}") String phone,
+        // The number the tracking page tells a customer to call when a
+        // delivery goes wrong. Asked for at sign-up (not left to be filled in
+        // later on Account, where nothing ever prompted for it) so the call
+        // button on /track/:token is never silently missing.
+        @NotBlank @Pattern(regexp = "[+\\d\\s\\-]{7,20}") String businessPhone,
         @NotBlank @Size(min = 8) String password
 ) {}

@@ -14,6 +14,7 @@ import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import AgentInviteSheet from '../../components/AgentInviteSheet.tsx';
 import { useModalBehaviour } from '../../lib/useModalBehaviour';
 import type { Agent, AgentSummary } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * OD7 — the roster.
@@ -63,6 +64,7 @@ import type { Agent, AgentSummary } from '../../types/api';
  * size with two `var()` lookups inline. All moved to `scopes.css`.
  */
 export default function OwnerAgentsPage() {
+  useDocumentTitle('Riders');
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -265,6 +267,13 @@ export default function OwnerAgentsPage() {
                   needs to notice. */}
               <span className="ow-person-ph">{a.phone || '—'}</span>
               <span className="ow-sp" />
+              {/* A rider who has never accepted their invite cannot sign in
+                  to anything yet — that used to be invisible next to "Active",
+                  which described the roster record, not whether the rider
+                  could actually get in. */}
+              {!a.activated && (
+                <span className="ow-pill pending">Invite pending</span>
+              )}
               <span className={`ow-pill ${a.active ? 'ok' : 'off'}`}>
                 {a.active ? 'Active' : 'Deactivated'}
               </span>
@@ -274,9 +283,13 @@ export default function OwnerAgentsPage() {
               {/* Promoted out of the overflow. Nothing is emailed automatically
                   — the account exists but the rider cannot discover it until
                   the owner sends this — so the one action that unblocks a new
-                  rider should not be two clicks behind a kebab. Active riders
-                  only: a deactivated account has nothing to sign in to. */}
-              {a.active && (
+                  rider should not be two clicks behind a kebab. Active AND not
+                  yet activated only: a rider who already signed in has found
+                  the account, and a deactivated one has nothing to sign in to
+                  — re-sending is still possible from the ⋮ menu for the rare
+                  "lost the phone, needs a new link" case, it just is not the
+                  one-click default for someone who is not stuck. */}
+              {a.active && !a.activated && (
                 <button type="button" className="ow-send"
                   aria-label={`Send ${a.name} their sign-in link`}
                   onClick={() => setInvite({ id: a.id, name: a.name, email: a.email, phone: a.phone })}>
@@ -298,7 +311,8 @@ export default function OwnerAgentsPage() {
                   </button>
                   <button type="button" role="menuitem"
                     onClick={() => { setMenuFor(null); setInvite({ id: a.id, name: a.name, email: a.email, phone: a.phone }); }}>
-                    <Send size={14} strokeWidth={2.1} /> Send sign-in link
+                    <Send size={14} strokeWidth={2.1} />
+                    {a.activated ? 'Resend invite link' : 'Send sign-in link'}
                   </button>
                   <button type="button" role="menuitem"
                     onClick={() => { setMenuFor(null); openEdit(a); }}>
@@ -339,6 +353,7 @@ export default function OwnerAgentsPage() {
                 <>
                   <div className="ow-sheet-id">
                     <span className="av" aria-hidden="true">{initials(detail.name)}</span>
+                    {!detail.activated && <span className="ow-pill pending">Invite pending</span>}
                     <span className={`ow-pill ${detail.active ? 'ok' : 'off'}`}>
                       {detail.active ? 'Active' : 'Deactivated'}
                     </span>

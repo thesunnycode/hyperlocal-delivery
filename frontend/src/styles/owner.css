@@ -74,14 +74,14 @@
   color: #fff; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: none; }
 .ow-brand b { font-size: 14px; font-weight: 600; color: var(--ow-ink); letter-spacing: -0.015em;
   display: block; line-height: 1.2; }
-.ow-brand > span > span { font-size: 11px; color: var(--ow-muted); }
+.ow-brand > span > span { font-size: 12px; color: var(--ow-muted); }
 .ow-who { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 7px;
   width: 100%; text-align: left; border: 0; background: none; cursor: pointer; }
 .ow-who:hover { background: #e6e8e0; }
 .ow-who .av { width: 28px; height: 28px; border-radius: 50%; background: var(--ow-brand); color: #fff;
-  flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
 .ow-who b { display: block; font-size: 12.5px; font-weight: 600; color: var(--ow-ink); }
-.ow-who > span > span { font-size: 11px; color: var(--ow-muted); }
+.ow-who > span > span { font-size: 12px; color: var(--ow-muted); }
 
 .ow-main { overflow: hidden; display: flex; flex-direction: column; background: var(--ow-paper);
   min-width: 0; }
@@ -125,7 +125,7 @@
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .ow-chip[aria-pressed='true'] { background: var(--ow-ink); border-color: var(--ow-ink); color: #fff;
   font-weight: 600; }
-.ow-chip em { font-style: normal; font-family: var(--ow-mono); font-size: 11px;
+.ow-chip em { font-style: normal; font-family: var(--ow-mono); font-size: 12px;
   color: var(--ow-muted); }   /* was opacity .7 — 4.33:1, just under AA */
 .ow-chip[aria-pressed='true'] em { color: #dfe3ea; }
 .ow-chip[disabled] { cursor: default; color: var(--ow-muted); background: var(--ow-sand); }
@@ -179,8 +179,17 @@
 .ow-row-a { display: block; min-width: 0; font-size: 12.5px; color: var(--ow-muted);
   margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ow-row-m { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px;
-  font-family: var(--ow-mono); font-size: 10.5px; color: var(--ow-muted); }
-.ow-row-m span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted); }
+/* min-width:0 is load-bearing here too, same defect as .ow-split above: a
+   flex item's min-width defaults to auto (its own min-content), and
+   white-space:nowrap makes that min-content the FULL unwrapped text width —
+   so without it neither span could actually shrink, and the due time +
+   rider name together forced .ow-row-m (and every ancestor up to .ow-list)
+   wider than the viewport on a phone. Every badge and rider name below
+   ~390px was pushed off-screen, leaving only the 3px status-colour edge as
+   the sole (colour-only) indicator of status. */
+.ow-row-m span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ow-row-m span:last-child { text-align: right; }
 
 .ow-detail { overflow-y: auto; padding: 20px 24px 40px; }
 /* The record's own sections stop at the measure too, so the detail pane
@@ -199,13 +208,13 @@
   flex-wrap: wrap; }
 .ow-dhead h2 { font-size: 19px; font-weight: 600; color: var(--ow-ink); margin: 0;
   letter-spacing: -0.02em; }
-.ow-dhead .tok { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); margin-top: 4px; }
+.ow-dhead .tok { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted); margin-top: 4px; }
 /* Name and status on one line: the pill describes the record, not the actions. */
 .ow-dtitle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .ow-dclose { margin-left: 2px; }
 .ow-foot { font-size: 12px; color: var(--ow-muted); line-height: 1.55; margin: 16px 2px 0;
   max-width: 62ch; }
-.ow-sec { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em;
+.ow-sec { font-family: var(--ow-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.15em;
   text-transform: uppercase; color: var(--ow-muted); margin: 24px 0 9px; }
 .ow-card { background: var(--ow-card); border: 1px solid var(--ow-line); border-radius: 10px; }
 .ow-dl { display: grid; grid-template-columns: 148px 1fr; margin: 0; }
@@ -219,15 +228,15 @@
 .ow-tl { list-style: none; margin: 0; padding: 4px 0; }
 .ow-tl li { display: grid; grid-template-columns: 82px 10px 1fr; gap: 11px; padding: 8px 15px;
   align-items: start; }
-.ow-tl .t { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); }
+.ow-tl .t { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted); }
 .ow-tl .m { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--ow-line-2));
   margin-top: 3px; }
 .ow-tl b { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
-.ow-tl em { font-style: normal; font-size: 11.5px; color: var(--ow-muted); line-height: 1.45; }
+.ow-tl em { font-style: normal; font-size: 12px; color: var(--ow-muted); line-height: 1.45; }
 
 /* ── badges ─────────────────────────────────────────────────── */
 .ow-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px;
-  background: var(--c); color: #fff; font-size: 10.5px; font-weight: 600; white-space: nowrap;
+  background: var(--c); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap;
   flex: none; }
 .ow-badge.lg { font-size: 12px; padding: 5px 11px; border-radius: 6px; }
 .b-assigned { --c: var(--st-assigned); }
@@ -239,10 +248,14 @@
 .b-returned { --c: var(--st-returned); }
 .b-cancelled { --c: var(--st-cancelled); }
 /* #15803d measured 4.43:1 on this tint — below AA. #126b34 is 5.84. */
-.ow-pill { display: inline-flex; justify-content: center; padding: 3px 9px; border-radius: 100px; font-size: 11px;
+.ow-pill { display: inline-flex; justify-content: center; padding: 3px 9px; border-radius: 100px; font-size: 12px;
   font-weight: 600; white-space: nowrap; }
 .ow-pill.ok { background: #e7f4ec; color: #126b34; }
 .ow-pill.off { background: #eceee7; color: var(--ow-muted); }
+/* A rider who has never accepted their invite is not the same as an
+   ordinarily active one — they cannot sign in to anything yet, and used to
+   look identical to a rider with 200 deliveries behind them. */
+.ow-pill.pending { background: var(--ow-warn-bg); color: var(--ow-warn-ink); }
 
 /* ── dense table ────────────────────────────────────────────── */
 /* padding-inline matches .ow-head/.ow-bar's own --ow-gutter padding above —
@@ -256,7 +269,7 @@
 .ow-tablewrap table { width: 100%; max-width: var(--ow-measure); border-collapse: collapse;
   font-size: 12.5px; flex: none; }
 .ow th { position: sticky; top: 0; z-index: 2; background: var(--ow-card); text-align: left;
-  font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+  font-family: var(--ow-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.13em;
   text-transform: uppercase; color: var(--ow-muted); padding: 10px 14px;
   border-bottom: 1px solid var(--ow-line-2); white-space: nowrap; }
 .ow td { padding: 10px 14px; border-bottom: 1px solid var(--ow-line); vertical-align: middle;
@@ -264,13 +277,21 @@
 .ow tbody tr.rw { cursor: pointer; }
 .ow tbody tr.rw:hover td { background: var(--ow-paper); }
 .ow tbody tr.rw:focus-visible { outline: 2px solid var(--ow-brand); outline-offset: -2px; }
-.ow td.mono { font-family: var(--ow-mono); font-size: 11.5px; color: var(--ow-muted); }
+.ow td.mono { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted); }
 .ow td.r, .ow th.r { text-align: right; }
 /* Sortable column header. The arrow is always rendered, at low opacity until
    the column is the active one — a header that only reveals its affordance on
    hover is invisible to anyone who never hovers. */
+/* text-transform:inherit is load-bearing, not decoration: `font: inherit`
+   resets family/size/weight/line-height, but text-transform is a separate
+   property, and the browser's own form-control stylesheet sets
+   `text-transform: none` on <button> — overriding the .ow th uppercase every
+   sortable header (Customer, Status, Rider, Scheduled, Created) inherits.
+   Without it, only the three columns with no sort control (Address, Token)
+   actually rendered upper-case, and the header row read as two different
+   tables stitched together. */
 .ow-sort { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none;
-  padding: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; }
+  padding: 0; margin: 0; font: inherit; text-transform: inherit; color: inherit; cursor: pointer; }
 /* R1: opacity:0.28 composited to ~1.30:1 on white — fails WCAG non-text 3:1.
    Explicit colour #8e9399 measures 3.08:1 and still reads as a quiet hint. */
 .ow-sort .hint { color: #8e9399; }
@@ -292,7 +313,7 @@
 /* Address / muted columns. */
 .ow-td-muted { color: var(--ow-muted); }
 /* Row-count label in the toolbar. */
-.ow-row-count { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted); }
+.ow-row-count { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted); }
 /* <select> used as a chip filter — native selects need a right-padding nudge
    so the chevron does not overlap the text. */
 .ow-chip-select { padding-right: 8px; }
@@ -352,7 +373,7 @@
 .ow-load { display: flex; gap: 18px; flex: none; margin: 0; min-width: 64px;
   justify-content: flex-end; }
 .ow-load > div { text-align: right; }
-.ow-load dt { font-family: var(--ow-mono); font-size: 9.5px; letter-spacing: 0.12em;
+.ow-load dt { font-family: var(--ow-mono); font-size: 12px; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--ow-muted); margin: 0 0 3px; }
 .ow-load dd { margin: 0; font-size: 15px; font-weight: 600; color: var(--ow-ink);
   font-variant-numeric: tabular-nums; }
@@ -376,7 +397,7 @@
 .ow-steps li { counter-increment: s; position: relative; padding: 0 0 12px 30px; }
 .ow-steps li::before { content: counter(s); position: absolute; left: 0; top: 1px;
   width: 20px; height: 20px; border-radius: 50%; background: var(--ow-sand);
-  color: var(--ow-muted); font-family: var(--ow-mono); font-size: 10px; font-weight: 700;
+  color: var(--ow-muted); font-family: var(--ow-mono); font-size: 12px; font-weight: 700;
   display: grid; place-items: center; }
 .ow-steps b { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
 .ow-steps span { display: block; font-size: 12px; line-height: 1.5; color: var(--ow-muted);
@@ -412,9 +433,9 @@
 .ow-f input:focus, .ow-f select:focus, .ow-f textarea:focus { outline: 0;
   border-color: var(--ow-brand); box-shadow: 0 0 0 3px var(--ow-brand-soft); }
 .ow-f input:disabled { background: var(--ow-sand); color: var(--ow-muted); }
-.ow-f .hint { font-size: 11.5px; color: var(--ow-muted); margin: 6px 0 0; line-height: 1.45; }
+.ow-f .hint { font-size: 12px; color: var(--ow-muted); margin: 6px 0 0; line-height: 1.45; }
 .ow-f.bad input, .ow-f.bad select { border-color: var(--ow-err); }
-.ow-f .bad-msg { display: flex; gap: 6px; align-items: flex-start; font-size: 11.5px;
+.ow-f .bad-msg { display: flex; gap: 6px; align-items: flex-start; font-size: 12px;
   color: #a11a12; margin: 6px 0 0; line-height: 1.45; }
 .ow-acc { border: 1px solid var(--ow-line-2); border-radius: 8px; margin-bottom: 10px; }
 .ow-acc summary { padding: 12px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
@@ -454,7 +475,7 @@
 /* ── tracking link row ──────────────────────────────────────── */
 .ow-link { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px;
   background: var(--ow-sand); border-radius: 9px; }
-.ow-link code { font-family: var(--ow-mono); font-size: 11.5px; color: var(--ow-ink);
+.ow-link code { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-ink);
   overflow-wrap: anywhere; flex: 1; min-width: 140px; }
 
 /* ── states ─────────────────────────────────────────────────── */
@@ -506,6 +527,15 @@
 .ow-inline-err svg { flex: none; margin-top: 1px; color: var(--ow-err); }
 
 /* F7: CreateShipmentModal layout utilities — replace inline style= props. */
+/* Quick delivery-window picks — one tap instead of two native pickers for
+   the common case ("this evening", "tomorrow morning"). */
+.ow-quickpicks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ow-chip-sm { padding: 6px 11px; border-radius: 999px; border: 1px solid var(--ow-line-2);
+  background: var(--ow-card); color: var(--ow-body); font: 600 12px/1 var(--ow-ui);
+  cursor: pointer; }
+.ow-chip-sm:hover { background: var(--ow-sand); }
+.ow-chip-sm[aria-pressed='true'] { background: var(--ow-ink); color: var(--ow-card);
+  border-color: var(--ow-ink); }
 /* Date/time pair row. */
 .ow-window-row { display: flex; gap: 10px; }
 /* Each date or time input fills half the row. */
@@ -541,6 +571,18 @@
   background: var(--ow-sand); font-size: 12.5px; line-height: 1.5; color: var(--ow-muted); }
 .ow-lock svg { flex: none; margin-top: 1px; }
 
+/* Why a failed shipment needs the owner, stated at the top of the record
+   instead of only inside History — that reason and the rider's note used to
+   be the one thing the owner actually needs to decide what to do, sitting
+   below the fold under Details, the tracking link and its privacy note. */
+.ow-fail-callout { display: flex; gap: 10px; align-items: flex-start; padding: 13px 15px;
+  margin-top: 14px; background: var(--ow-err-bg); border: 1px solid var(--st-failed);
+  border-radius: 10px; }
+.ow-fail-callout svg { flex: none; margin-top: 2px; color: var(--st-failed); }
+.ow-fail-callout b { display: block; font-size: 13.5px; font-weight: 600; color: #7a2019; }
+.ow-fail-callout span { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.5;
+  color: #6f3630; }
+
 /* F4: ShipmentDetailPanel layout utilities — replace inline style= props. */
 /* Title column in .ow-dhead: min-width:0 prevents the flex child from
    overflowing its track when the customer name is long. */
@@ -565,7 +607,7 @@
 .ow-check-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .ow-check-h h2 { margin: 0; font-family: var(--ow-display); font-weight: 400; font-size: 21px;
   line-height: 1.15; letter-spacing: -0.018em; color: var(--ow-ink); }
-.ow-check-h .n { font-family: var(--ow-mono); font-size: 11px; color: var(--ow-muted);
+.ow-check-h .n { font-family: var(--ow-mono); font-size: 12px; color: var(--ow-muted);
   white-space: nowrap; }
 .ow-check > p { margin: 8px 0 14px; font-size: 12.5px; line-height: 1.5; color: var(--ow-muted); }
 .ow-check-i { display: flex; gap: 11px; align-items: flex-start; width: 100%; text-align: left;
@@ -577,12 +619,16 @@
 .ow-check-i[disabled] .tx { color: var(--ow-muted); font-weight: 500; }
 .ow-check-i[disabled] .sb { color: var(--ow-muted); }
 .ow-check-i .mk { width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid;
-  place-items: center; font-family: var(--ow-mono); font-size: 10px; font-weight: 700;
+  place-items: center; font-family: var(--ow-mono); font-size: 12px; font-weight: 700;
   background: var(--ow-sand); color: var(--ow-muted); }
 .ow-check-i.done .mk { background: var(--st-delivered); color: #fff; }
 .ow-check-i .tx { display: block; font-size: 13px; font-weight: 600; color: var(--ow-ink); }
-.ow-check-i.done .tx { font-weight: 500; color: var(--ow-muted); text-decoration: line-through; }
-.ow-check-i .sb { display: block; font-size: 11.5px; color: var(--ow-muted); margin-top: 3px;
+/* No strikethrough: a step an owner might still want to *read* (which rider
+   got added, which shipment was the first) lost legibility exactly when it
+   became true, for a cosmetic "done" cue the check-mark badge beside it
+   already carries. */
+.ow-check-i.done .tx { font-weight: 500; color: var(--ow-muted); }
+.ow-check-i .sb { display: block; font-size: 12px; color: var(--ow-muted); margin-top: 3px;
   line-height: 1.45; }
 /* Step 3 is not startable from here, so it does not pretend to be a control:
    no hover, and the marker reads as a stage rather than a button. Steps 1 and
@@ -628,7 +674,7 @@
   color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; flex: none; }
 .ow-acct-h h2 { margin: 0; font-family: var(--ow-display); font-weight: 400; font-size: 27px;
   letter-spacing: -0.02em; color: var(--ow-ink); }
-.ow-acct-h .role { font-family: var(--ow-mono); font-size: 9.5px; font-weight: 700;
+.ow-acct-h .role { font-family: var(--ow-mono); font-size: 12px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--ow-muted); }
 
 /* ── mobile tab bar ─────────────────────────────────────────────
@@ -639,7 +685,7 @@
 .ow-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
   background: var(--ow-card); border-top: 1px solid var(--ow-line); }
 .ow-tabs a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  justify-content: center; padding: 9px 4px; font-size: 11px; font-weight: 500;
+  justify-content: center; padding: 9px 4px; font-size: 12px; font-weight: 500;
   text-decoration: none; color: var(--ow-muted); min-height: 56px; }
 .ow-tabs a.active { color: var(--ow-brand-deep); font-weight: 600; }
 /* Register renders its real desktop table down to 759px (its own
@@ -670,6 +716,17 @@
   .ow-list { border-right: 0; }
   .ow-split.detail-open .ow-list { display: none; }
   .ow-backrow { display: flex; }
+  /* Same "one scroll container, not three" fix the <759px band already had
+     (below) — without it, .ow-main's base overflow:hidden plus .ow-split's
+     flex:1;min-height:0 caps both .ow-list and .ow-detail to whatever height
+     is left inside the viewport, and each becomes its own tiny independently
+     -scrolling box: measured at 1024px wide, the list showed 1½ rows and the
+     resting KPI pane 204px, each behind its own internal scrollbar, with the
+     page itself unable to scroll at all. Letting the page be the only
+     scroller means a stacked list-then-pane (see the comment above) can
+     actually be read. */
+  .ow-main { overflow: visible; }
+  .ow-list, .ow-detail { overflow: visible; }
 }
 @media (min-width: 1120px) { .ow-backrow { display: none; } }
 .ow-backrow { align-items: center; gap: 9px; margin-bottom: 14px; }
@@ -717,7 +774,7 @@
   overflow: hidden; }
 .ow-rest-kpis > div { padding: 14px 16px; border-right: 1px solid var(--ow-line); }
 .ow-rest-kpis > div:last-child { border-right: 0; }
-.ow-rest-kpis dt { margin: 0 0 7px; font-family: var(--ow-mono); font-size: 9.5px;
+.ow-rest-kpis dt { margin: 0 0 7px; font-family: var(--ow-mono); font-size: 12px;
   font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ow-muted); }
 .ow-rest-kpis dd { margin: 0; font-size: 26px; font-weight: 600; line-height: 1;
   letter-spacing: -0.025em; color: var(--ow-ink); font-variant-numeric: tabular-nums; }
@@ -735,7 +792,7 @@
 .ow-rest-row b { font-size: 13.5px; font-weight: 600; color: var(--ow-ink); white-space: nowrap; }
 .ow-rest-row em { font-style: normal; font-size: 12.5px; color: var(--ow-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
-.ow-rest-row .go { font-size: 11.5px; color: var(--ow-muted); white-space: nowrap; flex: none; }
+.ow-rest-row .go { font-size: 12px; color: var(--ow-muted); white-space: nowrap; flex: none; }
 .ow-rest-row:hover .go { color: var(--ow-brand-deep); }
 
 /* ── settings cards (account) ───────────────────────────────────
@@ -770,7 +827,7 @@
   font: 400 13.5px/1.4 var(--ow-ui); color: var(--ow-ink); }
 .ow-acct-f input:focus { outline: 0; border-color: var(--ow-brand);
   box-shadow: 0 0 0 3px var(--ow-brand-soft); }
-.ow-acct-f .hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ow-muted); }
+.ow-acct-f .hint { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--ow-muted); }
 .ow-scard input.val:hover { border-color: var(--ow-muted); }
 .ow-scard input.val:focus { outline: 0; border-color: var(--ow-brand);
   box-shadow: 0 0 0 3px var(--ow-brand-soft); }

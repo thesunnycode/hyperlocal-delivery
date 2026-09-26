@@ -16,7 +16,9 @@ public record AgentResponse(
         Long deliveredCount,
         Long failedCount,
         String joinedAt,
-        String updatedAt
+        String updatedAt,
+        /** See {@link AgentSummaryDto#activated()}. */
+        Boolean activated
 ) {
 
     /**
@@ -33,7 +35,8 @@ public record AgentResponse(
                 deliveredCount,
                 failedCount,
                 TimeUtils.toIso(user.getCreatedAt()),
-                TimeUtils.toIso(user.getUpdatedAt())
+                TimeUtils.toIso(user.getUpdatedAt()),
+                user.getPasswordChangedAt() != null
         );
     }
 

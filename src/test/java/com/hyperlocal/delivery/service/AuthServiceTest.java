@@ -122,7 +122,7 @@ class AuthServiceTest {
     @Test
     void initiateRegistration_success() throws Exception {
         RegisterRequest req = new RegisterRequest(
-                "New Business", "New Owner", "New@Test.com", "9000000000", "password123");
+                "New Business", "New Owner", "New@Test.com", "9000000000", "9000000000", "password123");
 
         // looked up under the normalized address, not the raw one
         when(businessRepository.existsByEmail("new@test.com")).thenReturn(false);
@@ -164,7 +164,7 @@ class AuthServiceTest {
     @Test
     void initiateRegistration_existingAccount_throwsDuplicateEmail() {
         RegisterRequest req = new RegisterRequest(
-                "Dup Business", "Owner", "existing@test.com", "9000000000", "password123");
+                "Dup Business", "Owner", "existing@test.com", "9000000000", "9000000000", "password123");
 
         when(businessRepository.existsByEmail("existing@test.com")).thenReturn(true);
 
@@ -182,7 +182,7 @@ class AuthServiceTest {
     @Test
     void initiateRegistration_neverPersistsTheRawPassword() throws Exception {
         RegisterRequest req = new RegisterRequest(
-                "New Business", "New Owner", "safe@test.com", "9000000000", "sup3rSecret!");
+                "New Business", "New Owner", "safe@test.com", "9000000000", "9000000000", "sup3rSecret!");
 
         when(passwordEncoder.encode("sup3rSecret!")).thenReturn("$2a$12$storedHash");
         when(pendingRegistrationRepository.findByEmail("safe@test.com")).thenReturn(Optional.empty());
@@ -205,7 +205,7 @@ class AuthServiceTest {
     @Test
     void initiateRegistration_existingPendingRegistration_overwrites() throws Exception {
         RegisterRequest req = new RegisterRequest(
-                "Business", "Owner", "retry@test.com", "9000000000", "password123");
+                "Business", "Owner", "retry@test.com", "9000000000", "9000000000", "password123");
 
         PendingRegistration existing = PendingRegistration.builder()
                 .id(5L)
@@ -249,7 +249,7 @@ class AuthServiceTest {
                 .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .build();
         PendingRegistrationPayload payload = new PendingRegistrationPayload(
-                "New Business", "New Owner", "new@test.com", "9000000000", "$2a$12$storedHash");
+                "New Business", "New Owner", "new@test.com", "9000000000", "9000000000", "$2a$12$storedHash");
 
         when(otpService.validateOtp("new@test.com", "123456", OtpPurpose.REGISTRATION))
                 .thenReturn(new OtpValidationResult.Success());
@@ -258,7 +258,7 @@ class AuthServiceTest {
         when(businessRepository.existsByEmail("new@test.com")).thenReturn(false);
         when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
         when(registrationRaceGuard.createBusinessAndUser(
-                eq("New Business"), eq("New Owner"), eq("new@test.com"), eq("9000000000"), anyString()))
+                eq("New Business"), eq("New Owner"), eq("new@test.com"), eq("9000000000"), eq("9000000000"), anyString()))
                 .thenAnswer(inv -> {
                     Business b = Business.builder().id(1L).name(inv.getArgument(0)).build();
                     return User.builder()
@@ -284,7 +284,7 @@ class AuthServiceTest {
 
         ArgumentCaptor<String> passwordHashCaptor = ArgumentCaptor.forClass(String.class);
         verify(registrationRaceGuard).createBusinessAndUser(
-                anyString(), anyString(), anyString(), anyString(), passwordHashCaptor.capture());
+                anyString(), anyString(), anyString(), anyString(), anyString(), passwordHashCaptor.capture());
         assertEquals("$2a$12$storedHash", passwordHashCaptor.getValue());
         verify(passwordEncoder, never()).encode(any());
         verify(pendingRegistrationRepository).delete(pending);
@@ -305,7 +305,7 @@ class AuthServiceTest {
                 .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .build();
         PendingRegistrationPayload payload = new PendingRegistrationPayload(
-                "Dup Business", "Owner", "existing@test.com", "9000000000", "$2a$12$storedHash");
+                "Dup Business", "Owner", "existing@test.com", "9000000000", "9000000000", "$2a$12$storedHash");
 
         when(otpService.validateOtp("existing@test.com", "123456", OtpPurpose.REGISTRATION))
                 .thenReturn(new OtpValidationResult.Success());
@@ -315,7 +315,7 @@ class AuthServiceTest {
 
         assertThrows(DuplicateEmailException.class,
                 () -> authService.verifyRegistrationOtp("existing@test.com", "123456"));
-        verify(registrationRaceGuard, never()).createBusinessAndUser(any(), any(), any(), any(), any());
+        verify(registrationRaceGuard, never()).createBusinessAndUser(any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -332,7 +332,7 @@ class AuthServiceTest {
                 .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .build();
         PendingRegistrationPayload legacy = new PendingRegistrationPayload(
-                "Old Business", "Owner", "legacy@test.com", "9000000000", null);
+                "Old Business", "Owner", "legacy@test.com", "9000000000", "9000000000", null);
 
         when(otpService.validateOtp("legacy@test.com", "123456", OtpPurpose.REGISTRATION))
                 .thenReturn(new OtpValidationResult.Success());
@@ -343,7 +343,7 @@ class AuthServiceTest {
                 () -> authService.verifyRegistrationOtp("legacy@test.com", "123456"));
         assertEquals(ErrorCode.SESSION_EXPIRED, ex.getCode());
         verify(pendingRegistrationRepository).delete(pending);
-        verify(registrationRaceGuard, never()).createBusinessAndUser(any(), any(), any(), any(), any());
+        verify(registrationRaceGuard, never()).createBusinessAndUser(any(), any(), any(), any(), any(), any());
     }
 
     // ── email normalization ────────────────────────────────
@@ -355,7 +355,7 @@ class AuthServiceTest {
     @Test
     void initiateRegistration_duplicateDifferingOnlyInCase_isDetected() {
         RegisterRequest req = new RegisterRequest(
-                "Business", "Owner", "  Existing@Test.com  ", "9000000000", "password123");
+                "Business", "Owner", "  Existing@Test.com  ", "9000000000", "9000000000", "password123");
 
         when(userRepository.existsByEmail("existing@test.com")).thenReturn(true);
 

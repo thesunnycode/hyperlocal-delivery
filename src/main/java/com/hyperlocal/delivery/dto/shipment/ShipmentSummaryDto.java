@@ -22,7 +22,12 @@ public record ShipmentSummaryDto(
         Long agentId,
         String agentName,
         String scheduledAt,
-        String createdAt
+        String createdAt,
+        /** Null unless {@code status} is DELIVERED. Added so a summary list
+         *  — e.g. the agent's own {@code /shipments/mine?status=delivered} —
+         *  can answer "how many delivered in the last N days" without a
+         *  second, per-record fetch of the full {@link ShipmentResponseDto}. */
+        String deliveredAt
 ) {
 
     /**
@@ -39,7 +44,8 @@ public record ShipmentSummaryDto(
                 agent != null ? agent.id() : null,
                 agent != null ? agent.fullName() : null,
                 TimeUtils.toIso(s.getScheduledDeliveryAt()),
-                TimeUtils.toIso(s.getCreatedAt())
+                TimeUtils.toIso(s.getCreatedAt()),
+                TimeUtils.toIso(s.getDeliveredAt())
         );
     }
 }

@@ -7,6 +7,7 @@ import { useToast } from '../../lib/ToastContext.tsx';
 import { useFatalError } from '../../lib/FatalErrorContext.tsx';
 import { initials, isActionableError, cx } from '../../utils/format';
 import type { User } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * OD9 — the owner's own account.
@@ -63,6 +64,7 @@ const CARDS: Editable[] = [
 ];
 
 export default function OwnerAccountPage() {
+  useDocumentTitle('Account');
   const { user, logout, setUser } = useAuth();
   const toast = useToast();
   const { reportError } = useFatalError();

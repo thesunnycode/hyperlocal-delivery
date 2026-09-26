@@ -1,3 +1,46 @@
+/**
+ * Convert a `<input type="date">` + `<input type="time">` pair — read in the
+ * browser's own local zone — into the naive (no zone suffix) UTC wall-clock
+ * string the backend's `LocalDateTime` fields expect.
+ *
+ * The backend documents (and, since the JVM is pinned to UTC at startup, now
+ * actually guarantees) that every bare `LocalDateTime` it stores or returns
+ * represents a UTC instant. A date/time picker hands back the owner's LOCAL
+ * wall-clock reading (e.g. "18:00" meaning 6 PM in Bengaluru), so sending
+ * those digits verbatim silently mislabels a local time as if it were UTC —
+ * which is exactly the bug that shipped a shipment scheduled for 6 PM IST
+ * and displayed it back as 11:30 PM. Building a real `Date` from the
+ * components lets JavaScript do the local→UTC conversion, and slicing its
+ * ISO string down to the naive digits (dropping the trailing "Z" and the
+ * milliseconds) is what the API can actually parse into a `LocalDateTime`.
+ */
+export function localDateTimeToUtcNaive(date: string, time: string): string | undefined {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  const timeMatch = /^(\d{2}):(\d{2})$/.exec(time);
+  if (!dateMatch || !timeMatch) return undefined;
+  const [, y, mo, d] = dateMatch;
+  const [, h, mi] = timeMatch;
+  const local = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), 0, 0);
+  if (Number.isNaN(local.getTime())) return undefined;
+  return local.toISOString().slice(0, 19);
+}
+
+/**
+ * The inverse of {@link localDateTimeToUtcNaive} — for pre-filling a
+ * `date`/`time` input pair from a UTC ISO instant the API returned, in the
+ * viewer's own local zone.
+ */
+export function utcIsoToLocalDateTimeParts(iso: string | null | undefined): { date: string; time: string } {
+  if (!iso) return { date: '', time: '' };
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { date: '', time: '' };
+  const z = (n: number) => String(n).padStart(2, '0');
+  return {
+    date: `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`,
+    time: `${z(d.getHours())}:${z(d.getMinutes())}`
+  };
+}
+
 export function initials(name = ''): string {
   return name
     .trim()

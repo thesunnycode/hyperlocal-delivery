@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X, XCircle, Trash2 } from 'lucide-react';
-import { formatDateTime, formatTime } from '../utils/format';
+import { Copy, Check, ExternalLink, ArrowLeft, Lock, UserCog, Undo2, X, XCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { formatDateTime, formatTime, shortToken } from '../utils/format';
 import { STATUS_META, isTerminal, canReassignAgent, canRestoreToAssigned, canCancel } from '../utils/statusMachine';
 import type { Shipment } from '../types/api';
 
@@ -59,6 +59,7 @@ export default function ShipmentDetailPanel({
   const canDeleteShipment = shipment.status === 'cancelled';
   const attempts = shipment.attempts || [];
   const events = shipment.events || [];
+  const latestAttempt = attempts.length > 0 ? attempts[attempts.length - 1] : null;
 
   /* Attempts and status events interleaved into one list, oldest first. A
      failed attempt already produces a status event at the same instant, so
@@ -133,7 +134,14 @@ export default function ShipmentDetailPanel({
             <h2>{shipment.customerName}</h2>
             <span className={`ow-badge lg b-${shipment.status}`}>{meta?.label ?? shipment.status}</span>
           </div>
-          <div className="tok">{shipment.token}</div>
+          {/* A 36-char UUID under the customer's name was the least useful
+              string on the card, sitting in the second-most prominent slot.
+              The due time is what an owner actually reads here; the full
+              token stays available, in full, in the tracking-link block
+              below. */}
+          <div className="tok">
+            {shipment.scheduledAt ? `Due ${formatDateTime(shipment.scheduledAt)}` : `#${shortToken(shipment.token)}`}
+          </div>
         </div>
         {/* F4: ow-dhead-acts replaces style={{ display:'flex', gap:8, ... }} */}
         <div className="ow-dhead-acts">
@@ -172,6 +180,20 @@ export default function ShipmentDetailPanel({
         </div>
       </div>
 
+      {shipment.status === 'failed' && latestAttempt && (
+        <div className="ow-fail-callout">
+          <AlertTriangle size={18} strokeWidth={2.1} aria-hidden="true" />
+          <div>
+            <b>{latestAttempt.reason || latestAttempt.failureReason || 'Delivery attempted'}</b>
+            <span>
+              {latestAttempt.note ? `“${latestAttempt.note}”` : 'No note from the rider.'}
+              {' '}— attempt {latestAttempt.no ?? latestAttempt.attemptNumber} of 3
+              {latestAttempt.agentName ? ` · ${latestAttempt.agentName}` : ''}
+            </span>
+          </div>
+        </div>
+      )}
+
       {!canChangeAgent && (
         /* F4: ow-lock-top replaces style={{ marginTop: 14 }} */
         <p className="ow-lock ow-lock-top">
@@ -191,7 +213,10 @@ export default function ShipmentDetailPanel({
         <dt>Customer phone</dt><dd className="mono">{shipment.customerPhone || '—'}</dd>
         <dt>Rider</dt><dd>{shipment.agentName || 'Unassigned'}</dd>
         <dt>Scheduled</dt><dd>{formatDateTime(shipment.scheduledAt)}</dd>
-        <dt>Delivered</dt><dd>{shipment.deliveredAt ? formatDateTime(shipment.deliveredAt) : '—'}</dd>
+        {/* Only when it applies — "Delivered —" on a failed or in-flight
+            shipment is a row answering a question nobody asked, on the one
+            card whose whole job is the record's actual facts. */}
+        {shipment.deliveredAt && (<><dt>Delivered</dt><dd>{formatDateTime(shipment.deliveredAt)}</dd></>)}
         <dt>Created</dt><dd>{formatDateTime(shipment.createdAt)}</dd>
       </dl>
 

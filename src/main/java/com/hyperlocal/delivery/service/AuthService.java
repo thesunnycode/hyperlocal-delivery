@@ -121,6 +121,7 @@ public class AuthService {
                 req.ownerName(),
                 normalizedEmail,
                 req.phone(),
+                req.businessPhone(),
                 passwordEncoder.encode(req.password()));
 
         String payloadJson;
@@ -219,7 +220,7 @@ public class AuthService {
         // Create Business + User + tokens from the already-hashed payload
         AuthResponse response = createAccount(
                 payload.businessName(), payload.ownerName(), payload.email(),
-                payload.phone(), payload.passwordHash());
+                payload.phone(), payload.businessPhone(), payload.passwordHash());
 
         // Clean up the pending registration
         pendingRegistrationRepository.delete(pending);
@@ -243,7 +244,7 @@ public class AuthService {
      * annotation on a private method anyway, and the caller already carries it.
      */
     private AuthResponse createAccount(String businessName, String ownerName, String email,
-                                       String phone, String passwordHash) {
+                                       String phone, String businessPhone, String passwordHash) {
         // Defensive recheck: another registration may have completed between
         // the OTP being sent and this verification.
         if (businessRepository.existsByEmail(email) || userRepository.existsByEmail(email)) {
@@ -252,7 +253,8 @@ public class AuthService {
 
         User user;
         try {
-            user = registrationRaceGuard.createBusinessAndUser(businessName, ownerName, email, phone, passwordHash);
+            user = registrationRaceGuard.createBusinessAndUser(
+                    businessName, ownerName, email, phone, businessPhone, passwordHash);
         } catch (DataIntegrityViolationException e) {
             // Another concurrent verify-registration-otp call for this exact
             // email won the race between the recheck above and the insert

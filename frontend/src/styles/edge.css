@@ -49,7 +49,7 @@
 .es-brand .mk { width: 26px; height: 26px; border-radius: 6px; background: var(--es-brand);
   color: #fff; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: none; }
 .es-brand b { font-size: 14px; font-weight: 600; color: var(--es-ink); letter-spacing: -0.015em; }
-.es-top .ref { font-family: var(--es-mono); font-size: 10px; letter-spacing: 0.14em;
+.es-top .ref { font-family: var(--es-mono); font-size: 12px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--es-muted); }
 
 .es-main { flex: 1; display: grid; place-items: center; padding: 40px 22px 56px; }
@@ -80,7 +80,7 @@
 .es-ref { display: flex; align-items: center; gap: 10px; margin: 20px 0 0; padding: 10px 12px;
   border: 1px solid var(--es-line-2); border-radius: 9px; background: var(--es-card);
   text-align: left; }
-.es-ref span { font-family: var(--es-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+.es-ref span { font-family: var(--es-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--es-muted); }
 .es-ref code { font-family: var(--es-mono); font-size: 12.5px; color: var(--es-ink); }
 

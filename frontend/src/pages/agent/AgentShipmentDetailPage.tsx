@@ -10,6 +10,7 @@ import { STATUS_META, AGENT_NEXT, FAILURE_REASONS, FLOW, isTerminal } from '../.
 import { telHref, mapsHref, formatDateTime, formatTime, shortToken } from '../../utils/format';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import { useModalBehaviour } from '../../lib/useModalBehaviour';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 import type { FailureReason, Shipment, ShipmentStatus } from '../../types/api';
 
 /**
@@ -58,12 +59,19 @@ export default function AgentShipmentDetailPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [shipment, setShipment] = useState<Shipment | null>(null);
+  useDocumentTitle(shipment?.customerName ?? 'Shipment');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reason, setReason] = useState<FailureReason | null>(null);
   const [sheetNote, setSheetNote] = useState('');
   const [sheetError, setSheetError] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmSpec | null>(null);
   const [attemptBusy, setAttemptBusy] = useState(false);
+  // Guards the one-tap advance (pickup/transit/out-for-delivery) against a
+  // double-tap firing the same status change twice before the reload from
+  // the first call replaces the button. The confirm-gated outcomes
+  // (delivered/returned) already get this for free — the dialog closes on
+  // the first click, before a second one could land.
+  const [advanceBusy, setAdvanceBusy] = useState(false);
   const [note, setNote] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
   const sheetPanel = useModalBehaviour(sheetOpen, () => setSheetOpen(false));
@@ -105,14 +113,20 @@ export default function AgentShipmentDetailPage() {
   const terminal = isTerminal(shipment.status) || shipment.status === 'failed';
 
   const doAdvance = async (n: string) => {
+    if (advanceBusy) return;
     const advance = ADVANCE_FN[shipment.status];
     // Both exist for exactly the states whose dock offers a forward move,
     // which is the only way to reach this. Guards for the compiler.
     if (!advance || !step) return;
-    await advance(id ?? '', n);
-    toast(`Marked ${STATUS_META[step.next].label.toLowerCase()}.`, 'default');
-    setNote(''); setNoteOpen(false);
-    load();
+    setAdvanceBusy(true);
+    try {
+      await advance(id ?? '', n);
+      toast(`Marked ${STATUS_META[step.next].label.toLowerCase()}.`, 'default');
+      setNote(''); setNoteOpen(false);
+      load();
+    } finally {
+      setAdvanceBusy(false);
+    }
   };
 
   const onAdvance = () => {
@@ -172,7 +186,12 @@ export default function AgentShipmentDetailPage() {
           <ChevronLeft size={19} strokeWidth={2.4} />
         </button>
         <div>
-          <div className="ag-bar-tok" title={shipment.token}>{shortToken(shipment.token)}</div>
+          {/* A truncated UUID over the customer's name said "token" to
+              nobody. Due time is what a rider actually reads here; the full
+              token is still available (title=) for anyone who needs it. */}
+          <div className="ag-bar-tok" title={shipment.token}>
+            {shipment.scheduledAt ? `Due ${formatTime(shipment.scheduledAt)}` : `#${shortToken(shipment.token)}`}
+          </div>
           <div className="ag-bar-name">{shipment.customerName}</div>
         </div>
       </div>
@@ -297,17 +316,17 @@ export default function AgentShipmentDetailPage() {
             )}
 
             <button type="button" className={`ag-cta${step.kind === 'OUTCOME' ? ' ag-outcome' : ''}`}
-              onClick={onAdvance}>
-              {step.cta} <ArrowRight size={17} strokeWidth={2.2} />
+              onClick={onAdvance} disabled={advanceBusy} aria-busy={advanceBusy || undefined}>
+              {advanceBusy ? 'Saving…' : step.cta} <ArrowRight size={17} strokeWidth={2.2} />
             </button>
 
             {step.fork && (
               <div className="ag-fork">
-                <button type="button" className="ag-danger"
+                <button type="button" className="ag-danger" disabled={advanceBusy}
                   onClick={() => { setSheetNote((s) => s || note); setSheetOpen(true); }}>
                   <AlertTriangle size={16} strokeWidth={2.1} /> Log failed attempt
                 </button>
-                <button type="button" onClick={onMarkReturned}>
+                <button type="button" onClick={onMarkReturned} disabled={advanceBusy}>
                   <Undo2 size={16} strokeWidth={2.1} /> Return
                 </button>
               </div>

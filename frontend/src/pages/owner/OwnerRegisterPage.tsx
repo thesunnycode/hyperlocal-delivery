@@ -9,6 +9,7 @@ import { useFatalError } from '../../lib/FatalErrorContext.tsx';
 import { formatDateTime, shortToken, cx } from '../../utils/format';
 import { STATUS_META } from '../../utils/statusMachine';
 import type { AgentSummary, ShipmentStatus, ShipmentSummary } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 const STATUS_OPTIONS: ['all' | ShipmentStatus, string][] = [
   ['all', 'All statuses'], ['assigned', 'Assigned'], ['picked_up', 'Picked up'],
@@ -69,6 +70,7 @@ const COLUMNS: { key: SortKey | null; label: string; cell?: string }[] = [
 const SK = ['ow-sk-c1', 'ow-sk-c2', 'ow-sk-c3', 'ow-sk-c4', 'ow-sk-c5', 'ow-sk-c6', 'ow-sk-c7'];
 
 export default function OwnerRegisterPage() {
+  useDocumentTitle('Register');
   const navigate = useNavigate();
   const toast = useToast();
   const { reportError } = useFatalError();

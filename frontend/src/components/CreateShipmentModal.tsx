@@ -1,7 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { X, AlertTriangle } from 'lucide-react';
 import { useModalBehaviour } from '../lib/useModalBehaviour';
+import { localDateTimeToUtcNaive } from '../utils/format';
+import { fieldErrorFrom, type FieldError } from '../utils/apiErrors';
 
 /**
  * What the form hands back. `scheduledAt` is optional here even though
@@ -52,6 +54,14 @@ export default function CreateShipmentModal({
   const [error, setError] = useState<string | null>(null);
   const [isAgentError, setIsAgentError] = useState(false);
   const [windowError, setWindowError] = useState<string | null>(null);
+  // Per-field errors: from a client-side required check on submit, or from
+  // the server naming a field (bad phone format, an over-long address).
+  // Rendered with the same `.ow-f.bad` / `.bad-msg` treatment the window
+  // pair already uses, and routed through `friendlyValidationMessage` so a
+  // Bean Validation regex never reaches the screen (it used to: typing the
+  // *exact* phone placeholder shown on this form failed its own pattern and
+  // showed `must match "[+\d\s\-]{7,20}"` verbatim).
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const panel = useModalBehaviour(open, onClose);
 
   // F1: reset the form whenever the modal closes so stale data does not
@@ -62,18 +72,68 @@ export default function CreateShipmentModal({
       setError(null);
       setIsAgentError(false);
       setWindowError(null);
+      setFieldErrors({});
     }
   }, [open]);
+
+  /** "Today 6–8 PM", "Tomorrow morning"… quick delivery-window picks. Each
+   *  sets a single point in time (the schema has no range, just one
+   *  `scheduledAt`) but saves the owner two native pickers for the common
+   *  case. Computed from the *local* clock — see localDateTimeToUtcNaive for
+   *  why that matters once this leaves the form. */
+  const quickPicks = useMemo(() => {
+    const now = new Date();
+    const at = (daysAhead: number, hour: number) => {
+      const d = new Date(now);
+      d.setDate(d.getDate() + daysAhead);
+      d.setHours(hour, 0, 0, 0);
+      const z = (n: number) => String(n).padStart(2, '0');
+      return { date: `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`, time: `${z(hour)}:00` };
+    };
+    const picks = [
+      { label: 'This evening', ...at(0, 18) },
+      { label: 'Tomorrow morning', ...at(1, 10) },
+      { label: 'Tomorrow afternoon', ...at(1, 15) }
+    ];
+    // Past a picker whose hour has already gone by today reads as a promise
+    // to arrive in the past — drop it rather than let the owner tap it.
+    return picks.filter((p) => new Date(`${p.date}T${p.time}:00`) > now);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps -- recomputed each time the sheet opens, not every render
 
   if (!open) return null;
 
   const halfWindow = (form.date && !form.time) || (!form.date && form.time);
+
+  const setField = (key: keyof typeof EMPTY) => (value: string) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setFieldErrors((fe) => {
+      if (!(key in fe)) return fe;
+      const next = { ...fe };
+      delete next[key];
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (busy) return;
     setError(null);
     setIsAgentError(false);
+
+    // Client-side required check, replacing the browser's own native-bubble
+    // validation (`noValidate` below) — those bubbles are a third, visually
+    // inconsistent error style next to the auth screens' inline banners and
+    // this form's own window-pair error.
+    const required: Record<string, string> = {};
+    if (!form.customerName.trim()) required.customerName = 'Enter the customer’s name.';
+    if (!form.customerPhone.trim()) required.customerPhone = 'Enter a phone number.';
+    if (!form.address.trim()) required.address = 'Enter the delivery address.';
+    if (Object.keys(required).length > 0) {
+      setFieldErrors(required);
+      return;
+    }
+    setFieldErrors({});
+
     if (halfWindow) {
       setWindowError(form.date
         ? 'Add a time as well, or clear the date — a date on its own is not saved.'
@@ -81,7 +141,7 @@ export default function CreateShipmentModal({
       return;
     }
     setWindowError(null);
-    const scheduledAt = form.date && form.time ? `${form.date}T${form.time}` : undefined;
+    const scheduledAt = form.date && form.time ? localDateTimeToUtcNaive(form.date, form.time) : undefined;
     try {
       await onSubmit({
         customerName: form.customerName,
@@ -91,6 +151,19 @@ export default function CreateShipmentModal({
       });
       // On success the parent closes us — reset handled by the open effect above.
     } catch (err) {
+      const fe: FieldError | null = fieldErrorFrom(err);
+      if (fe?.field === 'customerPhone' || fe?.field === 'phone') {
+        setFieldErrors({ customerPhone: fe.message });
+        return;
+      }
+      if (fe?.field === 'address' || fe?.field === 'deliveryAddress') {
+        setFieldErrors({ address: fe.message });
+        return;
+      }
+      if (fe?.field === 'customerName') {
+        setFieldErrors({ customerName: fe.message });
+        return;
+      }
       const message = err instanceof Error ? err.message : '';
       // F5: detect the no-agents condition via the error CODE (parent already
       // validated body.code === 'NO_AGENTS_AVAILABLE' and carries it on the
@@ -102,7 +175,7 @@ export default function CreateShipmentModal({
       // message can't break this check the same way.
       const agentErr = (err as { code?: string } | null)?.code === 'NO_AGENTS_AVAILABLE';
       setIsAgentError(agentErr);
-      setError(message || 'Could not create the shipment.');
+      setError((fe ? fe.message : message) || 'Could not create the shipment.');
     }
   };
 
@@ -117,7 +190,7 @@ export default function CreateShipmentModal({
           </button>
         </div>
 
-        <form id="ow-create-form" onSubmit={handleSubmit} className="ow-sheet-b">
+        <form id="ow-create-form" onSubmit={handleSubmit} className="ow-sheet-b" noValidate>
           {error && (
             // F2: role="alert" so AT announces the error on render
             // F6: margin:0 now lives in owner.css — no inline style needed
@@ -140,21 +213,41 @@ export default function CreateShipmentModal({
             </p>
           )}
 
-          <div className="ow-f">
+          <div className={`ow-f${fieldErrors.customerName ? ' bad' : ''}`}>
             <label htmlFor="c-name">Customer name</label>
             <input id="c-name" value={form.customerName} required placeholder="Priya Menon"
-              onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))} />
+              aria-invalid={fieldErrors.customerName ? 'true' : undefined}
+              onChange={(e) => setField('customerName')(e.target.value)} />
+            {fieldErrors.customerName && (
+              <p className="bad-msg" role="alert">
+                <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" />
+                <span>{fieldErrors.customerName}</span>
+              </p>
+            )}
           </div>
-          <div className="ow-f">
+          <div className={`ow-f${fieldErrors.customerPhone ? ' bad' : ''}`}>
             <label htmlFor="c-phone">Phone</label>
             <input id="c-phone" type="tel" value={form.customerPhone} required placeholder="+91 98455 20114"
-              onChange={(e) => setForm((f) => ({ ...f, customerPhone: e.target.value }))} />
+              aria-invalid={fieldErrors.customerPhone ? 'true' : undefined}
+              onChange={(e) => setField('customerPhone')(e.target.value)} />
+            {fieldErrors.customerPhone && (
+              <p className="bad-msg" role="alert">
+                <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" />
+                <span>{fieldErrors.customerPhone}</span>
+              </p>
+            )}
           </div>
-          <div className="ow-f">
+          <div className={`ow-f${fieldErrors.address ? ' bad' : ''}`}>
             <label htmlFor="c-addr">Delivery address</label>
             <textarea id="c-addr" value={form.address} required placeholder="Flat 402, Brigade Gardenia"
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
-            <p className="hint">Written exactly as the rider will read it at the door.</p>
+              aria-invalid={fieldErrors.address ? 'true' : undefined}
+              onChange={(e) => setField('address')(e.target.value)} />
+            {fieldErrors.address
+              ? <p className="bad-msg" role="alert">
+                  <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" />
+                  <span>{fieldErrors.address}</span>
+                </p>
+              : <p className="hint">Written exactly as the rider will read it at the door.</p>}
           </div>
 
           <div className={`ow-f${windowError ? ' bad' : ''}`}>
@@ -164,6 +257,19 @@ export default function CreateShipmentModal({
                 overriding anything visible. */}
             <label htmlFor="c-date">Delivery window · optional</label>
             <label htmlFor="c-time" className="sr-only">Delivery time</label>
+
+            {quickPicks.length > 0 && (
+              <div className="ow-quickpicks" role="group" aria-label="Quick delivery window picks">
+                {quickPicks.map((p) => (
+                  <button key={p.label} type="button" className="ow-chip-sm"
+                    aria-pressed={form.date === p.date && form.time === p.time}
+                    onClick={() => { setForm((f) => ({ ...f, date: p.date, time: p.time })); setWindowError(null); }}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* F7: ow-window-row replaces style={{ display:'flex', gap:10 }} */}
             <div className="ow-window-row">
               {/* F7: ow-window-input replaces style={{ flex:1 }} */}
