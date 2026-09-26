@@ -11,6 +11,7 @@ import OtpInput from '../components/OtpInput.tsx';
 import ResendCodeButton from '../components/ResendCodeButton.tsx';
 import PasswordStrength from '../components/PasswordStrength.tsx';
 import type { InvitePreview, OtpErrorBody } from '../types/api';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 /**
  * Password reset, all three backend steps on one route:
@@ -55,6 +56,7 @@ type Step = 'email' | 'code' | 'password' | 'done';
 type AuthErr = { message: string; detail?: string };
 
 export default function ForgotPasswordPage({ mode = 'reset' }: { mode?: 'reset' | 'setup' }) {
+  useDocumentTitle(mode === 'setup' ? 'Set up your account' : 'Reset your password');
   const [params] = useSearchParams();
   const setup = mode === 'setup';
 

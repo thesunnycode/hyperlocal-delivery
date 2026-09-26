@@ -6,6 +6,7 @@ import { useToast } from '../../lib/ToastContext.tsx';
 import { useFatalError } from '../../lib/FatalErrorContext.tsx';
 import { cx, initials } from '../../utils/format';
 import type { AgentPerformanceRow } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /** Every column header is clickable, so the sort key is one of their ids. */
 type SortKey =
@@ -54,6 +55,7 @@ function failRate(a: AgentPerformanceRow): number | null {
  * operations app, where edit and deactivate live.
  */
 export default function AdminAgentPerformancePage() {
+  useDocumentTitle('Rider performance');
   const toast = useToast();
   const { reportError } = useFatalError();
   const [rows, setRows] = useState<AgentPerformanceRow[] | null>(null);
@@ -173,7 +175,15 @@ export default function AdminAgentPerformancePage() {
                         : <span style={{
                           fontWeight: 600,
                           color: failRate(a)! > 0.1 ? 'var(--rp-failed)' : 'var(--rp-ink)'
-                        }}>{(failRate(a)! * 100).toFixed(1)}%</span>}
+                        }}>
+                          {(failRate(a)! * 100).toFixed(1)}%
+                          {/* "100.0%" from one failed delivery reads as a
+                              track record rather than the coin-flip it is —
+                              name the finished count it's actually built on. */}
+                          {(a.delivered ?? 0) + (a.failed ?? 0) < 5 && (
+                            <span className="rp-fail-n"> ({(a.delivered ?? 0) + (a.failed ?? 0)})</span>
+                          )}
+                        </span>}
                     </td>
                     <td className={cx('r', sort === 'returned' && 'on', 'rp-muted-cell')}>{a.returned}</td>
                     <td className={cx('r', sort === 'open' && 'on')}>{a.open}</td>

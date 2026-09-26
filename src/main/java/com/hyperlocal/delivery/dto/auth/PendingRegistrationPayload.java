@@ -18,6 +18,7 @@ public record PendingRegistrationPayload(
         String ownerName,
         String email,
         String phone,
+        String businessPhone,
         String passwordHash
 ) {
 }

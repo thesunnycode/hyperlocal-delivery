@@ -198,6 +198,8 @@ export type ShipmentSummary = {
   agentName: string | null;
   scheduledAt: string | null;
   createdAt: string | null;
+  /** Null unless `status` is 'delivered'. */
+  deliveredAt: string | null;
 };
 
 /**
@@ -290,6 +292,8 @@ export type Agent = {
   failedCount: number;
   joinedAt: string | null;
   updatedAt: string | null;
+  /** True once this agent has spent an invite and set their own password. */
+  activated: boolean;
 };
 
 /**
@@ -323,6 +327,8 @@ export type AgentSummary = {
   active: boolean;
   openCount: number;
   createdAt: string | null;
+  /** True once this agent has spent an invite and set their own password. */
+  activated: boolean;
 };
 
 // ─── Reporting (owner-only, read-only) ───────────────────────────────────
@@ -419,6 +425,9 @@ export type RegisterBody = {
   ownerName: string;
   email: string;
   phone: string;
+  /** The number the tracking page tells a customer to call. Required — a
+   *  business with none can never show a Call button on /track/:token. */
+  businessPhone: string;
   /** Minimum 8 characters, enforced server-side. */
   password: string;
 };

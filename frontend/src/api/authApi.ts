@@ -38,11 +38,12 @@ export function registerOwner({
   ownerName,
   email,
   phone,
+  businessPhone,
   password
 }: RegisterBody) {
   return apiFetch<OtpSent>('/auth/register', {
     method: 'POST',
-    body: { businessName, ownerName, email, phone, password },
+    body: { businessName, ownerName, email, phone, businessPhone, password },
     skipAuth: true
   });
 }

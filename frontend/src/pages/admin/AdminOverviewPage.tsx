@@ -5,6 +5,7 @@ import { getOverview } from '../../api/reportsApi';
 import { useFatalError } from '../../lib/FatalErrorContext.tsx';
 import DayBars from '../../components/DayBars.tsx';
 import type { OverviewReport } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * AD1 — read-only. Nothing here writes.
@@ -25,6 +26,7 @@ type OverviewState = OverviewReport | { empty: true };
 const RANGES: [string, string][] = [['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
 
 export default function AdminOverviewPage() {
+  useDocumentTitle('Overview');
   const navigate = useNavigate();
   const { reportError } = useFatalError();
   const [range, setRange] = useState('30');
@@ -109,13 +111,30 @@ export default function AdminOverviewPage() {
   const failures = reasons.reduce((a, r) => a + (r.count || 0), 0);
 
   /* Each KPI's story is one number, so these are stat tiles. An eight-hue
-     chart for a single figure is the commonest way a chart misses its point. */
-  const kpis: [string, string, string][] = [
-    ['Delivered', String(data.delivered ?? 0), ''],
-    ['On time', String(data.onTimeRate ?? 0), '%'],
-    ['Failed', String(data.failed ?? 0), ''],
-    ['First attempt', String(data.firstAttemptRate ?? 0), '%'],
-    ['Avg delivery', String(data.avgDeliveryHours ?? 0), 'h']
+     chart for a single figure is the commonest way a chart misses its point.
+     On time and First attempt are both computed over `delivered` (see
+     AnalyticsService — same denominator for both), so "100%" from a single
+     delivery reads as a track record instead of the coin-flip it is. A small
+     sample gets its fraction spelled out instead of hiding behind a rate;
+     zero deliveries gets "—" rather than a confident "0%"/"0h" for a number
+     that was never actually computed. */
+  const delivered = data.delivered ?? 0;
+  const SMALL_SAMPLE = 5;
+  // The numerator behind each rate isn't in this response (only the
+  // pre-computed percentage is) — reconstructing it by multiplying the rate
+  // back out would risk a fraction that doesn't actually match the backend's
+  // integer math. Naming the sample size next to the rate is the honest
+  // version: it tells the owner "100%" is one delivery, not a track record,
+  // without inventing a numerator this page was never given.
+  const sampleNote = delivered > 0 && delivered < SMALL_SAMPLE
+    ? `From ${delivered} ${delivered === 1 ? 'delivery' : 'deliveries'}`
+    : undefined;
+  const kpis: [string, string, string, string | undefined][] = [
+    ['Delivered', String(delivered), '', undefined],
+    ['On time', delivered === 0 ? '—' : String(data.onTimeRate ?? 0), delivered === 0 ? '' : '%', sampleNote],
+    ['Failed', String(data.failed ?? 0), '', undefined],
+    ['First attempt', delivered === 0 ? '—' : String(data.firstAttemptRate ?? 0), delivered === 0 ? '' : '%', sampleNote],
+    ['Avg delivery', delivered === 0 ? '—' : String(data.avgDeliveryHours ?? 0), delivered === 0 ? '' : 'h', undefined]
   ];
 
   return (
@@ -123,10 +142,11 @@ export default function AdminOverviewPage() {
       {toolbar}
       <div className="rp-wrap">
         <dl className="rp-kpis">
-          {kpis.map(([label, value, unit]) => (
+          {kpis.map(([label, value, unit, note]) => (
             <div className="rp-kpi" key={label}>
               <dt>{label}</dt>
               <dd>{value}{unit && <small>{unit}</small>}</dd>
+              {note && <div className="rp-kpi-note">{note}</div>}
             </div>
           ))}
         </dl>

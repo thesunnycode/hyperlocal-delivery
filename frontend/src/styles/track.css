@@ -52,7 +52,7 @@
   flex: none; display: grid; place-items: center; font-size: 16px; font-weight: 700;
 }
 .tk-kick {
-  font-family: var(--tk-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em;
+  font-family: var(--tk-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--tk-muted); margin-bottom: 3px;
 }
 .tk-who { font-size: 15px; font-weight: 600; color: var(--tk-ink); letter-spacing: -0.015em; }
@@ -94,7 +94,7 @@
 .tk-quiet b { color: var(--tk-ink); font-weight: 600; }
 
 .tk-updated {
-  margin-top: 14px; font-family: var(--tk-mono); font-size: 11px; letter-spacing: 0.04em;
+  margin-top: 14px; font-family: var(--tk-mono); font-size: 12px; letter-spacing: 0.04em;
   color: var(--tk-muted); display: flex; align-items: center; gap: 8px;
 }
 .tk-refresh {
@@ -121,7 +121,7 @@
 .tk-seg { flex: 1; height: 3px; background: var(--tk-line-2); }
 .tk-seg.done { background: var(--tk-delivered); }
 .tk-lbls { display: flex; justify-content: space-between; margin-top: 12px; gap: 6px; }
-.tk-lbls span { font-size: 10.5px; color: var(--tk-muted); text-align: center; flex: 1; line-height: 1.25; }
+.tk-lbls span { font-size: 12px; color: var(--tk-muted); text-align: center; flex: 1; line-height: 1.25; }
 .tk-lbls span:first-child { text-align: left; }
 .tk-lbls span:last-child { text-align: right; }
 .tk-lbls span.on { color: var(--tk-ink); font-weight: 600; }
@@ -195,7 +195,7 @@
 
 .tk-foot {
   margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--tk-line);
-  font-family: var(--tk-mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--tk-muted);
+  font-family: var(--tk-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--tk-muted);
   display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
 }
 

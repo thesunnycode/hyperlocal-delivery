@@ -55,13 +55,14 @@ class RegistrationRaceGuard {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User createBusinessAndUser(String businessName, String ownerName, String email,
-                                       String phone, String passwordHash) {
+                                       String phone, String businessPhone, String passwordHash) {
         // passwordHash on Business is a legacy NOT NULL column never
         // consulted for authentication (only User.passwordHash is) — store
         // a non-authenticable placeholder to satisfy the constraint.
         Business business = Business.builder()
                 .name(businessName)
                 .email(email)
+                .phone(businessPhone)
                 .passwordHash("{noop}NOT_USED_FOR_AUTH")
                 .build();
         business = businessRepository.save(business);

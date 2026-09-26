@@ -5,6 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f7f9fb">
 <title>Hyperlocal</title>
+<meta name="description" content="Assign a rider, watch a shipment move, and send your customer a tracking link that just works — no app to install, no calls asking where it is.">
+<!-- Static, generic OG/Twitter tags: this is a client-rendered SPA with no
+     server-side rendering, so a crawler that does not execute JS (WhatsApp's
+     link-preview bot among them) only ever sees these values, never the
+     per-shipment title CustomerTrackingPage sets via document.title. Genuinely
+     per-shipment previews ("Out for delivery from Nandini Stores") would need
+     SSR or a prerender step for /track/:token specifically — out of scope
+     here, but these at least mean a shared tracking link stops arriving with
+     a blank icon and no name in the preview card. -->
+<meta property="og:site_name" content="Hyperlocal">
+<meta property="og:title" content="Hyperlocal Delivery">
+<meta property="og:description" content="Track your delivery — no app to install, no login needed.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<!-- SVG favicon: modern, scalable, and this app ships no build step that
+     could generate PNG sizes — see manifest.webmanifest for the same asset
+     reused as the PWA/home-screen icon. -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
 <!-- Fonts are linked here rather than @imported from CSS, so the request can
      start in parallel with the stylesheet — it matters most on the public
      /track/:token page, which arrives cold from a WhatsApp link on mobile data.

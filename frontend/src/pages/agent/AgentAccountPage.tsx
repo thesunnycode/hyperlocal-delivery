@@ -8,6 +8,7 @@ import { formatDate, isActionableError } from '../../utils/format';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import { useModalBehaviour } from '../../lib/useModalBehaviour';
 import type { User } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * A6 — the agent's own account.
@@ -29,6 +30,7 @@ import type { User } from '../../types/api';
  * immediately and replaced when the call lands, so the page never blocks.
  */
 export default function AgentAccountPage() {
+  useDocumentTitle('Account');
   const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();

@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle, WifiOff, X, Undo2, type LucideIcon } from 'lucide-react';
 import { cx } from '../utils/format';
 import type { Toast, ToastTone } from '../lib/ToastContext.tsx';
@@ -35,12 +36,23 @@ export default function ToastStack({
   /** Run the toast's action, then dismiss it. */
   onAct?: (id: number) => void;
 }) {
+  // Rider screens keep a sticky action dock pinned to the bottom
+  // (`AgentShipmentDetailPage`'s `.ag-dock`) — the one legal next move,
+  // always in reach on a screen used one-handed at a door. A bottom-pinned
+  // toast used to land exactly on top of it: the moment a status change
+  // revealed "Log failed attempt" and "Return", the confirmation toast
+  // covered both, and hovering/tapping there paused its own auto-dismiss
+  // timer, freezing it in place. Anchor to the top on every `/agent` route
+  // instead, clear of the dock on every screen that has one.
+  const { pathname } = useLocation();
+  const topAnchored = pathname.startsWith('/agent');
+
   return (
     /* The container is the live region. Items no longer carry role="alert" as
        well — a polite container plus an assertive child announced the same
        message twice on NVDA and JAWS. The container's politeness is enough:
        these are consequences of something the user just did. */
-    <div className="ts" aria-live="polite" aria-relevant="additions text">
+    <div className={cx('ts', topAnchored && 'ts-top')} aria-live="polite" aria-relevant="additions text">
       {toasts.map((t) => {
         const Icon = ICON_BY_TONE[t.tone] || CheckCircle2;
         return (

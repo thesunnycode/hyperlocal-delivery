@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import EdgeStateCard from '../components/EdgeStateCard.tsx';
 import { useAuth } from '../lib/AuthContext.tsx';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 /**
  * The catch-all 404 — a mistyped or stale URL anywhere in the app.
@@ -19,6 +20,7 @@ import { useAuth } from '../lib/AuthContext.tsx';
  * which is a bug worth hearing about.
  */
 export default function NotFoundPage() {
+  useDocumentTitle('Page not found');
   const navigate = useNavigate();
   const { isAuthenticated, isOwner } = useAuth();
   const home = isAuthenticated ? (isOwner ? '/owner/shipments' : '/agent/assignments') : '/login';

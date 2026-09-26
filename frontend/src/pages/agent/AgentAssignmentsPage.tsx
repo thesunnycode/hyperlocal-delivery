@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/AuthContext.tsx';
 import { formatTime } from '../../utils/format';
 import { isTerminal, STATUS_META } from '../../utils/statusMachine';
 import type { ShipmentStatus, ShipmentSummary } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 /**
  * A3 — read-only. Nothing advances from here; every mutation happens in A4,
@@ -41,10 +42,19 @@ function initials(name: string | null | undefined): string {
 }
 
 export default function AgentAssignmentsPage() {
+  useDocumentTitle('Today');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'ready' | 'expired'>('loading');
   const [ships, setShips] = useState<ShipmentSummary[]>([]);
+  // A separate fetch: `listMyShipments()` with no status — what `ships`
+  // holds — only ever returns NON-terminal shipments (see
+  // ShipmentService.myAssignments/NON_TERMINAL_FOR_REASSIGNMENT), which does
+  // not include `delivered`. The stat strip used to compute "Delivered · 7d"
+  // by filtering `ships` for status === 'delivered' — a set that can never
+  // contain one, so the figure was a permanent, silent 0 regardless of how
+  // many the rider actually delivered.
+  const [delivered, setDelivered] = useState<ShipmentSummary[]>([]);
   const [everLoaded, setEverLoaded] = useState(false);
   const [filter, setFilter] = useState('all');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -53,8 +63,12 @@ export default function AgentAssignmentsPage() {
   const load = useCallback(async () => {
     setRefreshing(true);
     try {
-      const data = await listMyShipments();
-      setShips(data || []);
+      const [open, deliveredList] = await Promise.all([
+        listMyShipments(),
+        listMyShipments({ status: 'delivered' })
+      ]);
+      setShips(open || []);
+      setDelivered(deliveredList || []);
       setEverLoaded(true);
       setStatus('ready');
     } catch (e: unknown) {
@@ -76,6 +90,10 @@ export default function AgentAssignmentsPage() {
   }, [load]);
 
   const openCount = ships.filter((s) => !isTerminal(s.status)).length;
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const deliveredLast7d = delivered.filter(
+    (s) => s.deliveredAt && Date.now() - new Date(s.deliveredAt).getTime() <= SEVEN_DAYS_MS
+  ).length;
 
   if (status === 'expired') {
     return (
@@ -132,7 +150,7 @@ export default function AgentAssignmentsPage() {
         <>
           <dl className="ag-strip">
             <div><dt>Open</dt><dd>{openCount}</dd></div>
-            <div><dt>Delivered&nbsp;· 7d</dt><dd>{ships.filter((s) => s.status === 'delivered').length}</dd></div>
+            <div><dt>Delivered&nbsp;· 7d</dt><dd>{deliveredLast7d}</dd></div>
             <div className={ships.some((s) => s.status === 'failed') ? 'ag-hot' : undefined}>
               <dt>Failed</dt><dd>{ships.filter((s) => s.status === 'failed').length}</dd>
             </div>
@@ -170,10 +188,22 @@ export default function AgentAssignmentsPage() {
                the row already leads with "Due …", so any other order makes
                that label read as noise. Windowless shipments sort last:
                they can be fitted around the ones that cannot move. */
-            const visible = ships.filter(active.match).slice().sort((a, b) => {
+            // Actionable stops (there is still a move for this rider to make)
+            // sort before anything Failed/Delivered/Returned/Cancelled, and
+            // due time only orders within each of those two groups. A Failed
+            // shipment can land on an earlier due time than everything still
+            // moving — a rider cannot retry it, only the owner can — so
+            // ordering purely by time put two dead ends in the first two
+            // thumb positions on the one screen a rider opens all day.
+            const actionable = (s: ShipmentSummary) => !isTerminal(s.status) && s.status !== 'failed';
+            const byTime = (a: ShipmentSummary, b: ShipmentSummary) => {
               if (!a.scheduledAt) return b.scheduledAt ? 1 : 0;
               if (!b.scheduledAt) return -1;
               return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+            };
+            const visible = ships.filter(active.match).slice().sort((a, b) => {
+              const groupDiff = Number(actionable(b)) - Number(actionable(a));
+              return groupDiff !== 0 ? groupDiff : byTime(a, b);
             });
             if (visible.length === 0) {
               return (

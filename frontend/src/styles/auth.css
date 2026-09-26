@@ -91,7 +91,7 @@
   top: 28px;
   left: 32px;
   font-family: var(--auth-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -146,7 +146,7 @@
   top: 16px;
   left: 20px;
   font-family: var(--auth-mono);
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -329,7 +329,7 @@
 /* Text label beside the segments */
 .auth-steps-label {
   font-family: var(--auth-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -834,7 +834,7 @@
   background: var(--auth-brand-soft);
   color: var(--auth-brand-deep);
   font-family: var(--auth-mono);
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;

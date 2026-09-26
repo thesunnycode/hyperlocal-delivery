@@ -13,6 +13,7 @@ import ReassignAgentModal from '../../components/ReassignAgentModal.tsx';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import type { NewShipmentInput } from '../../components/CreateShipmentModal.tsx';
 import type { AgentSummary, Shipment, ShipmentSummary } from '../../types/api';
+import { useDocumentTitle } from '../../lib/useDocumentTitle';
 
 type FilterId = 'all' | 'open' | 'failed';
 const FILTERS: [FilterId, string][] = [['all', 'All'], ['open', 'Open'], ['failed', 'Needs you']];
@@ -36,6 +37,16 @@ const RANGES: [RangeId, string][] = [
   ['today', 'Today'], ['7d', '7 days'], ['30d', '30 days'], ['all', 'All time']
 ];
 const RANGE_DAYS: Record<RangeId, number | null> = { today: 1, '7d': 7, '30d': 30, all: null };
+/* The resting pane's heading used to be a hardcoded "Today at a glance" that
+   stayed put whichever range chip was selected — "Today at a glance" over a
+   figure computed for "All time" told two different stories in the same
+   breath. */
+const RANGE_GLANCE: Record<RangeId, string> = {
+  today: 'Today at a glance',
+  '7d': 'Last 7 days at a glance',
+  '30d': 'Last 30 days at a glance',
+  all: 'All time at a glance'
+};
 
 function withinRange(iso: string | null | undefined, range: RangeId): boolean {
   const days = RANGE_DAYS[range];
@@ -95,12 +106,16 @@ const LINK_KEY = 'hl.tracking.linkCopied';
  *  2. BULK RETURN. Three failures was three open-act-close journeys. One
  *     select bar, one action.
  *
- *  3. UNDO INSTEAD OF CONFIRM. Returning a shipment to the queue is reversible
- *     — it writes a status the shipment already held — so guarding it with a
- *     dialog taxes the common case to protect the rare one. It fires a toast
- *     with Undo instead.
+ *  3. NO CONFIRM DIALOG. Returning a shipment to the queue is reversible in
+ *     spirit — it writes a status the shipment already held — so guarding it
+ *     with a dialog taxes the common case to protect the rare one. It fires
+ *     a plain toast instead. That toast used to carry an "Undo" button, but
+ *     the API has no call that puts a shipment back to Failed, so pressing
+ *     it did nothing except reload the list and admit as much — worse than
+ *     no button at all, and removed for that reason.
  */
 export default function OwnerShipmentsPage() {
+  useDocumentTitle('Shipments');
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -169,8 +184,22 @@ export default function OwnerShipmentsPage() {
         || s.customerName.toLowerCase().includes(needle)
         || s.address.toLowerCase().includes(needle)
         || s.token.toLowerCase().includes(needle));
-    // Failures first — they are the only rows that need the owner.
-    return filtered.slice().sort((a, b) => (a.status === 'failed' ? -1 : 0) - (b.status === 'failed' ? -1 : 0));
+    // Three groups, in this order: failures (the only rows that need the
+    // owner), then open shipments soonest-due first (a Delivered row used to
+    // sit above an Out-for-delivery one because both only ever kept the
+    // API's creation order), then closed ones, most recently scheduled
+    // first.
+    const bucket = (s: ShipmentSummary) => (s.status === 'failed' ? 0 : isTerminal(s.status) ? 2 : 1);
+    // Windowless open shipments sort last within their group — they can be
+    // fitted in around the ones that actually promised a time — rather than
+    // first, which Date.parse('')'s NaN-as-0 fallback would otherwise do.
+    const openTime = (s: ShipmentSummary) => (s.scheduledAt ? Date.parse(s.scheduledAt) : Infinity);
+    const closedTime = (s: ShipmentSummary) => Date.parse(s.scheduledAt ?? s.createdAt ?? '') || 0;
+    return filtered.slice().sort((a, b) => {
+      const groupDiff = bucket(a) - bucket(b);
+      if (groupDiff !== 0) return groupDiff;
+      return bucket(a) === 2 ? closedTime(b) - closedTime(a) : openTime(a) - openTime(b);
+    });
   }, [inRange, ships, filter, q]);
 
   /** The failures, in range. The hero, the bulk bar and the triage list are
@@ -182,7 +211,16 @@ export default function OwnerShipmentsPage() {
   const noAgents = agents !== null && agents.length === 0;
   const hasShipments = !!ships && ships.length > 0;
   const linkShared = localStorage.getItem(LINK_KEY) === '1';
-  const setupComplete = !noAgents && agents !== null && hasShipments && linkShared;
+  // A rider on the roster and a shipment in the queue is the console
+  // actually being used — the checklist's real job is done at that point,
+  // whether or not this particular browser ever saw the tracking link get
+  // copied. It used to also require `linkShared`, a localStorage flag that
+  // never gets set on a second device or a cleared profile: a business three
+  // weeks in, with a full roster and a queue that had already needed the
+  // owner twice, still opened to "Get your first delivery tracked" ahead of
+  // the failures that needed them — the one screen a returning owner opens
+  // most often, leading with onboarding instead of triage.
+  const setupComplete = !noAgents && agents !== null && hasShipments;
   const showSetup = agents !== null && ships !== null && !setupComplete && !setupDismissed;
   const narrowed = filter !== 'all' || q.trim() !== '' || range !== 'all';
   /* Newest five, minus anything the failed block above already lists — the
@@ -255,15 +293,16 @@ export default function OwnerShipmentsPage() {
       await reassignShipment(id ?? '', {});
       // The token is a 36-character UUID; the customer name is what the
       // owner actually recognises in a toast.
-      /* Undo rather than a confirm dialog. The action is reversible — the
-         shipment held Assigned five minutes ago — and the owner does it three
-         times on a bad morning, so a modal in front of each one is a tax on
-         the case where they meant it. `reassignShipment` is idempotent per the
-         contract, so replaying it is safe if the toast is clicked twice. */
-      toast(`${selected?.customerName ?? 'Shipment'} is back to Assigned.`, 'default', {
-        label: 'Undo',
-        onAct: () => { loadList(); toast('Nothing was changed — reload to see the current status.', 'default'); }
-      });
+      //
+      // No Undo action here: the API has no "put it back to Failed" call, so
+      // an Undo button used to fire, reload the list (still showing
+      // Assigned), and then admit "Nothing was changed — reload to see the
+      // current status." A dialog in front of every return would tax the
+      // common case (see reassignToAssigned's own rationale below for why
+      // that trade was made), but a button that visibly does nothing when
+      // pressed is worse than either — it teaches the owner every Undo in
+      // this app might be a no-op. Plain confirmation instead.
+      toast(`${selected?.customerName ?? 'Shipment'} is back to Assigned.`, 'default');
       getShipment(id ?? '').then(setSelected);
       loadList();
     } catch (err) {
@@ -338,10 +377,9 @@ export default function OwnerShipmentsPage() {
     setSel([]);
     loadList();
     if (bad === 0) {
-      toast(`${n} ${n === 1 ? 'shipment' : 'shipments'} back in the queue, auto-assigned.`, 'default', {
-        label: 'Undo',
-        onAct: () => { loadList(); toast('Reload to see the current statuses.', 'default'); }
-      });
+      // No Undo — see reassignToAssigned's comment; the API has nothing to
+      // undo this back into.
+      toast(`${n} ${n === 1 ? 'shipment' : 'shipments'} back in the queue, auto-assigned.`, 'default');
     } else if (ok === 0) {
       toast(`Could not return ${bad === 1 ? 'that shipment' : `those ${bad} shipments`}. Nothing changed.`, 'accent');
     } else {
@@ -657,7 +695,7 @@ export default function OwnerShipmentsPage() {
               {checklist && <div className="ow-rest-check">{checklist}</div>}
               <div className="ow-rest">
                 <div className="ow-rest-head">
-                  <h2>Today at a glance</h2>
+                  <h2>{RANGE_GLANCE[range]}</h2>
                   <span>{counts.all} {counts.all === 1 ? 'shipment' : 'shipments'}</span>
                 </div>
 

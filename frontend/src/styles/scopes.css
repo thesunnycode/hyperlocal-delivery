@@ -50,6 +50,7 @@
   --ow-err: var(--hl-danger);
   --ow-err-bg: var(--hl-danger-bg);
   --ow-warn-bg: var(--hl-warn-bg);
+  --ow-warn-ink: var(--hl-warn-ink);
 
   --ow-ui: var(--hl-ui);
   --ow-display: var(--hl-display);
@@ -599,7 +600,7 @@
   font: 600 11.5px/1 var(--hl-ui);
 }
 .ow-top .ow-who b { font-size: 12.5px; }
-.ow-top .ow-who > span > span { font-size: 10.5px; letter-spacing: var(--hl-track-caps);
+.ow-top .ow-who > span > span { font-size: 12px; letter-spacing: var(--hl-track-caps);
   text-transform: uppercase; font-weight: 600; }
 
 /* The page header sat directly under the sidebar's top edge and needed its own
