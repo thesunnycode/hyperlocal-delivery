@@ -2840,3 +2840,52 @@ defect found:
   previous entry.
 
 **Files:** `frontend/src/styles.css`.
+
+---
+
+## 2026-09-27 (cont'd) - Native `<select>` dropdowns, an unstyled reassign-note field, and ambiguous WhatsApp buttons
+
+Third round on the same audit, from fresh screenshots. Four more real
+defects:
+
+- **Every filter/period dropdown in the owner app (Reports' date range,
+  Register's status and rider filters, the shipment-detail "Change rider"
+  reassign select) was a plain native `<select>`.** The closed control was
+  styled to match the app, but the *open options popup* is browser/OS
+  chrome that CSS cannot restyle — Chrome on Windows renders it with the
+  OS's own blue highlight, which reads as a jarring, unbranded control next
+  to everything else. Replaced all four with the app's own (previously
+  unused, dead-code) shadcn `Select` from `components/ui/select.tsx` —
+  already `@radix-ui/react-select`-based, so it renders a fully custom
+  popover using the app's own tokens. Needed a non-empty sentinel value
+  (`'all'`/`'auto'`) for the "All statuses"/"All riders"/"Automatic" options
+  since Radix Select's `value` cannot be `''`.
+- **The "Note (optional)" field in the reassign/return panel had no
+  styling at all** — no border, no height, no padding — and rendered
+  squashed onto the same line as its own label. Root cause: that field
+  lives in `.field-pair` (inside `.owner-action`), but the only rule
+  giving inputs their box treatment is `.form-stack input`, and this is
+  the one `.field-pair` instance not wrapped in a `.form-stack` (the two
+  other usages — Account page, New-shipment date/time — are, which is why
+  they looked fine and this one didn't). Added `.field-pair input` /
+  `.field-pair input:focus` rules mirroring `.form-stack input`'s values,
+  and `.field-pair label{display:grid;gap:7px}` so the label text and
+  control actually stack instead of running inline.
+- **Two buttons on the public tracking page were both labeled plain
+  "WhatsApp"** — one shares the tracking link (top row, next to Share/SMS),
+  the other messages the shop directly (bottom row, next to Call). Nothing
+  distinguished them. Relabeled to "Share on WhatsApp" and "WhatsApp
+  {businessName}" respectively (the latter matching the existing "Call
+  {businessName}" pattern right next to it).
+- **`.dialog` (the shared sheet/modal shell) declared `min-height:100%`
+  redundantly on top of the flex-stretch it already gets for free from
+  `.modal-backdrop`'s default `align-items:stretch`.** A percentage
+  min-height computed independently of the flex algorithm is a classic
+  source of a 1px scrollHeight/clientHeight mismatch — a persistent,
+  practically-invisible scrollbar on a sheet whose content visibly fits.
+  Removed the redundant declaration; `max-height:100vh` + `overflow:auto`
+  alone already handles the case where content is genuinely too tall.
+
+**Files:** `frontend/src/components/owner/OwnerLive.tsx`,
+`frontend/src/components/tracking/TrackingLive.tsx`,
+`frontend/src/components/ux.tsx`, `frontend/src/styles.css`.

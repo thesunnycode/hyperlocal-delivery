@@ -75,7 +75,7 @@ export function ShareTracking({ url, business }: { url: string; business?: strin
   }
   return <div className="share-row">
     <Button variant="coral" className="share-btn" onClick={share}><Share2/> {done ? 'Link copied' : 'Share'}</Button>
-    <Button variant="outline" className="share-btn" asChild><a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer"><MessageCircle/> WhatsApp</a></Button>
+    <Button variant="outline" className="share-btn" asChild><a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer"><MessageCircle/> Share on WhatsApp</a></Button>
     <Button variant="outline" className="share-btn" asChild><a href={`sms:?&body=${encodeURIComponent(text)}`}><MessageSquare/> SMS</a></Button>
   </div>;
 }

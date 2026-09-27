@@ -84,7 +84,7 @@ function TrackView({ d, refreshing, updated, reload }: { d: PublicTracking; refr
       <ShareTracking url={typeof window !== 'undefined' ? window.location.href : ''} business={d.businessName}/>
       {d.businessPhone && <div className="track-contact">
         <a className="track-call" href={telHref(d.businessPhone)}><Phone size={15}/><span>Call {d.businessName ?? 'the shop'}</span></a>
-        <a className="track-call alt" href={`https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(`Hi! I'm asking about my delivery${d.businessName ? ` from ${d.businessName}` : ''}.`)}`} target="_blank" rel="noreferrer"><MessageSquare size={15}/><span>WhatsApp</span></a>
+        <a className="track-call alt" href={`https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(`Hi! I'm asking about my delivery${d.businessName ? ` from ${d.businessName}` : ''}.`)}`} target="_blank" rel="noreferrer"><MessageSquare size={15}/><span>WhatsApp {d.businessName ?? 'the shop'}</span></a>
       </div>}</section>
     <section className="track-card"><h2 className="mini-heading">Updates</h2><ol className="live-timeline">{visible.map((e, i) => {
       const bad = e.status === 'failed' || e.status === 'cancelled' || e.status === 'returned';
