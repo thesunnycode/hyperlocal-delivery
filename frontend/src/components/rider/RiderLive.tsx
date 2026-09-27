@@ -86,7 +86,8 @@ function DetailBody() {
     if (s.status === 'assigned') { void run(() => confirmPickup(s.id, n), 'Pickup confirmed'); return; }
     if (s.status === 'picked_up') { void run(() => startTransit(s.id, n), 'On the way'); return; }
     if (s.status === 'in_transit') { void run(() => markOutForDelivery(s.id, n), 'Out for delivery'); return; }
-    if (s.status === 'out_for_delivery') setConfirm({ title: 'Mark as delivered?', body: `Confirm you handed the parcel to ${s.customerName}. This can’t be undone.`, action: 'Mark delivered', run: () => markDelivered(s.id, n) });
+    // The slide gesture itself is the confirmation for the irreversible step.
+    if (s.status === 'out_for_delivery') void run(() => markDelivered(s.id, n), 'Delivered');
   }
 
   return <main className="agent-content agent-detail-live">
@@ -101,7 +102,9 @@ function DetailBody() {
     {step && <div className="agent-dock"><p className="eyebrow">{step.kind}</p>
       <label className="dock-note">Note for your business (optional)<input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Left with security"/></label>
       {actErr && <Banner error={actErr}/>}
-      <SwipeAction label={step.cta} busy={busy} onConfirm={forward}/>
+      {s.status === 'out_for_delivery'
+        ? <SwipeAction label={step.cta} busy={busy} onConfirm={forward}/>
+        : <Button variant="coral" className="dock-go" disabled={busy} onClick={forward}>{busy ? <Loader2 className="spin"/> : <ChevronRight size={20}/>}<span>{step.cta}</span></Button>}
       {step.fork && <div className="action-pair"><Button variant="outline" onClick={() => setFailing(true)}><X/> Couldn’t deliver</Button><Button variant="outline" onClick={() => setConfirm({ title: 'Return to the business?', body: 'Use this when the parcel is going back to the shop. This closes the delivery.', action: 'Mark returned', danger: true, run: () => markReturned(s.id, note || null) })}><Undo2/> Return parcel</Button></div>}
     </div>}
     {confirm && <Confirm title={confirm.title} body={confirm.body} action={confirm.action} danger={!!confirm.danger} onClose={() => setConfirm(null)} onConfirm={async () => { const r = await confirm.run(); setS(r); setNote(''); setToast(STATUS_META[r.status].label); }}/>}
