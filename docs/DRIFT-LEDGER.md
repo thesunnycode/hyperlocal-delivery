@@ -2808,3 +2808,35 @@ documented contract — not itemized here.
 `src/test/java/com/hyperlocal/delivery/service/AuthServiceTest.java`,
 `frontend/src/utils/format.ts`, `frontend/src/types/api.ts`,
 `frontend/src/api/authApi.ts`.
+
+---
+
+## 2026-09-27 - Continued UI audit: real shipment statuses carried no color at all
+
+Follow-up to the same-day audit pass above, going screen by screen through
+the rest of the app (Reports tabs, Account, Forgot-password flow, 404,
+agent-setup invalid-token state, rider failed-attempt/return-parcel/
+mark-delivered flows). All of those were already correct. One more real
+defect found:
+
+- **`LiveStatus`/`Status` render `className="status status-${label}"` for
+  the seven real `ShipmentStatus` values plus `cancelled`, but `styles.css`
+  only had rules for the *mock preview's* own labels** (`needs-attention`,
+  `off-shift`, `available`, `new` — see `delivery-data.ts`, used only by the
+  logged-out `/` landing/demo board). Every real status — Assigned, Picked
+  up, In transit, Out for delivery, Delivered, Failed, Returned, Cancelled —
+  fell through to the same pale neutral `.status` base rule. In the
+  Shipments queue, the Register table, and the rider's own delivery header,
+  a "Failed" row was visually identical to an "In transit" one; only the
+  label text differed. (The public `/track/:token` page was unaffected —
+  it has its own `ACCENT`/`--accent` system in `TrackingLive.tsx`, already
+  correct.)
+
+  Fixed by pulling `.status-delivered` out of its `.status-available`
+  pairing into its own solid `--primary` (success) treatment, and adding
+  `.status-failed`/`.status-returned` (destructive-tinted) and
+  `.status-cancelled` (explicit neutral). Reuses tokens only — no new
+  colors invented, including the `--destructive` red declared in the
+  previous entry.
+
+**Files:** `frontend/src/styles.css`.
