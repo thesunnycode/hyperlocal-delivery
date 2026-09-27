@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useRouterState } from '@tanstack/react-ro
 import { ArrowLeft, ArrowRight, BarChart3, CalendarDays, Check, ChevronDown, ChevronRight, CircleHelp, Copy, ClipboardList, Download, Eye, EyeOff, LogOut, Menu, Package, Plus, RefreshCw, Search, SlidersHorizontal, UserRound, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { riders, shipments, type Shipment, type ShipmentStatus } from './delivery-data';
+import { clearSession } from '@/lib/hl/apiClient';
 import { useDeliveryPreview } from './delivery-preview-context';
 import riderImage from '@/assets/delivery-rider.jpg';
 import riderLoop from '@/assets/delivery-rider-loop.mp4.asset.json';
@@ -25,12 +26,16 @@ function Brand({ dark = false }: { dark?: boolean }) {
 }
 function Sidebar({ close }: { close: () => void }) {
   const path = useRouterState({ select: s => s.location.pathname });
+  const navigate = useNavigate();
   return <aside className="sidebar">
     <Brand dark />
     <div className="side-label">WORKSPACE</div>
     <nav className="side-nav" aria-label="Main navigation">{ownerNav.map(({ href, label, icon: Icon }, i) => <Link key={href} to={href} onClick={close} className={`side-link ${path.startsWith(href) || (label === 'Reports' && path.startsWith('/owner/reports')) ? 'active' : ''}`}><Icon size={19}/><span>{label}</span><small>0{i + 1}</small></Link>)}</nav>
     <div className="side-bottom"><div className="side-pulse"><span className="pulse-dot"/> LIVE WORKSPACE</div><p>Connected to your Hyperlocal service.</p></div>
-    <Link to="/owner/account" className="side-profile" onClick={close}><span className="avatar">H</span><span><strong>Your account</strong><small>Profile & sign out</small></span><ChevronRight size={16}/></Link>
+    <div className="side-profile-row">
+      <Link to="/owner/account" className="side-profile" onClick={close}><span className="avatar">H</span><span><strong>Your account</strong><small>Profile & settings</small></span><ChevronRight size={16}/></Link>
+      <Button variant="ghost" size="icon" className="side-signout" aria-label="Sign out" onClick={() => { close(); clearSession(); navigate({ to: '/login' }); }}><LogOut size={17}/></Button>
+    </div>
   </aside>;
 }
 function Workspace({ children }: { children: React.ReactNode }) {

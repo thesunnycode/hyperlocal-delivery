@@ -62,6 +62,14 @@ export function Skeleton({ rows = 4 }: { rows?: number }) { return <div classNam
 
 export function Modal({ label, eyebrow, onClose, children, wide }: { label: string; eyebrow: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  // Without this, the page behind a fixed-position sheet stays scrollable —
+  // a wheel/trackpad scroll over the dimmed backdrop moves the list behind
+  // it, which reads as the sheet itself jumping between renders.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
   return <div className="modal-backdrop" onMouseDown={onClose}><section className={`dialog ${wide ? 'dialog-wide' : ''}`} role="dialog" aria-modal="true" aria-label={label} onMouseDown={e => e.stopPropagation()}><div className="dialog-top"><span className="eyebrow">{eyebrow}</span><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close"><X/></Button></div>{children}</section></div>;
 }
 
@@ -204,8 +212,8 @@ function RidersBody() {
     <div className="toolbar"><label className="searchbox"><Search size={18}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Search name, email or phone…" aria-label="Search riders"/></label><div className="filter-scroll" role="group" aria-label="Rider status">{(['active', 'inactive', 'all'] as const).map(v => <Button key={v} variant={show === v ? 'selected' : 'filter'} onClick={() => setShow(v)}>{v.charAt(0).toUpperCase() + v.slice(1)}</Button>)}</div></div>
     {(error || rowErr) && <Banner error={(error || rowErr)!} retry={error ? reload : undefined}/>}
     {loading && !data ? <Skeleton/> : rows.length ? <div className="rider-grid">{rows.map(a => <article key={a.id} className={`rider-card ${a.active ? '' : 'rider-off'}`}>
-      <div className="rider-card-top"><Avatar name={a.name}/><div><h3>{a.name}</h3><p>{a.email}</p></div>
-        <div className="menu-anchor"><Button variant="ghost" size="icon" aria-label={`More actions for ${a.name}`} onClick={() => setMenu(menu === a.id ? null : a.id)}><MoreHorizontal/></Button>{menu === a.id && <div className="pop-menu" role="menu" onMouseLeave={() => setMenu(null)}><button role="menuitem" onClick={() => { setMenu(null); setEditing(a); }}><Pencil size={15}/> Edit details</button>{a.active ? <button role="menuitem" className="danger" onClick={() => { setMenu(null); setConfirm(a); }}><UserRoundX size={15}/> Deactivate</button> : <button role="menuitem" onClick={async () => { setMenu(null); try { await reactivateAgent(a.id); setToast(`${a.name} is active again`); reload(); } catch (e) { setRowErr(errText(e)); } }}><UserRoundCheck size={15}/> Reactivate</button>}</div>}</div></div>
+      <div className="rider-card-top menu-anchor"><Avatar name={a.name}/><div><h3>{a.name}</h3><p>{a.email}</p></div>
+        <Button variant="ghost" size="icon" aria-label={`More actions for ${a.name}`} onClick={() => setMenu(menu === a.id ? null : a.id)}><MoreHorizontal/></Button>{menu === a.id && <div className="pop-menu" role="menu" onMouseLeave={() => setMenu(null)}><button role="menuitem" onClick={() => { setMenu(null); setEditing(a); }}><Pencil size={15}/> Edit details</button>{a.active ? <button role="menuitem" className="danger" onClick={() => { setMenu(null); setConfirm(a); }}><UserRoundX size={15}/> Deactivate</button> : <button role="menuitem" onClick={async () => { setMenu(null); try { await reactivateAgent(a.id); setToast(`${a.name} is active again`); reload(); } catch (e) { setRowErr(errText(e)); } }}><UserRoundCheck size={15}/> Reactivate</button>}</div>}</div>
       <div className="rider-meta"><span className={`pill ${a.activated ? 'pill-teal' : 'pill-coral'}`}>{a.activated ? 'Set up' : 'Setup pending'}</span><span className="pill">{a.active ? 'Active' : 'Inactive'}</span><span className="mono muted">{a.openCount} open</span></div>
       {a.phone && <p className="rider-phone"><a href={`tel:${a.phone}`}>{a.phone}</a></p>}
       {!a.activated && a.active && <Button variant="outline" size="sm" onClick={() => sendInvite(a)}><Mail/> Send setup link</Button>}
