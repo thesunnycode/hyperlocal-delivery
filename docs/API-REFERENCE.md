@@ -125,8 +125,6 @@ The application reads the following environment variables (see
 | `CORS_ORIGINS` | No (dev), Yes (prod) | `*` (dev only — prod has no default) | Comma-separated allowed origins, e.g. `http://localhost:3000` |
 | `SPRING_PROFILES_ACTIVE` | No | `dev` | Spring profile. Use `prod` on Railway (enables production logging, higher JWT access-TTL, mail, etc.) |
 | `PORT` | No | `8080` | Server port. Railway/Heroku assign this dynamically — the app binds Tomcat to it via `server.port: ${PORT:8080}` in the prod profile |
-| `RESET_LINK_BASE_URL` | Yes (prod only) | `http://localhost:5173/reset-password` (dev) | Base URL of the frontend's reset-password page (config key only — the current OTP-based reset flow does not send a link; kept for the `PasswordResetMailer`/`MailLinkBuilder` classes that still exist but are not called from `AuthService`) |
-| `RESET_TOKEN_TTL_MINUTES` | No | `30` | Bound to the same unused reset-link path as `RESET_LINK_BASE_URL` above — the real reset session token's TTL is a separate, hardcoded 5 minutes in `AuthService.verifyResetOtp`/`JwtUtil.signResetToken` |
 | `INVITE_LINK_BASE_URL` | Yes (prod only) | `http://localhost:5173/agent-setup` (dev) | Base URL of the frontend page where an invited agent sets their first password |
 | `INVITE_TTL_HOURS` | No | `168` (one week) | Agent invite link lifetime in hours |
 | `SMTP_HOST` | No | — | SMTP server hostname, shared by every mail sender (OTP emails, agent invites). **Leave blank to fall back to console logging (recommended for local development).** |
@@ -138,14 +136,11 @@ The application reads the following environment variables (see
 For local development, leave `SMTP_HOST` blank and check the application
 logs for OTP codes and invite links instead.
 
-**Note on the two `RESET_*` env vars above:** they're real, bound config
-keys (`app.mail.reset-link-base-url`/`reset-token-ttl-minutes` in
-`application.yml`), but a fresh read of `AuthService.java` (2026-09-29)
-found its `PasswordResetMailer mailer` field is injected and never called
-— the password-reset flow was rebuilt around OTP + a short-lived JWT
-reset-session token (`forgotPassword` → `verifyResetOtp` →
-`resetPassword`) without removing the now-unused link-based config and
-mailer classes. Documented here for accuracy, not as a recommendation to
-keep relying on them; flagging in case a docs-writing session wants to
-treat this as a stop-and-ask code question rather than a doc fact to
-silently repeat.
+Note: the password-reset flow (`forgot-password` → `verify-reset-otp` →
+`reset-password`) is entirely OTP + JWT based — the reset session token's
+5-minute TTL is hardcoded in `JwtUtil`, not environment-configured. An
+earlier link-based reset design (`RESET_LINK_BASE_URL`/
+`RESET_TOKEN_TTL_MINUTES`, a `PasswordResetMailer` interface) was left
+wired up but never called after that rewrite; both the dead config keys
+and the mailer classes were removed on 2026-09-29 (see git history) once
+this was verified unused.

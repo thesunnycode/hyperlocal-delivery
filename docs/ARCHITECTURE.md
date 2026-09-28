@@ -113,8 +113,7 @@ src/main/java/com/hyperlocal/delivery
 ├── service/            AuthService, AgentService, AgentAssignmentService, AgentInviteService,
 │                       ShipmentService, DeliveryAttemptService, AnalyticsService,
 │                       OtpService, OtpRateLimiter, LoginRateLimiter, RegistrationRaceGuard,
-│                       PasswordResetMailer (interface, unused by AuthService — see docs/API-REFERENCE.md),
-│                       ConsoleMailService, SmtpMailService, MailLinkBuilder,
+│                       MailLinkBuilder,
 │                       OtpEmailService (interface), ConsoleOtpEmailService, SmtpOtpEmailService,
 │                       AgentInviteMailer (interface), ConsoleAgentInviteMailer, SmtpAgentInviteMailer,
 │                       ScheduledCleanupJob
@@ -157,9 +156,17 @@ src/main/java/com/hyperlocal/delivery
 └── util/               ResponseBuilder, TrackingTokenGenerator, TimeUtils, CsvExportWriter
 ```
 
-Notes on classes that no longer exist as of this pass (previously listed
-here, removed after verifying against the real tree): `PasswordResetToken`
-and `PasswordResetTokenRepository` — the V3 migration's `password_reset_tokens`
-table was dropped by V6, and the reset flow is now OTP + JWT-session-token
-based (see "Four hard engineering problems" #4 above), not a persisted
-reset-token row.
+Notes on classes that no longer exist (previously listed here, removed
+after verifying against the real tree):
+
+- `PasswordResetToken` / `PasswordResetTokenRepository` — the V3
+  migration's `password_reset_tokens` table was dropped by V6, and the
+  reset flow is now OTP + JWT-session-token based (see "Four hard
+  engineering problems" #4 above), not a persisted reset-token row.
+- `PasswordResetMailer` / `ConsoleMailService` / `SmtpMailService` — this
+  interface pair was the link-based reset flow's mailer, left wired up in
+  `MailConfig` and injected into `AuthService` after the OTP rewrite made
+  it unreachable. Verified unused (2026-09-29) and removed, along with the
+  now-dead `RESET_LINK_BASE_URL`/`RESET_TOKEN_TTL_MINUTES` config keys.
+  `MailLinkBuilder` stayed — its `buildInviteLink` method is still real,
+  shared with the agent-invite mailers.
