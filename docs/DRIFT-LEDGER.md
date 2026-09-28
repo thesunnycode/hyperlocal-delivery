@@ -2915,3 +2915,54 @@ content that can exceed one screen) exactly as before — nothing relies on
 the card being pinned to the bottom of the viewport.
 
 **Files:** `frontend/src/styles.css`.
+
+---
+
+## 2026-09-27 (cont'd, again) - The actual root cause: every sheet was never sized against the real viewport at all
+
+The previous entry's `align-items:flex-start` swap traded one visual
+complaint for another — reported back as the sheet now looking
+"floating"/"half-built", top-pinned with dimmed emptiness below it before
+reaching the viewport bottom. Both symptoms (full-height card with a dead
+white footer, and a short top-pinned card) turned out to be downstream of
+the same real bug, which had nothing to do with `align-items`:
+
+**`.content` (and `.agent-content`, `.auth-form-area`) carries `animation:
+uxIn .35s ease-out both`, and `uxIn`'s keyframes animate `transform`.** An
+element with a transform-animating CSS animation becomes a containing
+block for any `position:fixed` descendant, in every major browser — and
+this holds for the animation's entire declared lifetime, not just while
+it's actually playing frame-to-frame. Every `Modal` (`New shipment`, `Add
+rider`, the shipment-detail sheet, every `Confirm` dialog) renders nested
+inside `.content`. So `.modal-backdrop` — `position:fixed;inset:0`,
+which should always equal the true viewport — was actually being sized
+against `.content`'s own box the entire time, and `.content`'s height is
+just whatever its own page content requires. That's why the sheet's
+apparent height kept changing depending on which page it was opened from
+and which CSS I touched: none of those edits were operating against the
+real viewport at all.
+
+Confirmed directly: setting `.content`'s `animation` to `none` in devtools
+changed the measured `.modal-backdrop` height from 549px to the actual
+889px viewport height, on the same page, same modal, no other change.
+
+Fix, two parts:
+1. `uxIn`'s keyframes no longer touch `transform` (fade only, dropped the
+   translateY slide) — removing the containing-block trigger entirely
+   rather than trying to compensate for it.
+2. `.modal-backdrop`'s `align-items` reverted to the default `stretch`
+   (a full-height drawer is the correct pattern, not a top-pinned
+   truncated card), and `.dialog` is now `display:flex;flex-direction:
+   column` with `margin-top:auto` on the trailing form/action row —
+   `.dialog > form.form-stack` for the short Add-rider/New-shipment forms,
+   `.dialog > .action-pair:last-child` for Confirm dialogs — so the
+   primary CTA anchors to the drawer's bottom edge instead of leaving
+   dead space below it, or (before part 1) instead of the whole drawer
+   just being the wrong height to have room for that in the first place.
+
+With the real viewport restored as the containing block, every sheet now
+correctly spans full height with its action anchored to the bottom —
+verified on Add rider, New shipment, a Confirm dialog, and the long
+shipment-detail sheet (which still scrolls internally exactly as before).
+
+**Files:** `frontend/src/styles.css`.
