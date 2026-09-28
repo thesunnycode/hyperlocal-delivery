@@ -25,12 +25,23 @@
 /* Full height (default align-items:stretch) is the right call for a
    side-drawer sheet — a top-anchored card that stops short of the
    viewport bottom, with dimmed nothing below it, reads as broken/half
-   loaded. The actual fix for a short form's dead space below its button
-   is to anchor the trailing CTA to the drawer's own bottom edge instead
-   of shrinking the drawer — see .dialog > form.form-stack below. */
-.modal-backdrop { position:fixed;inset:0;z-index:60;background:color-mix(in oklab,var(--ink) 62%,transparent);display:flex;justify-content:flex-end; } .dialog { width:min(100%,480px);max-height:100vh;overflow:auto;background:var(--card);padding:30px;box-shadow:-10px 0 45px color-mix(in oklab,var(--ink) 14%,transparent);display:flex;flex-direction:column; }
-.dialog > form.form-stack { flex:1; display:flex; flex-direction:column; min-height:0; }
-.dialog > form.form-stack > *:last-child { margin-top:auto; }
+   loaded. For a short form (Add rider, New shipment) the fix isn't to
+   shrink the drawer either — it's to vertically center the field+button
+   block within it, so the leftover space splits evenly above and below
+   instead of reading as "something's missing down here". See
+   .dialog > form.form-stack below. Confirm dialogs (title + body + a
+   button row, no form wrapper) keep the simpler bottom-anchor instead,
+   since there's no single element to center that excludes the header. */
+.modal-backdrop { position:fixed;inset:0;z-index:60;background:color-mix(in oklab,var(--ink) 62%,transparent);display:flex;justify-content:flex-end; } .dialog { width:min(100%,480px);max-height:100vh;overflow:auto;background:var(--card);padding:30px;box-shadow:-10px 0 45px color-mix(in oklab,var(--ink) 14%,transparent);display:flex;flex-direction:column;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
+/* Long sheets (shipment detail) can end mid-section with zero rows
+   peeking through at the fold — with no visible scroll affordance that
+   reads as content being cut off/broken rather than merely scrollable.
+   An explicit, always-visible scrollbar removes the ambiguity. */
+.dialog::-webkit-scrollbar { width:10px; }
+.dialog::-webkit-scrollbar-track { background:transparent; }
+.dialog::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+.dialog::-webkit-scrollbar-thumb:hover { background:var(--muted-foreground); }
+.dialog > form.form-stack { flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
 .dialog > .action-pair:last-child { margin-top:auto; } .dialog-top { display:flex;justify-content:space-between;align-items:center; } .dialog h2 { font:800 34px 'Outfit',sans-serif;margin:22px 0 3px; } .dialog-sub { color:var(--muted-foreground);margin-bottom:20px; } .detail-grid { margin-top:27px;display:grid;grid-template-columns:1fr 1fr;gap:19px; } .detail-grid div { border-top:1px solid var(--border);padding-top:13px; } .detail-grid small,.detail-grid strong { display:block; } .detail-grid small { color:var(--muted-foreground);font:600 10px 'JetBrains Mono',monospace;margin-bottom:8px; } .detail-grid strong { font-size:14px; } .dialog-note { background:var(--mist);border-radius:8px;padding:16px;margin-top:30px;color:var(--muted-foreground);font-size:13px;line-height:1.5; } .form-stack { display:grid;gap:17px; } .form-stack label { display:grid;gap:7px;font-size:13px;font-weight:700; } .form-stack input { width:100%;height:46px;border:1px solid var(--border);border-radius:7px;padding:0 13px;outline:0;background:var(--card);color:var(--foreground);font-weight:400; } .form-stack input:focus { border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklab,var(--primary) 12%,transparent); } .form-help { color:var(--muted-foreground);font-size:12px;line-height:1.5;margin:0; }
 .agent-shell { min-height:100vh; } .agent-header { height:78px;border-bottom:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:0 max(30px,calc((100vw - 1000px)/2)); } .agent-header nav { display:flex;gap:28px;color:var(--muted-foreground);font-weight:700;font-size:14px; } .agent-header nav a:hover { color:var(--primary); } .agent-content { max-width:1000px;padding:50px 30px 100px;margin:auto; } .agent-stats { grid-template-columns:repeat(3,1fr); } .agent-filters { margin-bottom:24px; } .agent-mobile-nav { display:none; } .back-link { display:inline-flex;gap:8px;align-items:center;color:var(--primary);font-size:13px;font-weight:700;margin-bottom:36px; } .detail-status { display:flex;gap:14px;align-items:center;margin:-9px 0 25px;color:var(--muted-foreground);font-size:12px; }
 .tracking-shell { min-height:100vh;background:var(--mist); } .tracking-top { padding:24px max(24px,calc((100vw - 1100px)/2));border-bottom:1px solid var(--border);background:var(--card); } .tracking-content { width:min(100% - 40px,560px);margin:10vh auto;text-align:center; } .tracking-symbol { display:grid;place-items:center;width:64px;height:64px;border-radius:8px;background:var(--secondary);color:var(--primary);margin:0 auto 26px; } .tracking-content h1 { font:800 38px/1.12 'Outfit',sans-serif;margin:0 0 18px; } .tracking-content>p:not(.eyebrow) { color:var(--muted-foreground);font-size:15px;line-height:1.7; } .tracking-tip { display:flex;gap:12px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:17px;margin:30px 0;color:var(--muted-foreground);font-size:13px;line-height:1.5; } .tracking-tip svg { flex:none;color:var(--primary); }

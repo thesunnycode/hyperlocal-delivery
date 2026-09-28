@@ -2966,3 +2966,32 @@ verified on Add rider, New shipment, a Confirm dialog, and the long
 shipment-detail sheet (which still scrolls internally exactly as before).
 
 **Files:** `frontend/src/styles.css`.
+
+---
+
+## 2026-09-27 (cont'd, x3) - Short-form drawer polish + always-visible scrollbar
+
+Two follow-ups once the real root cause (the previous entry) was fixed:
+
+- Asked directly which treatment of a short form's leftover drawer space
+  looked better: bottom-anchored button (what the previous entry shipped),
+  vertical centering, or filling the space with supporting content.
+  Chose vertical centering. `.dialog > form.form-stack` is now
+  `justify-content:center` instead of pushing only its last child down —
+  the field+button block centers as one group, so the leftover space
+  splits evenly above and below instead of reading as "empty at the
+  bottom". Confirm dialogs (title + body + a button row, no form wrapper)
+  keep the simpler bottom-anchor, since centering would require a new
+  wrapper element around everything except the header to exclude
+  `.dialog-top` from the centered group.
+- The long shipment-detail sheet was reported as "broken halfway" —
+  reproduced it: the sheet genuinely does scroll (`scrollHeight` 1303 vs
+  `clientHeight` 782, confirmed), but it can end a page mid-section with
+  zero rows peeking through past the fold, and with no visible scroll
+  affordance (Chromium's default scrollbar is invisible until hovered),
+  that reads as truncated content rather than "scroll for more". Gave
+  `.dialog` an explicit, always-visible scrollbar (`scrollbar-width:thin`
+  + `::-webkit-scrollbar` styling in the app's own border color) instead
+  of relying on the browser default.
+
+**Files:** `frontend/src/styles.css`.
