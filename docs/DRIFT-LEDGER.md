@@ -2889,3 +2889,29 @@ defects:
 **Files:** `frontend/src/components/owner/OwnerLive.tsx`,
 `frontend/src/components/tracking/TrackingLive.tsx`,
 `frontend/src/components/ux.tsx`, `frontend/src/styles.css`.
+
+---
+
+## 2026-09-27 (cont'd) - Every sheet forced to full viewport height, even a 3-field form
+
+Reported against the deployed site (not just local): "Add rider" and "New
+shipment" showed a wall of dead white space below the button, stretching
+the sheet all the way to the bottom of the screen. The previous entry's
+`.dialog` fix (removing a redundant `min-height:100%`) addressed a
+different symptom (a phantom 1px scrollbar) and didn't touch this — this
+is a separate root cause.
+
+`.modal-backdrop` is `display:flex` and never set `align-items`, so it
+defaulted to `stretch` — every sheet's white card was forced to exactly
+100% of the viewport height regardless of how little content it held.
+Short forms (3 fields + a button) ended up with a large blank white
+footer inside their own card, not just a dimmed backdrop below them.
+
+Set `align-items:flex-start` on `.modal-backdrop` so each `.dialog` sizes
+to its own content instead, top-anchored. `max-height:100vh` +
+`overflow:auto` on `.dialog` still caps and scrolls genuinely long sheets
+(verified against the shipment-detail sheet, which has Timeline/History
+content that can exceed one screen) exactly as before — nothing relies on
+the card being pinned to the bottom of the viewport.
+
+**Files:** `frontend/src/styles.css`.
