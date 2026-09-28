@@ -2995,3 +2995,30 @@ Two follow-ups once the real root cause (the previous entry) was fixed:
   of relying on the browser default.
 
 **Files:** `frontend/src/styles.css`.
+
+---
+
+## 2026-09-27 (cont'd, x4) - .dialog-wide had its own separate height cap the whole time
+
+After the previous entries, "New shipment"/"Add rider" were confirmed
+fixed, but the shipment-detail sheet was reported still cut off — same
+symptom, different sheet. Root cause was straightforward once isolated:
+that's the one modal in the app called with `<Modal ... wide>`, and
+`.dialog-wide` (applied alongside the base `.dialog` class) declared its
+own `max-height:min(88vh,900px)` — deliberately short of the viewport,
+independent of everything fixed so far. None of the previous fixes
+touched it because they were all on `.dialog` itself, and this override
+came after in the cascade.
+
+Removed the override; `.dialog-wide` now only sets `width`, inheriting
+`.dialog`'s `max-height:100vh` like every other sheet. Confirmed via
+direct measurement: `.dialog.dialog-wide`'s `getBoundingClientRect()` now
+reports `top:0, bottom:889` exactly matching `window.innerHeight`.
+
+Also confirmed live: the previous three entries in this thread had not
+reached the deployed site (`hyperlocal.thesunnycode.me`) — three commits
+behind, comparing asset hashes and grepping the deployed CSS for
+fix-specific rules. Not a code issue; the host wasn't (or hadn't yet)
+redeployed from a `git push`. It has since caught up.
+
+**Files:** `frontend/src/styles.css`.

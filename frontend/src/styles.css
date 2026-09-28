@@ -106,7 +106,14 @@
 @keyframes shimmer{to{background-position:-200% 0}}
 .header-actions{display:flex;gap:.6rem;align-items:center}
 .chip-count{font-family:var(--font-mono,monospace);font-size:.72rem;opacity:.7;margin-left:.2rem}
-.dialog-wide{width:min(720px,100%);max-height:min(88vh,900px);overflow-y:auto}
+/* No max-height/overflow-y override here anymore — .dialog-wide is only
+   ever applied together with .dialog (className={`dialog ${wide ? ...}`),
+   and the base .dialog already sets max-height:100vh + overflow:auto,
+   full height like every other sheet. This used to cap it at
+   min(88vh,900px), which is exactly why the shipment-detail sheet (the
+   one modal using wide) kept looking cut off short of the viewport
+   bottom while every other sheet was already fixed. */
+.dialog-wide{width:min(720px,100%)}
 .panel-title{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}
 .field-pair{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 .field-pair label{display:grid;gap:7px;font-size:13px;font-weight:700}
