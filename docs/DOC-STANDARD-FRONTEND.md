@@ -1,6 +1,6 @@
 # Doc standard — frontend build guide (2026-09-29)
 
-Companion to `docs/DOC-STANDARD.md` (the backend guide's format). This file
+Companion to `docs/DOC-STANDARD-BACKEND.md` (the backend guide's format). This file
 governs every `task-NN-*.md` file under `docs/phase-frontend-*/`. The two
 guides share the same teaching philosophy (concept before code, reasoning
 inline, read-real-source discipline) but use different block structures —

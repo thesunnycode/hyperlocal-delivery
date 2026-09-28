@@ -24,13 +24,13 @@
 
 **Moved (archived), not recreated by this plan — see Task 1:**
 - `docs/old-docs/phase-00-setup/` … `docs/old-docs/phase-11-agent-invites/`
-- `docs/old-docs/DOC-STANDARD.md`, `REWRITE-PLAN.md`, `AUDIT-PROMPT.md`, `AUDIT-REPORT.md`, `DRIFT-LEDGER.md`, `STRUCTURAL-PASS-PROMPT.md`, `_audit_scan.ps1`, `FLOW-AUDIT-PROMPT.md`, `FRONTEND-SCREEN-AUDIT-PROMPT.md`, `ui-ux-audit-prompt.md`, `audits/`, `ux-audit/`, `mockups/`
+- `docs/old-docs/DOC-STANDARD-BACKEND.md`, `REWRITE-PLAN.md`, `AUDIT-PROMPT.md`, `AUDIT-REPORT.md`, `DRIFT-LEDGER.md`, `STRUCTURAL-PASS-PROMPT.md`, `_audit_scan.ps1`, `FLOW-AUDIT-PROMPT.md`, `FRONTEND-SCREEN-AUDIT-PROMPT.md`, `ui-ux-audit-prompt.md`, `audits/`, `ux-audit/`, `mockups/`
 
 **Stays live, untouched by this plan:**
 - `docs/concepts/*.md`, `docs/ARCHITECTURE.md`, `docs/API-REFERENCE.md`
 
 **Created by this plan:**
-- `docs/DOC-STANDARD.md` (new, replaces the archived one — describes the 7-block structure)
+- `docs/DOC-STANDARD-BACKEND.md` (new, replaces the archived one — describes the 7-block structure)
 - `docs/phase-00-setup/00-task-breakdown.md` + `task-01..NN-*.md` (new content)
 - `docs/phase-01-project-init/` … `docs/phase-11-agent-invites/` (same pattern, new content, one task in this plan per phase)
 
@@ -43,7 +43,7 @@
 
 **Files:**
 - Move: `docs/phase-00-setup/` … `docs/phase-11-agent-invites/` → `docs/old-docs/phase-00-setup/` … `docs/old-docs/phase-11-agent-invites/`
-- Move: `docs/DOC-STANDARD.md`, `docs/REWRITE-PLAN.md`, `docs/AUDIT-PROMPT.md`, `docs/AUDIT-REPORT.md`, `docs/DRIFT-LEDGER.md`, `docs/STRUCTURAL-PASS-PROMPT.md`, `docs/_audit_scan.ps1`, `docs/FLOW-AUDIT-PROMPT.md`, `docs/FRONTEND-SCREEN-AUDIT-PROMPT.md`, `docs/ui-ux-audit-prompt.md` → same filenames under `docs/old-docs/`
+- Move: `docs/DOC-STANDARD-BACKEND.md`, `docs/REWRITE-PLAN.md`, `docs/AUDIT-PROMPT.md`, `docs/AUDIT-REPORT.md`, `docs/DRIFT-LEDGER.md`, `docs/STRUCTURAL-PASS-PROMPT.md`, `docs/_audit_scan.ps1`, `docs/FLOW-AUDIT-PROMPT.md`, `docs/FRONTEND-SCREEN-AUDIT-PROMPT.md`, `docs/ui-ux-audit-prompt.md` → same filenames under `docs/old-docs/`
 - Move: `docs/audits/`, `docs/ux-audit/`, `docs/mockups/` → `docs/old-docs/audits/`, `docs/old-docs/ux-audit/`, `docs/old-docs/mockups/`
 - Modify: `CLAUDE.md` (documentation-set section)
 
@@ -61,7 +61,7 @@ for d in docs/phase-*; do git mv "$d" "docs/old-docs/$(basename "$d")"; done
 - [ ] **Step 2: Move the standalone guide/audit files**
 
 ```bash
-for f in DOC-STANDARD.md REWRITE-PLAN.md AUDIT-PROMPT.md AUDIT-REPORT.md DRIFT-LEDGER.md STRUCTURAL-PASS-PROMPT.md _audit_scan.ps1 FLOW-AUDIT-PROMPT.md FRONTEND-SCREEN-AUDIT-PROMPT.md ui-ux-audit-prompt.md; do
+for f in DOC-STANDARD-BACKEND.md REWRITE-PLAN.md AUDIT-PROMPT.md AUDIT-REPORT.md DRIFT-LEDGER.md STRUCTURAL-PASS-PROMPT.md _audit_scan.ps1 FLOW-AUDIT-PROMPT.md FRONTEND-SCREEN-AUDIT-PROMPT.md ui-ux-audit-prompt.md; do
   git mv "docs/$f" "docs/old-docs/$f" 2>/dev/null || mv "docs/$f" "docs/old-docs/$f"
 done
 ```
@@ -83,22 +83,22 @@ git add docs/old-docs
 ls docs/
 ```
 
-Expected: only `old-docs/`, `concepts/`, `ARCHITECTURE.md`, `API-REFERENCE.md`, `superpowers/` (this plan/spec's own folder) remain outside `old-docs/` — no `phase-*` folders, no `DOC-STANDARD.md`, at the top level of `docs/`.
+Expected: only `old-docs/`, `concepts/`, `ARCHITECTURE.md`, `API-REFERENCE.md`, `superpowers/` (this plan/spec's own folder) remain outside `old-docs/` — no `phase-*` folders, no `DOC-STANDARD-BACKEND.md`, at the top level of `docs/`.
 
 - [ ] **Step 5: Update CLAUDE.md's documentation-set table**
 
-Replace the current table (the one listing `REWRITE-PLAN.md`, `DOC-STANDARD.md`, `AUDIT-PROMPT.md`, etc.) with:
+Replace the current table (the one listing `REWRITE-PLAN.md`, `DOC-STANDARD-BACKEND.md`, `AUDIT-PROMPT.md`, etc.) with:
 
 ```markdown
 `docs/` holds the backend build guide, rewritten from scratch on 2026-09-29
 with coarser, feature-sliced tasks and a concept-before-code structure (see
-`docs/DOC-STANDARD.md`). Twelve phase folders, `phase-00-setup` through
+`docs/DOC-STANDARD-BACKEND.md`). Twelve phase folders, `phase-00-setup` through
 `phase-11-agent-invites`, each with a `00-task-breakdown.md` and per-task
 `task-NN-*.md` files, plus `concepts/`.
 
 | File | What it is |
 |---|---|
-| `docs/DOC-STANDARD.md` | The locked format every task file follows (the 7-block task structure) |
+| `docs/DOC-STANDARD-BACKEND.md` | The locked format every task file follows (the 7-block task structure) |
 | `docs/ARCHITECTURE.md`, `docs/API-REFERENCE.md` | System diagrams and endpoint reference for the real, current app |
 | `docs/old-docs/` | The frozen, no-longer-maintained prior build guide and its audit apparatus (`DRIFT-LEDGER.md`, `AUDIT-PROMPT.md`, etc.) — read-only reference for what topics used to be covered, never a source of technical claims for the current guide |
 
@@ -106,7 +106,7 @@ with coarser, feature-sliced tasks and a concept-before-code structure (see
 
 - Every technical claim comes from reading the real, current source fresh —
   never from `docs/old-docs/`, never from memory.
-- Follow `docs/DOC-STANDARD.md`'s 7-block structure for every task file.
+- Follow `docs/DOC-STANDARD-BACKEND.md`'s 7-block structure for every task file.
 ```
 
 Keep the rest of `CLAUDE.md` (build/run instructions, environment facts,
@@ -122,10 +122,10 @@ git commit -m "docs: archive prior build guide to docs/old-docs/, update CLAUDE.
 
 ---
 
-### Task 2: Write the new `docs/DOC-STANDARD.md`
+### Task 2: Write the new `docs/DOC-STANDARD-BACKEND.md`
 
 **Files:**
-- Create: `docs/DOC-STANDARD.md`
+- Create: `docs/DOC-STANDARD-BACKEND.md`
 
 **Interfaces:**
 - Consumes: the 7-block structure and constraints from the spec (`docs/superpowers/specs/2026-09-29-docs-rewrite-design.md`).
@@ -133,7 +133,7 @@ git commit -m "docs: archive prior build guide to docs/old-docs/, update CLAUDE.
 
 - [ ] **Step 1: Write the structure section**
 
-Create `docs/DOC-STANDARD.md` describing, for every task file:
+Create `docs/DOC-STANDARD-BACKEND.md` describing, for every task file:
 
 ```markdown
 # Doc standard — backend build guide (rewritten 2026-09-29)
@@ -200,7 +200,7 @@ Each `docs/phase-NN-name/` folder contains:
 - [ ] **Step 2: Verify no leftover reference to the old 8-block format**
 
 ```bash
-grep -rn "why these lines\|Done when\|Touches row" docs/DOC-STANDARD.md
+grep -rn "why these lines\|Done when\|Touches row" docs/DOC-STANDARD-BACKEND.md
 ```
 
 Expected: no matches (those are old-format terms; the new file uses
@@ -209,8 +209,8 @@ different section names).
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/DOC-STANDARD.md
-git commit -m "docs: write new 7-block DOC-STANDARD.md for the rewritten build guide"
+git add docs/DOC-STANDARD-BACKEND.md
+git commit -m "docs: write new 7-block DOC-STANDARD-BACKEND.md for the rewritten build guide"
 ```
 
 ---
@@ -222,7 +222,7 @@ git commit -m "docs: write new 7-block DOC-STANDARD.md for the rewritten build g
 - Create: `docs/phase-00-setup/task-01-*.md` through `task-0N-*.md` (N in 6-8 range)
 
 **Interfaces:**
-- Consumes: `docs/DOC-STANDARD.md` (Task 2's output) — the 7-block structure and sizing target.
+- Consumes: `docs/DOC-STANDARD-BACKEND.md` (Task 2's output) — the 7-block structure and sizing target.
 - Produces: an environment-setup phase (JDK, Maven, MySQL, Node, Git, IDE, first commit) that phase-01 assumes is complete.
 
 - [ ] **Step 1: Read real environment facts fresh**
@@ -264,7 +264,7 @@ grep -L "## 1. Header\|# .*Header" docs/phase-00-setup/task-*.md
 ```
 
 Expected: every task file matches the 7-block headings from
-`docs/DOC-STANDARD.md` — no file missing a block.
+`docs/DOC-STANDARD-BACKEND.md` — no file missing a block.
 
 - [ ] **Step 5: Spot-check two version claims against the machine**
 
@@ -288,7 +288,7 @@ git commit -m "docs: write phase 00 (environment setup) from scratch, 7-block fo
 - Create: `docs/phase-01-project-init/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 00 complete (environment ready). `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 00 complete (environment ready). `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: a running, empty Spring Boot project with the real `pom.xml`,
   `application.yml`, `.env.example`, `.gitignore`, and package skeleton in
   place, that phase-02 assumes exists.
@@ -346,7 +346,7 @@ git commit -m "docs: write phase 01 (project init) from scratch, 7-block format"
 - Create: `docs/phase-02-database-schema/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 01 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 01 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the full database schema (all 9 application tables +
   `flyway_schema_history`) that phase-03's entities map onto.
 
@@ -400,7 +400,7 @@ git commit -m "docs: write phase 02 (database schema) from scratch, 7-block form
 - Create: `docs/phase-03-jpa-entities/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 02 complete (real schema in place). `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 02 complete (real schema in place). `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: all 8 entities + all 8 repositories that phase-04 onward inject
   and query.
 
@@ -452,7 +452,7 @@ git commit -m "docs: write phase 03 (JPA entities and repos) from scratch, 7-blo
 - Create: `docs/phase-04-security-jwt/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 03 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 03 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the full JWT/security filter chain that phase-05's `AuthService`
   issues tokens into and every later controller's `@PreAuthorize` relies on.
 
@@ -501,7 +501,7 @@ git commit -m "docs: write phase 04 (security and JWT) from scratch, 7-block for
 - Create: `docs/phase-05-auth-and-otp/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 04 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 04 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: registration, OTP verification, login, and password-reset flows
   that phase-06 onward assume a logged-in user for.
 
@@ -554,7 +554,7 @@ git commit -m "docs: write phase 05 (auth and OTP) from scratch, 7-block format"
 - Create: `docs/phase-06-agent-management/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 05 complete (owner can log in). `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 05 complete (owner can log in). `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: agent CRUD + assignment logic that phase-07's shipment reassign
   and phase-11's invite flow build on.
 
@@ -605,7 +605,7 @@ git commit -m "docs: write phase 06 (agent management) from scratch, 7-block for
 - Create: `docs/phase-07-shipment-lifecycle/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 06 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 06 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the full shipment state machine + 13-endpoint controller that
   phase-08's delivery attempts and phase-09's analytics query against.
 
@@ -653,7 +653,7 @@ git commit -m "docs: write phase 07 (shipment lifecycle) from scratch, 7-block f
 - Create: `docs/phase-08-delivery-attempts/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 07 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 07 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: delivery-attempt recording that phase-09's analytics reads.
 
 - [ ] **Step 1: Read every real file fresh**
@@ -698,7 +698,7 @@ git commit -m "docs: write phase 08 (delivery attempts) from scratch, 7-block fo
 - Create: `docs/phase-09-analytics-reports/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 08 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 08 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the analytics/reports API that phase-10's production checklist
   references.
 
@@ -744,7 +744,7 @@ git commit -m "docs: write phase 09 (analytics and reports) from scratch, 7-bloc
 - Create: `docs/phase-10-production-readiness/task-01-*.md` through `task-0N-*.md`
 
 **Interfaces:**
-- Consumes: Phase 09 complete. `docs/DOC-STANDARD.md` structure.
+- Consumes: Phase 09 complete. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the production-ready configuration (scheduling, OpenAPI,
   startup validation, SPA fallback, CORS profiles) — the last backend
   phase before invites.
@@ -793,7 +793,7 @@ git commit -m "docs: write phase 10 (production readiness) from scratch, 7-block
 
 **Interfaces:**
 - Consumes: Phase 06 complete (agent management) — this phase depends only
-  on Phase 06, same as the old guide. `docs/DOC-STANDARD.md` structure.
+  on Phase 06, same as the old guide. `docs/DOC-STANDARD-BACKEND.md` structure.
 - Produces: the final phase; nothing later depends on it.
 
 - [ ] **Step 1: Read every real file fresh**
@@ -840,7 +840,7 @@ git commit -m "docs: write phase 11 (agent invites) from scratch, 7-block format
 ## Final check (after Task 14)
 
 - [ ] Confirm `docs/` top level contains only: `old-docs/`, `concepts/`,
-  `ARCHITECTURE.md`, `API-REFERENCE.md`, `DOC-STANDARD.md`, `superpowers/`,
+  `ARCHITECTURE.md`, `API-REFERENCE.md`, `DOC-STANDARD-BACKEND.md`, `superpowers/`,
   and the 12 new `phase-*` folders — no leftover old-format file.
 - [ ] Run `find docs -maxdepth 2 -name "00-task-breakdown.md"` and confirm
   all 12 phases have one.
