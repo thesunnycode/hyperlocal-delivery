@@ -23,6 +23,3 @@ app:
     refresh-ttl-days: 1
   cors:
     allowed-origins: "*"
-  mail:
-    reset-link-base-url: http://localhost:5173/reset-password
-    reset-token-ttl-minutes: 30

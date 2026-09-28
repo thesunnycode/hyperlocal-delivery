@@ -21,7 +21,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 
 import tools.jackson.databind.ObjectMapper;
-import com.hyperlocal.delivery.config.MailProperties;
 import com.hyperlocal.delivery.dto.auth.AuthResponse;
 import com.hyperlocal.delivery.dto.auth.LoginRequest;
 import com.hyperlocal.delivery.dto.auth.OtpSentResponse;
@@ -68,12 +67,6 @@ class AuthServiceTest {
 
     @Mock
     private JwtUtil jwtUtil;
-
-    @Mock
-    private PasswordResetMailer mailer;
-
-    @Mock
-    private MailProperties mailProperties;
 
     @Mock
     private OtpService otpService;

@@ -19,9 +19,10 @@ spring:
     locations: classpath:db/migration
   mail:
     # Left blank when unset (rather than a hard-required placeholder) so a
-    # deploy without SMTP configured degrades to console-logging the reset
-    # link (see MailConfig / ConsoleMailService) instead of failing to
-    # start with "Could not resolve placeholder 'SMTP_HOST'".
+    # deploy without SMTP configured degrades to console-logging OTP codes
+    # and invite links (see MailConfig / ConsoleOtpEmailService /
+    # ConsoleAgentInviteMailer) instead of failing to start with "Could not
+    # resolve placeholder 'SMTP_HOST'".
     host: ${SMTP_HOST:}
     port: ${SMTP_PORT:587}
     username: ${SMTP_USERNAME:}
@@ -38,8 +39,6 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS}
   mail:
-    reset-link-base-url: ${RESET_LINK_BASE_URL}
-    reset-token-ttl-minutes: ${RESET_TOKEN_TTL_MINUTES:30}
     invite-link-base-url: ${INVITE_LINK_BASE_URL}
     invite-ttl-hours: ${INVITE_TTL_HOURS:168}
 

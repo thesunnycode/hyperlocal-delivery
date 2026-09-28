@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
-import com.hyperlocal.delivery.config.MailProperties;
 import com.hyperlocal.delivery.dto.auth.AuthResponse;
 import com.hyperlocal.delivery.dto.auth.LoginRequest;
 import com.hyperlocal.delivery.dto.auth.OtpSentResponse;
@@ -74,8 +73,6 @@ public class AuthService {
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final PasswordResetMailer mailer;
-    private final MailProperties mailProperties;
     private final OtpService otpService;
     private final OtpEmailService otpEmailService;
     private final ObjectMapper objectMapper;
@@ -287,16 +284,16 @@ public class AuthService {
                 });
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
-            loginRateLimiter.recordFailedAttempt(req.email());
+            loginRateLimiter.recordFailedAttempt(normalizedEmail);
             throw new InvalidCredentialsException();
         }
 
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-            loginRateLimiter.recordFailedAttempt(req.email());
+            loginRateLimiter.recordFailedAttempt(normalizedEmail);
             throw new InvalidCredentialsException();
         }
 
-        loginRateLimiter.recordSuccess(req.email());
+        loginRateLimiter.recordSuccess(normalizedEmail);
         return issueTokens(user);
     }
 

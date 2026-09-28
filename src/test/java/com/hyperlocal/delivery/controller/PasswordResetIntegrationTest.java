@@ -23,16 +23,12 @@ import com.hyperlocal.delivery.model.User;
 import com.hyperlocal.delivery.repository.OtpRecordRepository;
 import com.hyperlocal.delivery.security.JwtUtil;
 import com.hyperlocal.delivery.service.OtpEmailService;
-import com.hyperlocal.delivery.service.PasswordResetMailer;
 
 /**
  * Integration tests for the password-reset flow.
  * The forgotPassword endpoint now uses OTP-based verification.
  */
 class PasswordResetIntegrationTest extends BaseIntegrationTest {
-
-    @MockitoBean
-    private PasswordResetMailer mailer;
 
     @MockitoBean
     private OtpEmailService otpEmailService;

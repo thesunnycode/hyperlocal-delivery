@@ -1,9 +1,10 @@
 package com.hyperlocal.delivery.service;
 
 /**
- * Sends the agent invite email. Two implementations, chosen the same way as
- * {@link PasswordResetMailer}: {@link ConsoleAgentInviteMailer} logs the link
- * locally, {@link SmtpAgentInviteMailer} sends it for real.
+ * Sends the agent invite email. Two implementations, selected in
+ * {@code MailConfig} the same way as the OTP email sender:
+ * {@link ConsoleAgentInviteMailer} logs the link locally,
+ * {@link SmtpAgentInviteMailer} sends it for real.
  */
 public interface AgentInviteMailer {
 
