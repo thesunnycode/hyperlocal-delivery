@@ -8,7 +8,8 @@ import com.hyperlocal.delivery.util.TimeUtils;
  * Lightweight shipment summary for paginated list endpoints.
  *
  * <p>Field names match the real frontend contract directly (same rename as
- * {@link ShipmentResponseDto}): OwnerShipmentsPage.jsx list rows read
+ * {@link ShipmentResponseDto}): the owner shipments page
+ * ({@code /owner/shipments}) list rows read
  * {@code s.token}, {@code s.scheduledAt}, and {@code s.agentName} — not
  * {@code trackingToken}, {@code scheduledDeliveryAt}, or a nested
  * {@code assignedAgent} object.

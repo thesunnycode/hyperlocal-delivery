@@ -232,7 +232,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     /**
      * Task 10 — DeliveryAttemptDto exposed via the shared shipment-detail
      * "attempts" array must use the singular "note" field
-     * (AttemptLogList.jsx reads a.note, never a.notes), plus "no" and
+     * (the frontend's attempt lists read a.note, never a.notes), plus "no" and
      * "reason" as read by owner, agent, and admin pages.
      */
     @Test
@@ -475,7 +475,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
 
     /**
      * Bug found via manual E2E verification: the real frontend
-     * (shipmentsApi.js createShipment) sends {@code {customerName,
+     * (shipmentsApi.ts createShipment) sends {@code {customerName,
      * customerPhone, address, scheduledAt}} — note "address", not
      * "deliveryAddress". CreateShipmentRequest must accept that exact shape
      * via @JsonAlias (same precedent as note/notes and fullName/name).
@@ -502,7 +502,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification: OwnerShipmentsPage.jsx reads
+     * Bug found via manual E2E verification: the owner shipments page reads
      * created.id / created.agentName on create, and selected.token /
      * selected.address / selected.scheduledAt / selected.agentName /
      * selected.agentId on the detail view — not trackingToken /
@@ -554,7 +554,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification: OwnerShipmentsPage.jsx's list
+     * Bug found via manual E2E verification: the owner shipments page's list
      * rows read s.token / s.customerName / s.scheduledAt / s.agentName —
      * ShipmentSummaryDto must expose those flat field names too, not
      * trackingToken / scheduledDeliveryAt / a nested assignedAgent object.

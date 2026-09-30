@@ -11,7 +11,8 @@ import com.hyperlocal.delivery.util.TimeUtils;
  *
  * <p>Field names match the frontend's contract directly (renamed, not
  * aliased):
- * OwnerShipmentsPage.jsx reads {@code selected.token}, {@code selected.address},
+ * the owner shipments page ({@code /owner/shipments}) reads {@code selected.token},
+ * {@code selected.address},
  * {@code selected.scheduledAt}, {@code selected.agentName}, and
  * {@code selected.agentId} — not {@code trackingToken}, {@code deliveryAddress},
  * {@code scheduledDeliveryAt}, or a nested {@code assignedAgent} object.

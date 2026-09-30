@@ -14,7 +14,8 @@ import com.hyperlocal.delivery.util.TimeUtils;
  * <p>Field names match the real frontend contract directly (renamed, not
  * aliased, per the same response-side precedent used for {@code
  * ShipmentResponseDto}/{@code ShipmentSummaryDto} in this fix):
- * CustomerTrackingPage.jsx reads {@code s.address}, {@code s.scheduledAt},
+ * the customer tracking page ({@code /track/$token}) reads {@code s.address},
+ * {@code s.scheduledAt},
  * and {@code s.events} (each item read as {@code {status, label, stamp}}) —
  * not {@code deliveryAddress}, {@code scheduledDeliveryAt}, or a {@code
  * timeline} array of {@code {status, at}}. This is a rename-only fix: no

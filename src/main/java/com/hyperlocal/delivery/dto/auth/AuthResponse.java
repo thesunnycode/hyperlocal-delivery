@@ -16,7 +16,8 @@ public record AuthResponse(
     /**
      * Builds an AuthResponse, deriving the top-level {@code token} (alias of
      * {@code accessToken}) and {@code role} (copy of {@code user.role()})
-     * fields the frontend's AuthContext destructures directly.
+     * fields the frontend's login handling passes to {@code setSession}
+     * ({@code apiClient.ts}) directly.
      */
     public static AuthResponse of(String accessToken, String refreshToken, long expiresIn, UserResponse user) {
         return new AuthResponse(accessToken, refreshToken, expiresIn, accessToken, user.role(), user);

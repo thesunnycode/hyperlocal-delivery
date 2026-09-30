@@ -9,7 +9,7 @@ import com.hyperlocal.delivery.model.ShipmentStatus;
 import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
- * Single-shipment inspect view for the admin register page's detail panel,
+ * Single-shipment inspect view for the owner register page's detail panel,
  * which reads {@code
  * inspect.customerName/address/status/createdAt/scheduledAt/deliveredAt/
  * agentName/events[{time,label}]/attempts}.

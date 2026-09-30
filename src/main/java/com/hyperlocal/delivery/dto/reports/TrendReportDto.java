@@ -5,7 +5,7 @@ import java.util.List;
 import com.hyperlocal.delivery.dto.analytics.DailyVolume;
 
 /**
- * Daily shipment volume reshaped for {@code AdminTrendPage.jsx}. The page
+ * Daily shipment volume reshaped for the frontend's trend report ({@code /owner/reports/trend}). The page
  * reads {@code rows} for its table and {@code days} for its chart — both
  * carry the same per-day data, so both fields are populated from the same
  * source list.

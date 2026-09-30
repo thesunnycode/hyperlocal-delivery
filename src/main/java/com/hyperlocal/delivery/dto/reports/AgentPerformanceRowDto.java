@@ -3,7 +3,7 @@ package com.hyperlocal.delivery.dto.reports;
 import com.hyperlocal.delivery.dto.analytics.AgentStats;
 
 /**
- * One agent-performance row reshaped for {@code AdminAgentPerformancePage.jsx}.
+ * One agent-performance row reshaped for the frontend's rider-performance report ({@code /owner/reports/agents}).
  *
  * <p>{@code open} (shipments still in progress within the range) is derived
  * as {@code assigned - delivered - failed - returned} rather than a new

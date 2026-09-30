@@ -126,7 +126,7 @@ class PublicTrackingIntegrationTest extends BaseIntegrationTest {
 
     /**
      * Bug found via manual E2E verification (same bug class as
-     * CreateShipmentRequest/ShipmentResponseDto): CustomerTrackingPage.jsx
+     * CreateShipmentRequest/ShipmentResponseDto): the customer tracking page
      * reads {@code s.address}, {@code s.scheduledAt}, and {@code s.events}
      * (each item read as {@code {status, label, stamp}}) — not {@code
      * deliveryAddress}, {@code scheduledDeliveryAt}, or a {@code timeline}

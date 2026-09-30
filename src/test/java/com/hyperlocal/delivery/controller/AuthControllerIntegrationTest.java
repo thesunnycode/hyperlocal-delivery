@@ -16,7 +16,7 @@ import com.hyperlocal.delivery.model.UserRole;
 /**
  * Integration tests for the auth login/register response shape — specifically
  * the top-level {@code token} and {@code role} aliases the frontend's
- * AuthContext destructures directly (data.token, data.role, data.user).
+ * login handling reads directly (data.token, data.role, data.user).
  */
 class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
@@ -49,8 +49,8 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     /**
      * Regression test for the {@code UserResponse.fullName -> name} rename:
      * every login/register/me response embeds a {@code user} object, and the
-     * frontend reads {@code user.name} (OwnerAccountPage, OwnerLayout,
-     * AdminLayout, AgentAssignmentsPage) — never {@code user.fullName}.
+     * frontend reads {@code user.name} (the owner and agent account and
+     * assignments pages) — never {@code user.fullName}.
      *
      * <p>With the OTP-based registration flow, the register endpoint no longer
      * returns user data directly. We verify the field name via the login

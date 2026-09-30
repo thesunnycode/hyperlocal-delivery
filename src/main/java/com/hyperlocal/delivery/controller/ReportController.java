@@ -43,9 +43,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Owner-facing reporting endpoints consumed directly by the admin frontend
- * ({@code AdminOverviewPage}, {@code AdminTrendPage},
- * {@code AdminAgentPerformancePage}).
+ * Owner-facing reporting endpoints consumed directly by the owner frontend
+ * (the reports pages at {@code /owner/reports/overview},
+ * {@code /owner/reports/trend}, and {@code /owner/reports/agents}).
  *
  * <p>This is a read-only reshaping layer over {@link AnalyticsService}: it
  * translates the frontend's {@code range}/{@code days} query params into

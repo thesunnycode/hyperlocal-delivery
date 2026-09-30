@@ -5,8 +5,8 @@ import com.hyperlocal.delivery.model.ShipmentStatus;
 import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
- * One row of the admin register list, reshaped for {@code
- * AdminRegisterPage.jsx}, which reads {@code
+ * One row of the owner register list, reshaped for the frontend's
+ * register page ({@code /owner/register}), which reads {@code
  * r.token/status/customerName/address/agentName/scheduledAt/deliveredAt}.
  *
  * <p>{@code status} keeps the {@link ShipmentStatus} enum type rather than

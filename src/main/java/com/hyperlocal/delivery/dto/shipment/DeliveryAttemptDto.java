@@ -10,9 +10,9 @@ import com.hyperlocal.delivery.util.TimeUtils;
  * {@code failureReason}, {@code attemptedAt}) used by the standalone
  * attempt endpoints ({@code POST /attempt}, {@code GET /attempts}), and
  * adds the aliases {@code no}, {@code reason}, {@code note}, {@code stamp}
- * read by {@code AttemptLogList.jsx} (whose doc comment states the shape
- * as {@code {no, stamp, reason, note}} and whose render reads {@code
- * a.note} — singular — never {@code a.notes}).
+ * read by the delivery-attempt lists in {@code OwnerLive.tsx} and
+ * {@code RiderLive.tsx}, which render {@code a.note} — singular — never
+ * {@code a.notes}.
  *
  * <p>{@code failureReason}/{@code reason} both go through {@link
  * com.hyperlocal.delivery.model.FailureReason#getLabel()} —

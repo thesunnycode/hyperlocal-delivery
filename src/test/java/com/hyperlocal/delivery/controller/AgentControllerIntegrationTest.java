@@ -66,7 +66,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void createAgent_withNameFieldInsteadOfFullName_returns201() throws Exception {
-        // Matches exactly what the real frontend sends: agentsApi.js's
+        // Matches exactly what the real frontend sends: agentsApi.ts's
         // createAgent({name, email, phone}) posts a "name" key, never
         // "fullName". CreateAgentRequest.fullName must accept it via
         // @JsonAlias, the same pattern already used for note/notes.
@@ -91,7 +91,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void createAgent_withoutPasswordField_returns201WithRandomHashedPassword() throws Exception {
-        // Matches exactly what the real frontend sends: OwnerAgentsPage.jsx's
+        // Matches exactly what the real frontend sends: the owner agents page's
         // createAgent() only ever posts name/email/phone, never a password
         // field, because agents are onboarded via invite/reset-link, not by
         // the owner choosing their password.
@@ -184,7 +184,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void listAgents_rowsUseFrontendContractFieldNames() throws Exception {
-        // Matches exactly what OwnerAgentsPage.jsx / OwnerShipmentsPage.jsx
+        // Matches exactly what the owner agents and shipments pages
         // read off each list row: a.id, a.name, a.email, a.phone, a.active,
         // a.openCount — never the backend's old internal names
         // (fullName/isActive/activeShipments).
@@ -206,8 +206,8 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void listAgents_withActiveTrueQueryParam_excludesDeactivatedAgents() throws Exception {
-        // Matches exactly what OwnerShipmentsPage.jsx sends to populate the
-        // reassign-agent dropdown: agentsApi.js's listAgents({active: true})
+        // Matches exactly what the owner shipments page sends to populate the
+        // reassign-agent dropdown: agentsApi.ts's listAgents({active: true})
         // serializes to "?active=true" (not "?isActive=true"), so the
         // controller's @RequestParam must be named "active" or this filter
         // silently never applies and deactivated agents leak into the list.
@@ -320,7 +320,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getAgentById_usesFrontendContractFieldNames() throws Exception {
-        // Matches exactly what OwnerAgentsPage.jsx reads off the detail
+        // Matches exactly what the owner agents page reads off the detail
         // response: detail.name, detail.email, detail.phone,
         // detail.deliveredCount, detail.failedCount, detail.openCount,
         // detail.joinedAt, detail.active — never the backend's old
@@ -424,7 +424,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void updateAgent_withNameFieldInsteadOfFullName_returns200() throws Exception {
-        // Matches exactly what the real frontend sends: agentsApi.js's
+        // Matches exactly what the real frontend sends: agentsApi.ts's
         // updateAgent(id, {name, phone}) posts a "name" key, never
         // "fullName". UpdateAgentRequest.fullName must accept it via
         // @JsonAlias, the same pattern already used for note/notes.
