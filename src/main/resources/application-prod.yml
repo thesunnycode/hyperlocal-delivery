@@ -57,4 +57,4 @@ management:
 logging:
   level:
     root: INFO
-    com.hyperlocal: DEBUG
+    com.hyperlocal: INFO
