@@ -11,6 +11,7 @@ import com.hyperlocal.delivery.dto.invite.AcceptInviteRequest;
 import com.hyperlocal.delivery.dto.invite.InvitePreviewResponse;
 import com.hyperlocal.delivery.dto.invite.InviteResponse;
 import com.hyperlocal.delivery.exception.AgentNotFoundException;
+import com.hyperlocal.delivery.exception.InvalidAgentException;
 import com.hyperlocal.delivery.exception.InvalidInviteTokenException;
 import com.hyperlocal.delivery.model.AgentInvite;
 import com.hyperlocal.delivery.model.User;
@@ -64,6 +65,11 @@ public class AgentInviteService {
      * <p>Tenant-scoped on {@code businessId} and restricted to
      * DELIVERY_AGENT rows: an owner cannot mint a password-setting link for
      * another owner, or for someone else's agent.
+     *
+     * <p>A deactivated agent is refused with {@link InvalidAgentException}
+     * (422 {@code INVALID_AGENT}), the same code shipment assignment uses
+     * for an inactive agent: a password-setting link for an account that
+     * has been switched off would be a way back in. Reactivate first.
      */
     @Transactional
     public InviteResponse issue(Long businessId, Long agentId) {
@@ -71,6 +77,9 @@ public class AgentInviteService {
                 .filter(u -> u.getRole() == UserRole.DELIVERY_AGENT)
                 .filter(u -> u.getBusiness() != null && u.getBusiness().getId().equals(businessId))
                 .orElseThrow(() -> new AgentNotFoundException(agentId));
+        if (!Boolean.TRUE.equals(agent.getIsActive()) || agent.getDeletedAt() != null) {
+            throw new InvalidAgentException("Agent is deactivated; reactivate before inviting: " + agentId);
+        }
 
         LocalDateTime now = LocalDateTime.now();
         inviteRepository.expireOutstanding(agent.getId(), now);

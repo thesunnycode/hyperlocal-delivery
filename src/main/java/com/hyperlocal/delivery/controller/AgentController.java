@@ -142,7 +142,8 @@ public class AgentController {
         @ApiResponse(responseCode = "200", description = "Invite issued"),
         @ApiResponse(responseCode = "401", description = "Not authenticated"),
         @ApiResponse(responseCode = "403", description = "Not a business owner"),
-        @ApiResponse(responseCode = "404", description = "Agent not found in this business")
+        @ApiResponse(responseCode = "404", description = "Agent not found in this business"),
+        @ApiResponse(responseCode = "422", description = "Agent is deactivated (INVALID_AGENT)")
     })
     public ApiSuccess<InviteResponse> invite(
             @AuthenticationPrincipal CustomUserDetails principal,
