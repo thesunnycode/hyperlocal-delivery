@@ -80,8 +80,6 @@ public class SecurityConfig {
                                 "/",
                                 "/index.html",
                                 "/assets/**",
-                                "/favicon.ico",
-                                "/vite.svg",
                                 "/{path:^(?!api|actuator).*$}",
                                 "/{path:^(?!api|actuator).*$}/**").permitAll()
                         .anyRequest().authenticated())
