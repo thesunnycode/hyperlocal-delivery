@@ -22,8 +22,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     /**
      * Hashed Vite assets (immutable filenames) get aggressive 1-year
-     * caching. Non-hashed assets (index.html, favicon) get short caching
-     * with revalidation. This makes the SPA CDN-ready without a separate
+     * caching. The non-hashed root files &mdash; Vite's {@code index.html}
+     * plus everything in {@code frontend/public} ({@code favicon.svg},
+     * {@code robots.txt}, {@code delivery-rider-loop.webm}) &mdash; get a
+     * 5-minute public cache. A file added to {@code frontend/public} must be
+     * added here too, or it falls back to Spring Security's no-store headers. This makes the SPA CDN-ready without a separate
      * nginx layer.
      */
     @Override
@@ -33,8 +36,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/assets/")
                 .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable());
 
-        // Root-level static files (index.html, favicon) — short cache
-        registry.addResourceHandler("/index.html", "/favicon.ico", "/vite.svg")
+        // Root-level static files (index.html + frontend/public) — short cache
+        registry.addResourceHandler("/index.html", "/favicon.svg", "/robots.txt",
+                        "/delivery-rider-loop.webm")
                 .addResourceLocations("classpath:/static/")
                 .setCacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic());
     }
