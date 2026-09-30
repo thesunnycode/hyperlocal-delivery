@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -84,11 +85,17 @@ public class AgentInviteService {
         LocalDateTime now = LocalDateTime.now();
         inviteRepository.expireOutstanding(agent.getId(), now);
 
+        // Whole seconds: expires_at is a DATETIME with no fractional part, so
+        // the value reported here must be the value the preview will later
+        // read back, not one carrying digits the column drops.
+        LocalDateTime expiresAt = now.plusHours(mailProperties.inviteTtlHours())
+                .truncatedTo(ChronoUnit.SECONDS);
+
         String rawToken = jwtUtil.generateOpaqueToken();
         inviteRepository.save(AgentInvite.builder()
                 .user(agent)
                 .tokenHash(JwtUtil.sha256Hex(rawToken))
-                .expiresAt(now.plusHours(mailProperties.inviteTtlHours()))
+                .expiresAt(expiresAt)
                 .build());
 
         String businessName = agent.getBusiness().getName();
@@ -97,7 +104,7 @@ public class AgentInviteService {
 
         return new InviteResponse(
                 MailLinkBuilder.buildInviteLink(mailProperties.inviteLinkBaseUrl(), rawToken),
-                TimeUtils.toIso(now.plusHours(mailProperties.inviteTtlHours())),
+                TimeUtils.toIso(expiresAt),
                 emailed);
     }
 
