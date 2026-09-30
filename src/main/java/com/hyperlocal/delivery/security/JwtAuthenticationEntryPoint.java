@@ -1,6 +1,7 @@
 package com.hyperlocal.delivery.security;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +44,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     /**
-     * Write a 401 {@link ApiError} JSON body and commit the response.
+     * Write a 401 {@link ApiError} JSON body, as
+     * {@code application/json;charset=UTF-8}, and commit the response.
      *
      * <p>Static so the JWT filter can call it without resolving a bean
      * when it needs to fail a request before the Spring Security
@@ -61,6 +63,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 TimeUtils.nowIso(),
                 request.getRequestURI());
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        // Charset set explicitly and before getWriter(): the servlet default
+        // is ISO-8859-1, which would both mislabel the JSON and mangle any
+        // non-Latin-1 character in the message.
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }
