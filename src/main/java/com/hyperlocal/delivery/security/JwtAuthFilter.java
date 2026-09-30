@@ -42,9 +42,8 @@ import io.jsonwebtoken.JwtException;
  * stale or expired bearer token (which any generic HTTP client that
  * unconditionally reattaches a previously-stored token will send —
  * routinely, once the 15-minute access-token TTL elapses) 401s an
- * endpoint that is documented as requiring no authentication at all —
- * confirmed live against {@code GET /api/track/{token}} in
- * docs/audits/2026-09-10-flow-public-tracking.md.
+ * endpoint that is documented as requiring no authentication at all,
+ * such as public tracking at {@code GET /api/track/{token}}.
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {

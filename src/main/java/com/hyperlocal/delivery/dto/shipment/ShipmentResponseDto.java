@@ -9,8 +9,8 @@ import com.hyperlocal.delivery.util.TimeUtils;
 /**
  * Full shipment detail response including events and delivery attempts.
  *
- * <p>Field names match the real frontend contract directly (renamed, not
- * aliased, per the response-side precedent used elsewhere in this plan):
+ * <p>Field names match the frontend's contract directly (renamed, not
+ * aliased):
  * OwnerShipmentsPage.jsx reads {@code selected.token}, {@code selected.address},
  * {@code selected.scheduledAt}, {@code selected.agentName}, and
  * {@code selected.agentId} — not {@code trackingToken}, {@code deliveryAddress},

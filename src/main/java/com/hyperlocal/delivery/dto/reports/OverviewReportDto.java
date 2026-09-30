@@ -10,7 +10,7 @@ import com.hyperlocal.delivery.dto.analytics.OverviewResponse;
 
 /**
  * Business-wide overview reshaped into the exact field names read by
- * {@code AdminOverviewPage.jsx} (see task 13 brief). Rates coming out of
+ * {@code AdminOverviewPage.jsx}. Rates coming out of
  * {@link com.hyperlocal.delivery.service.AnalyticsService} are fractions
  * (0.0-1.0); this DTO expresses them as 0-100 percentages, matching the
  * frontend's {@code `${data.onTimeRate}%`} rendering.

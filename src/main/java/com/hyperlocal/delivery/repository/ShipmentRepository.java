@@ -244,10 +244,10 @@ public interface ShipmentRepository
      * attempts joins to N rows, so {@code COUNT(*)} over the join fans out
      * per-attempt instead of counting shipments once each, silently
      * inflating {@code totalDelivered} (and understating the rate) for
-     * every delivered shipment with 2+ recorded attempts. Confirmed live:
-     * one shipment delivered clean plus one with 1 prior attempt plus one
-     * with 2 prior attempts produced {@code COUNT(*) = 4} instead of the
-     * correct 3 — see docs/audits/2026-09-10-flow-reports-analytics.md.
+     * every delivered shipment with 2+ recorded attempts. For example, one
+     * shipment delivered clean plus one with 1 prior attempt plus one with
+     * 2 prior attempts gives {@code COUNT(*) = 4} over the join instead of
+     * the correct 3.
      */
     @Query(value = """
             SELECT COUNT(*) as totalDelivered,

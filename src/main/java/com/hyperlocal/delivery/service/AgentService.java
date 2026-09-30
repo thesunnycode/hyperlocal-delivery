@@ -101,9 +101,8 @@ public class AgentService {
      * {@link UserRepository#findByBusiness_IdAndRole}. Deactivating an
      * agent sets {@code deletedAt} as part of the soft delete (see
      * {@link #deactivate}), so filtering on {@code deletedAt IS NULL} here
-     * — as an earlier version of this method did — silently dropped
-     * deactivated agents from every list view with no UI path back to
-     * them. Only when the caller explicitly passes {@code active=true} or
+     * would silently drop deactivated agents from every list view with no
+     * UI path back to them. Only when the caller explicitly passes {@code active=true} or
      * {@code active=false} is the result narrowed to that state.</p>
      */
     @Transactional(readOnly = true)

@@ -37,10 +37,9 @@ public class DeliveryAttemptService {
     /**
      * Attempts beyond this count return the shipment to the store rather
      * than staying open for another try — matching the agent app's own
-     * copy ("After the third, it goes back to the store."). Confirmed via
-     * a live flow audit (docs/audits/2026-09-10-flow-delivery-attempts.md)
-     * that this was NOT previously enforced: a shipment could accumulate
-     * unbounded failed attempts and never autonomously reach RETURNED.
+     * copy ("After the third, it goes back to the store."). Without this
+     * cap, a shipment could accumulate unbounded failed attempts and never
+     * reach RETURNED on its own.
      */
     private static final int MAX_ATTEMPTS = 3;
 

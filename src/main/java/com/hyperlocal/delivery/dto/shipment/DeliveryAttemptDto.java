@@ -15,14 +15,14 @@ import com.hyperlocal.delivery.util.TimeUtils;
  * a.note} — singular — never {@code a.notes}).
  *
  * <p>{@code failureReason}/{@code reason} both go through {@link
- * com.hyperlocal.delivery.model.FailureReason#getLabel()} (Task 5's fix) —
+ * com.hyperlocal.delivery.model.FailureReason#getLabel()} —
  * never {@code .name()} — so Jackson's {@code @JsonValue} label mapping is
  * never bypassed.
  *
  * <p>Deliberately has no {@code notes} (plural) field — only the singular
- * {@code note} — since the frontend never reads {@code a.notes} and the
- * plural key must be verifiably absent from the wire shape (see Task 10's
- * {@code attemptDtoUsesSingularNoteFieldNotNotes} test).
+ * {@code note} — since the frontend never reads {@code a.notes}, the
+ * plural key is kept out of the wire shape entirely (the
+ * {@code attemptDtoUsesSingularNoteFieldNotNotes} test checks this).
  */
 public record DeliveryAttemptDto(
         Long id,

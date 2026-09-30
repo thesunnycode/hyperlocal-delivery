@@ -9,12 +9,12 @@ import com.hyperlocal.delivery.model.ShipmentStatus;
 import com.hyperlocal.delivery.util.TimeUtils;
 
 /**
- * Single-shipment inspect view for the admin register page's detail panel
- * (task 14 brief), which reads {@code
+ * Single-shipment inspect view for the admin register page's detail panel,
+ * which reads {@code
  * inspect.customerName/address/status/createdAt/scheduledAt/deliveredAt/
  * agentName/events[{time,label}]/attempts}.
  *
- * <p>{@code events} reuses Task 10's {@link ShipmentEventDto} superset
+ * <p>{@code events} reuses the {@link ShipmentEventDto} superset
  * shape as-is (it already carries {@code time}/{@code label}); the extra
  * fields on that DTO are harmless since the inspect view only reads those
  * two. {@code status} keeps the {@link ShipmentStatus} enum type so it
