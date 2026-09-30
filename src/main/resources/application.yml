@@ -45,6 +45,10 @@ app:
     # A week: the owner sends this to someone who may not read it
     # until their next shift.
     invite-ttl-hours: ${INVITE_TTL_HOURS:168}
+  scheduling:
+    # ScheduledCleanupJob.purgeExpiredTokens: expired refresh tokens and
+    # expired agent invites. Spring 6-field cron; 03:00 daily.
+    refresh-cleanup-cron: "0 0 3 * * *"
 
 management:
   endpoints:
