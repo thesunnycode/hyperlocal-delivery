@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hyperlocal.delivery.model.OtpStatus;
+import com.hyperlocal.delivery.repository.AgentInviteRepository;
 import com.hyperlocal.delivery.repository.OtpRecordRepository;
 import com.hyperlocal.delivery.repository.PendingRegistrationRepository;
 import com.hyperlocal.delivery.repository.RefreshTokenRepository;
@@ -16,9 +17,10 @@ import com.hyperlocal.delivery.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Periodic housekeeping job that purges expired refresh tokens, OTP records,
- * and pending registration payloads from the database. Token cleanup runs
- * daily at 03:00 by default; OTP cleanup runs every hour.
+ * Periodic housekeeping job that purges expired refresh tokens, expired
+ * agent invites, OTP records, and pending registration payloads from the
+ * database. Token and invite cleanup runs daily at 03:00 by default
+ * ({@code app.scheduling.refresh-cleanup-cron}); OTP cleanup runs every hour.
  *
  * <p><strong>Scaling note:</strong> These jobs are idempotent (DELETE
  * operations are safe to run multiple times). However, if the application
@@ -35,16 +37,25 @@ public class ScheduledCleanupJob {
     private final RefreshTokenRepository refreshTokenRepository;
     private final OtpRecordRepository otpRecordRepository;
     private final PendingRegistrationRepository pendingRegistrationRepository;
+    private final AgentInviteRepository agentInviteRepository;
 
     /**
-     * Delete all refresh tokens whose {@code expires_at} is in the past.
+     * Delete all refresh tokens and agent invites whose {@code expires_at} is
+     * in the past. An invite that has been accepted, or retired by a newer
+     * one (which sets its expiry to the moment of retirement), is removed
+     * once that expiry has passed.
      */
     @Scheduled(cron = "${app.scheduling.refresh-cleanup-cron:0 0 3 * * *}")
     @Transactional
     public void purgeExpiredTokens() {
-        long deletedRefresh = refreshTokenRepository.deleteByExpiresAtBefore(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        long deletedRefresh = refreshTokenRepository.deleteByExpiresAtBefore(now);
         if (deletedRefresh > 0) {
             log.info("Purged {} expired refresh token(s)", deletedRefresh);
+        }
+        int deletedInvites = agentInviteRepository.deleteExpiredBefore(now);
+        if (deletedInvites > 0) {
+            log.info("Purged {} expired agent invite(s)", deletedInvites);
         }
     }
 
