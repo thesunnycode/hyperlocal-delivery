@@ -38,7 +38,7 @@ import com.hyperlocal.delivery.security.PublicApiPaths;
  *   <li>The built SPA shell (static assets, {@code index.html}, and any
  *       non-{@code /api}/{@code /actuator} route path forwarded to it by
  *       {@link com.hyperlocal.delivery.controller.SpaFallbackController})
- *       is also public &mdash; the page loads for everyone and React Router
+ *       is also public &mdash; the page loads for everyone and TanStack Router
  *       + the API's own auth checks gate access to actual data.</li>
  *   <li>All other endpoints (the {@code /api/**} surface) require a valid
  *       access token; role-based authorisation is applied at the method

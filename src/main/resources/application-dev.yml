@@ -1,6 +1,6 @@
 # Local development profile (SPRING_PROFILES_ACTIVE=dev).
 #
-# The Vite dev server (frontend/vite.config.js) already proxies /api/**
+# The Vite dev server (frontend/vite.config.ts) already proxies /api/**
 # calls to the backend same-origin, so most requests never hit CORS. This
 # override exists for the cases that bypass the proxy (e.g. hitting the
 # backend directly from the browser at http://localhost:5173, or Swagger

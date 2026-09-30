@@ -163,7 +163,7 @@
             <!--
                 Builds frontend/ (Vite/React SPA) and drops the output into
                 src/main/resources/static so Spring Boot serves it same-origin
-                in production (see frontend/vite.config.js build.outDir and
+                in production (see frontend/vite.config.ts build.outDir and
                 SpaFallbackController). Runs during generate-resources, before
                 resources get copied to target/classes.
             -->

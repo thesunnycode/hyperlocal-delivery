@@ -4,15 +4,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Forwards deep-link requests for client-side (React Router) routes to the
+ * Forwards deep-link requests for client-side (TanStack Router) routes to the
  * built SPA's {@code index.html}, so a hard refresh on e.g.
  * {@code /owner/shipments/42} doesn't 404 against Spring's static resource
  * handler.
  *
- * <p>Only applies in builds where {@code frontend/dist} has been copied into
+ * <p>Only applies in builds where the frontend has been built into
  * {@code src/main/resources/static} (see {@code pom.xml}'s
- * {@code frontend-maven-plugin} binding and {@code frontend/vite.config.js}'s
- * {@code build.outDir}). In a checkout with no built frontend, these
+ * {@code frontend-maven-plugin} binding and {@code frontend/vite.config.ts}'s
+ * {@code build.outDir}, which points there directly). In a checkout with no built frontend, these
  * mappings simply forward to a missing {@code index.html} and Spring
  * returns its usual 404 &mdash; no different from today.
  *
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  *   <li>{@code /assets/**} — the SPA's hashed JS/CSS bundle, served directly
  *       by Spring's static resource handler;</li>
  *   <li>any path whose first segment contains a {@code .} — e.g.
- *       {@code /favicon.ico}, {@code /vite.svg} &mdash; so real static files
+ *       {@code /favicon.svg}, {@code /robots.txt} &mdash; so real static files
  *       at the root are served normally instead of being swallowed by this
  *       fallback (annotated {@code @Controller} mappings are matched before
  *       Spring Boot's static resource handler, so an over-broad pattern here
