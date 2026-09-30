@@ -15,18 +15,27 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
  * Swagger / OpenAPI 3 configuration.
  *
  * <p>Advertises a single bearer-JWT security scheme applied at the
- * document level so every endpoint inherits it; {@code permitAll}
- * endpoints should override with an empty security requirement at the
- * operation annotation.
+ * document level, so every operation in the generated document &mdash;
+ * including the public ones listed in {@code PublicApiPaths} (login,
+ * register, public tracking, health, ...) &mdash; shows the requirement. No
+ * operation overrides it; the server simply ignores a missing token on
+ * those {@code permitAll} paths. {@code SecurityConfig}, not this
+ * document, is the source of truth for what is public.
+ *
+ * <p>The tag list declares one entry per controller-level {@code @Tag}.
+ * A new controller tag needs a line here too: "Reports" had none and was
+ * missing from the generated document's tag list.
  */
 @Configuration
 @OpenAPIDefinition(tags = {
         @Tag(name = "Auth", description = "Registration, login, token refresh, logout"),
-        @Tag(name = "Agents", description = "Delivery-agent CRUD and deactivation"),
+        @Tag(name = "Agents", description = "Delivery-agent CRUD, deactivation and invites"),
         @Tag(name = "Shipments", description = "Shipment lifecycle and reassignment"),
         @Tag(name = "Delivery Attempts", description = "Per-attempt outcome logging"),
         @Tag(name = "Public Tracking", description = "Unauthenticated customer tracking"),
-        @Tag(name = "Analytics", description = "Business KPI aggregates")
+        @Tag(name = "Analytics", description = "Business KPI aggregates"),
+        @Tag(name = "Reports", description = "Owner reports: overview, trend, agent performance, shipment register, CSV export"),
+        @Tag(name = "Health", description = "Service liveness probe")
 })
 public class OpenApiConfig {
 
