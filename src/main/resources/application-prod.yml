@@ -36,6 +36,9 @@ app:
     secret: ${JWT_SECRET}
     access-ttl-minutes: 1440
     refresh-ttl-days: 7
+  # No defaults on purpose. An unset variable here is bound as its literal
+  # "${...}" text rather than failing, so StartupValidator aborts startup if
+  # either of these two is unset or blank.
   cors:
     allowed-origins: ${CORS_ORIGINS}
   mail:
