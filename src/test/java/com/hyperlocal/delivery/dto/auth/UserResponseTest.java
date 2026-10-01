@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Verifies that {@link UserResponse#from(User)} actually emits the
  * frontend-facing role short code ("OWNER"/"AGENT") rather than the raw
- * enum name. This is a DTO-level regression test: {@link UserResponse#role()}
+ * enum name. This is a DTO-level test: {@link UserResponse#role()}
  * is a plain {@code String} field populated eagerly in {@code from()},
  * so Jackson's {@code @JsonValue} on {@code UserRole} never gets a chance
  * to run for this field — the mapping expression itself must produce the

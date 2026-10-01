@@ -29,7 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Concurrency test for agent assignment.
- * See docs/phase-08-testing/task-16-write-agent-assignment-concurrency-test.md.
  *
  * Uses CountDownLatch to fire N threads creating shipments simultaneously
  * against 2 agents. Verifies load distribution: no agent has more than

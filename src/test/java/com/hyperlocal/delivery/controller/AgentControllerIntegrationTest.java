@@ -66,10 +66,10 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void createAgent_withNameFieldInsteadOfFullName_returns201() throws Exception {
-        // Matches exactly what the real frontend sends: agentsApi.ts's
+        // Matches exactly what the frontend sends: agentsApi.ts's
         // createAgent({name, email, phone}) posts a "name" key, never
         // "fullName". CreateAgentRequest.fullName must accept it via
-        // @JsonAlias, the same pattern already used for note/notes.
+        // @JsonAlias, the same pattern used for note/notes.
         String body = """
                 {
                     "name": "Frontend Contract Agent",
@@ -91,7 +91,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void createAgent_withoutPasswordField_returns201WithRandomHashedPassword() throws Exception {
-        // Matches exactly what the real frontend sends: the owner agents page's
+        // Matches exactly what the frontend sends: the owner agents page's
         // createAgent() only ever posts name/email/phone, never a password
         // field, because agents are onboarded via invite/reset-link, not by
         // the owner choosing their password.
@@ -186,7 +186,7 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
     void listAgents_rowsUseFrontendContractFieldNames() throws Exception {
         // Matches exactly what the owner agents and shipments pages
         // read off each list row: a.id, a.name, a.email, a.phone, a.active,
-        // a.openCount — never the backend's old internal names
+        // a.openCount — never the entity's internal names
         // (fullName/isActive/activeShipments).
         createAndSaveAgent(business, "contract-list-agent@test.com");
 
@@ -227,11 +227,9 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void listAgents_withNoQueryParam_includesDeactivatedAgent() throws Exception {
-        // Bug found via manual E2E verification: after deactivating an
-        // agent ("Ravi Kumar") through the real app, clicking the "All"
-        // filter tab on the Agents page — which calls listAgents({}),
-        // i.e. GET /api/agents with no query params at all — returned
-        // only the still-active agent. The deactivated agent vanished
+        // The "All" filter tab on the Agents page calls listAgents({}),
+        // i.e. GET /api/agents with no query params at all. If that
+        // returned only active agents, a deactivated agent would vanish
         // from every list view with no way back to it short of guessing
         // its id and hitting GET /api/agents/{id} directly. The
         // unfiltered ("All") listing must return every agent in the
@@ -260,12 +258,11 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     void listAgents_withActiveFalseQueryParam_returnsOnlyDeactivatedAgents() throws Exception {
         // The active=false branch shares the same repository query shape
-        // as active=true. Before this fix, that query additionally
-        // required deletedAt IS NULL, which deactivate() always clears to
-        // non-null — so active=false would have returned zero rows even
-        // for a real deactivated agent. Not currently exercised by the
-        // frontend, but must behave correctly as a documented, legitimate
-        // filter value.
+        // as active=true. That query must not also require
+        // deletedAt IS NULL, which deactivate() always sets to non-null —
+        // otherwise active=false would return zero rows even for a real
+        // deactivated agent. Not exercised by the frontend, but must
+        // behave correctly as a documented, legitimate filter value.
         createAndSaveAgent(business, "still-active-2@test.com");
         User deactivatedAgent = createAndSaveAgent(business, "deactivated-2@test.com");
         mockMvc.perform(post("/api/agents/" + deactivatedAgent.getId() + "/deactivate")
@@ -282,10 +279,9 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void listAgents_withNoQueryParam_neverLeaksOtherBusinessAgents() throws Exception {
-        // Tenant scoping must survive the fix: relaxing the unfiltered
-        // list to include deactivated agents must not also start
-        // returning agents (active or deactivated) that belong to a
-        // different business.
+        // Tenant scoping still applies: including deactivated agents in
+        // the unfiltered list must not also return agents (active or
+        // deactivated) that belong to a different business.
         Business otherBiz = createAndSaveBusiness("Other List Biz", "other-list@biz.com");
         User otherActiveAgent = createAndSaveAgent(otherBiz, "other-active@test.com");
         User otherDeactivatedAgent = createAndSaveAgent(otherBiz, "other-deactivated-list@test.com");
@@ -361,14 +357,13 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getAgentById_afterDeactivate_returns200WithActiveFalse() throws Exception {
-        // Bug found via manual E2E verification: POST /{id}/deactivate
-        // succeeds (204), but the very next request the frontend makes -
-        // GET /{id} to refresh the detail pane and show the "Reactivate"
-        // button - used to 404 because AgentService.get() looked the agent
-        // up via the active-only findAgent() (deletedAt IS NULL). The owner
-        // must be able to view a deactivated agent's detail (active: false)
-        // exactly as the "Active"/"All" list filter and the "Reactivate"
-        // button imply is possible.
+        // After POST /{id}/deactivate succeeds (204), the very next request
+        // the frontend makes is GET /{id}, to refresh the detail pane and
+        // show the "Reactivate" button. That lookup must not be limited to
+        // active agents (deletedAt IS NULL): the owner must be able to view
+        // a deactivated agent's detail (active: false) exactly as the
+        // "Active"/"All" list filter and the "Reactivate" button imply is
+        // possible.
         User agent = createAndSaveAgent(business, "deactivated-detail-agent@test.com");
 
         mockMvc.perform(post("/api/agents/" + agent.getId() + "/deactivate")
@@ -385,9 +380,9 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getDeactivatedAgent_fromDifferentBusiness_stillReturns404() throws Exception {
-        // Tenant scoping must survive the fix: a deactivated agent
-        // belonging to ANOTHER business must still 404, not leak across
-        // tenants just because the active-only filter was relaxed.
+        // Tenant scoping still applies: a deactivated agent belonging to
+        // ANOTHER business must still 404, not leak across tenants just
+        // because the detail lookup includes deactivated agents.
         Business otherBiz = createAndSaveBusiness("Other Deactivate Biz", "other-deactivate@biz.com");
         User otherAgent = createAndSaveAgent(otherBiz, "other-deactivated-agent@test.com");
         User otherOwner = createAndSaveOwner(otherBiz, "other-owner-deactivate@test.com");
@@ -424,10 +419,10 @@ class AgentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void updateAgent_withNameFieldInsteadOfFullName_returns200() throws Exception {
-        // Matches exactly what the real frontend sends: agentsApi.ts's
+        // Matches exactly what the frontend sends: agentsApi.ts's
         // updateAgent(id, {name, phone}) posts a "name" key, never
         // "fullName". UpdateAgentRequest.fullName must accept it via
-        // @JsonAlias, the same pattern already used for note/notes.
+        // @JsonAlias, the same pattern used for note/notes.
         User agent = createAndSaveAgent(business, "update-name-alias-agent@test.com");
 
         String body = """

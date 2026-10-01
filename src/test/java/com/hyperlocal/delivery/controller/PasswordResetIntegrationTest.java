@@ -26,7 +26,7 @@ import com.hyperlocal.delivery.service.OtpEmailService;
 
 /**
  * Integration tests for the password-reset flow.
- * The forgotPassword endpoint now uses OTP-based verification.
+ * The forgotPassword endpoint uses OTP-based verification.
  */
 class PasswordResetIntegrationTest extends BaseIntegrationTest {
 

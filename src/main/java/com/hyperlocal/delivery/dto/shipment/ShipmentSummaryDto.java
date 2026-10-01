@@ -7,7 +7,7 @@ import com.hyperlocal.delivery.util.TimeUtils;
 /**
  * Lightweight shipment summary for paginated list endpoints.
  *
- * <p>Field names match the real frontend contract directly (same rename as
+ * <p>Field names match the frontend contract directly (the same names as
  * {@link ShipmentResponseDto}): the owner shipments page
  * ({@code /owner/shipments}) list rows read
  * {@code s.token}, {@code s.scheduledAt}, and {@code s.agentName} — not
@@ -24,7 +24,7 @@ public record ShipmentSummaryDto(
         String agentName,
         String scheduledAt,
         String createdAt,
-        /** Null unless {@code status} is DELIVERED. Added so a summary list
+        /** Null unless {@code status} is DELIVERED. Present so a summary list
          *  — e.g. the agent's own {@code /shipments/mine?status=delivered} —
          *  can answer "how many delivered in the last N days" without a
          *  second, per-record fetch of the full {@link ShipmentResponseDto}. */

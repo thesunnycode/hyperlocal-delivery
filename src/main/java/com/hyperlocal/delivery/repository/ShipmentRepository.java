@@ -121,8 +121,8 @@ public interface ShipmentRepository
      * a {@code Set} is, so {@code events} would end up with each row
      * repeated once per attempt. Splitting into two queries keeps each
      * collection's row count independent, at the cost of one extra
-     * (indexed, cheap) query — still far better than the N+1 this
-     * {@code @EntityGraph} was originally introduced to avoid.
+     * (indexed, cheap) query — still far better than the N+1 lazy loads
+     * the {@code @EntityGraph} avoids.
      */
     default Optional<Shipment> findWithDetailById(Long id) {
         Optional<Shipment> shipment = findDetailByIdWithoutAttempts(id);

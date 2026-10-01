@@ -17,7 +17,7 @@ import com.hyperlocal.delivery.model.Business;
 import com.hyperlocal.delivery.model.User;
 
 /**
- * Integration test for atomic delivery attempt recording (task 19.5).
+ * Integration test for atomic delivery attempt recording.
  * Drives shipment to OUT_FOR_DELIVERY, then POSTs an attempt.
  * Verifies: delivery_attempts row, shipment status FAILED, event recorded.
  */
@@ -105,7 +105,7 @@ class DeliveryAttemptIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 5: the frontend sends/expects human-readable failure-reason
+     * The frontend sends/expects human-readable failure-reason
      * labels (e.g. "Address not found"), not the raw enum name
      * (ADDRESS_NOT_FOUND). Verifies both directions: the request body can
      * use the frontend label, and the response echoes the label back —
@@ -154,7 +154,7 @@ class DeliveryAttemptIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Finding #2/#6: an agent who is NOT the assigned agent gets 404 (not
+     * An agent who is NOT the assigned agent gets 404 (not
      * 403) when recording an attempt, matching the other five action
      * endpoints — otherwise 403-vs-404 would be a working existence oracle
      * for shipments across tenants.
@@ -237,11 +237,10 @@ class DeliveryAttemptIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Flow audit 2026-09-10 (docs/audits/2026-09-10-flow-delivery-attempts.md):
-     * the 3rd failed attempt must return the shipment to the store
+     * The 3rd failed attempt must return the shipment to the store
      * (RETURNED), matching the agent app's own "After the third, it goes
-     * back to the store." copy — previously every attempt just set FAILED
-     * with no cap at all.
+     * back to the store." copy — attempts before that leave the shipment
+     * FAILED.
      */
     @Test
     void recordAttempt_thirdFailure_transitionsToReturned() throws Exception {

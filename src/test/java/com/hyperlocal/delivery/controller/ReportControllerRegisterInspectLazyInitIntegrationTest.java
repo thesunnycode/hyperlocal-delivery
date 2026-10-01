@@ -25,32 +25,30 @@ import com.hyperlocal.delivery.repository.ShipmentEventRepository;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 
 /**
- * Regression coverage for the second occurrence of the {@code
- * LazyInitializationException} bug class first fixed in
- * {@link ReportControllerRegisterLazyInitIntegrationTest} (that fix covered
- * {@code GET /api/reports/register}'s {@code assignedAgent} association;
- * this covers a different gap found in the comprehensive sweep that
- * followed).
+ * Coverage for {@code LazyInitializationException} on the register inspect
+ * endpoint — the same class of failure that
+ * {@link ReportControllerRegisterLazyInitIntegrationTest} covers for
+ * {@code GET /api/reports/register}'s {@code assignedAgent} association.
  *
  * <p>{@code GET /api/reports/register/{token}} loads its shipment via {@code
  * ShipmentService#getByTokenInBusiness}, which calls {@code
- * ShipmentRepository#findWithDetailByTrackingToken}. That query's {@code
- * @EntityGraph} fetched the {@code events} and {@code attempts} collections
- * themselves, but not each event's nested {@code changedBy} user or each
- * attempt's nested {@code agent} user. {@code RegisterInspectDto.from()} is
- * built in {@code ReportController}, outside {@code ShipmentService}'s
+ * ShipmentRepository#findWithDetailByTrackingToken}. That query must fetch
+ * not only the {@code events} and {@code attempts} collections themselves
+ * but also each event's nested {@code changedBy} user and each attempt's
+ * nested {@code agent} user. {@code RegisterInspectDto.from()} is built in
+ * {@code ReportController}, outside {@code ShipmentService}'s
  * {@code @Transactional} boundary (open-in-view is disabled), and delegates
  * to {@code ShipmentEventDto.from()} / {@code DeliveryAttemptDto.from()},
- * both of which touch those associations — so the request threw a 500
- * {@code LazyInitializationException} the moment a shipment had at least one
- * event or attempt.
+ * both of which touch those associations — so without the nested fetch the
+ * request would throw a 500 {@code LazyInitializationException} the moment
+ * a shipment had at least one event or attempt.
  *
  * <p>Deliberately its own test class, following the same pattern as {@link
  * ReportControllerRegisterLazyInitIntegrationTest}: {@code
  * ReportControllerIntegrationTest}'s shared {@code @BeforeEach} runs inside
  * {@link BaseIntegrationTest}'s class-level rollback-only {@code
  * @Transactional}, which keeps one Hibernate session open across an entire
- * test method (including its MockMvc call) and would mask this exact bug.
+ * test method (including its MockMvc call) and would mask this exact failure.
  * This test opts out via {@code @Transactional(propagation = NOT_SUPPORTED)}
  * so the request genuinely runs under closed transaction boundaries, like
  * production.

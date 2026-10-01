@@ -12,17 +12,17 @@ import com.hyperlocal.delivery.model.OtpPurpose;
  * {@code dev}/{@code test}/{@code mysql-test} profiles, and only when
  * {@link SmtpOtpEmailService} didn't already register (i.e.
  * {@code spring.mail.host} is blank). Deliberately narrower than the
- * password-reset/agent-invite console mailers, which fall back in every
- * profile: an OTP is a live credential, so a misconfigured prod deploy
- * (SMTP_HOST blank) should fail loudly at startup rather than silently
- * start logging real users' OTP codes in plaintext.
+ * agent-invite console mailer, which falls back in every profile: an OTP
+ * is a live credential, so a misconfigured prod deploy (SMTP_HOST blank)
+ * should fail loudly at startup rather than silently start logging real
+ * users' OTP codes in plaintext.
  *
  * <p>See {@code MailConfig}'s Javadoc for why the console/SMTP pair is
  * wired as {@code @Bean} methods rather than {@code @Profile}/
  * {@code @ConditionalOnExpression}-gated {@code @Component}s directly:
- * those two conditions used to be independent and could both hold at once
- * (e.g. {@code dev} profile + real SMTP configured for local OTP testing),
- * which failed startup with a duplicate-bean error instead of picking one.
+ * as two independent conditions they could both hold at once (e.g.
+ * {@code dev} profile + real SMTP configured for local OTP testing), which
+ * would fail startup with a duplicate-bean error instead of picking one.
  *
  * <p>Logging the plaintext code is acceptable here because this bean is
  * only ever active in a dev/test profile with no real mail transport

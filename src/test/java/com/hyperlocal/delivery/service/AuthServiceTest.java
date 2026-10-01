@@ -169,7 +169,7 @@ class AuthServiceTest {
 
     /**
      * The raw password must never reach pending_registrations. Serializing the
-     * RegisterRequest directly used to write it to a plain TEXT column that
+     * RegisterRequest directly would write it to a plain TEXT column that
      * survives until the hourly cleanup job runs.
      */
     @Test
@@ -312,8 +312,8 @@ class AuthServiceTest {
     }
 
     /**
-     * A row written before passwords were hashed at initiation has no
-     * passwordHash. It must not become a 500, and it must not create an
+     * A pending row whose payload has no passwordHash cannot produce an
+     * account. It must not become a 500, and it must not create an
      * account with a null hash — the user restarts registration instead.
      */
     @Test

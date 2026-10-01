@@ -20,7 +20,7 @@ public record AgentSummaryDto(
          *  nobody-knows-it password {@code AgentService} generated, so
          *  reissuing them an invite link is the normal case, not a mistake to
          *  guard against; re-inviting an already-activated agent is the one
-         *  the owner console now asks to confirm. */
+         *  the owner console asks to confirm. */
         Boolean activated
 ) {
 

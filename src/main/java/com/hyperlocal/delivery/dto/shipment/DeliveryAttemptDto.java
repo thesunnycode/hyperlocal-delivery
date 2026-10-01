@@ -6,7 +6,7 @@ import com.hyperlocal.delivery.util.TimeUtils;
 /**
  * DTO for a delivery attempt record.
  *
- * <p>Superset shape: keeps the original field names ({@code attemptNumber},
+ * <p>Superset shape: carries the entity's field names ({@code attemptNumber},
  * {@code failureReason}, {@code attemptedAt}) used by the standalone
  * attempt endpoints ({@code POST /attempt}, {@code GET /attempts}), and
  * adds the aliases {@code no}, {@code reason}, {@code note}, {@code stamp}

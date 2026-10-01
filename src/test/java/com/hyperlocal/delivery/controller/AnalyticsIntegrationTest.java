@@ -18,7 +18,7 @@ import com.hyperlocal.delivery.model.User;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 
 /**
- * Integration tests for analytics endpoints (task 23.3).
+ * Integration tests for analytics endpoints.
  * Runs against MySQL (native queries use TIMESTAMPDIFF).
  */
 @ActiveProfiles("mysql-test")

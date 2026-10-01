@@ -30,7 +30,7 @@ import com.hyperlocal.delivery.repository.ShipmentEventRepository;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 
 /**
- * Integration tests for the {@code /api/reports/*} surface (task 13).
+ * Integration tests for the {@code /api/reports/*} surface.
  * Runs against MySQL (native queries use TIMESTAMPDIFF), mirroring
  * {@link AnalyticsIntegrationTest} which backs the underlying analytics.
  */
@@ -116,17 +116,17 @@ class ReportControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Flow audit 2026-09-10 (docs/audits/2026-09-10-flow-reports-analytics.md):
-     * {@code firstAttemptSuccessRaw} used to LEFT JOIN delivery_attempts
-     * without deduplicating, so a delivered shipment with N recorded
-     * attempts fanned out to N joined rows and inflated the denominator —
-     * silently understating the reported rate. This fixture creates one
+     * {@code firstAttemptSuccessRaw} must count each delivered shipment
+     * once: a LEFT JOIN to delivery_attempts without deduplicating would fan
+     * a delivered shipment with N recorded attempts out to N joined rows and
+     * inflate the denominator — silently understating the reported rate.
+     * This fixture creates one
      * DELIVERED shipment with zero attempts and one DELIVERED shipment with
      * TWO attempts. Combined with the 3 zero-attempt DELIVERED shipments
      * already seeded in {@code setUp()}, the correct rate is 4 first-attempt
-     * successes of 5 total delivered (80%) — the pre-fix fan-out bug would
-     * have reported 4 of 6 join-fanned-out rows (66.7%) instead, since the
-     * two-attempt shipment alone contributed 2 rows to the join.
+     * successes of 5 total delivered (80%) — a fanned-out join would
+     * report 4 of 6 rows (66.7%) instead, since the two-attempt shipment
+     * alone would contribute 2 rows to the join.
      */
     @Test
     void overview_firstAttemptRate_notInflatedByMultipleAttemptsOnOneShipment() throws Exception {
@@ -218,7 +218,7 @@ class ReportControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Final-review Finding 1/3 regression: an invalid {@code status} value
+     * An invalid {@code status} value
      * must surface as a 400 (matching {@code ShipmentController.list}'s
      * registered {@code ShipmentStatusConverter} behavior for the same
      * enum), not 500 via the generic exception fallback.
@@ -315,9 +315,8 @@ class ReportControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 18 regression: reporting must stay read-only per the plan's
-     * Global Constraints. Rather than trusting that no one adds a mutating
-     * endpoint later, reflect over every declared method on
+     * Reporting must stay read-only. Rather than trusting that no one adds
+     * a mutating endpoint later, reflect over every declared method on
      * {@link ReportController} and fail if any is mapped to anything but
      * GET (no {@code @PostMapping}/{@code @PutMapping}/
      * {@code @PatchMapping}/{@code @DeleteMapping}, and no

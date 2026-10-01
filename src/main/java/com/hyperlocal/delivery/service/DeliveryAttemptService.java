@@ -60,7 +60,7 @@ public class DeliveryAttemptService {
      * transitions off the same OUT_FOR_DELIVERY read can't both commit — and
      * because an unscoped lookup followed by a 403 for the wrong-agent case
      * would let a caller distinguish "shipment exists but isn't mine" (403)
-     * from "shipment doesn't exist" (404) across tenants; both cases now
+     * from "shipment doesn't exist" (404) across tenants; both cases
      * return 404, matching every other action endpoint.
      */
     @Transactional

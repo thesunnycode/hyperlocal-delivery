@@ -23,8 +23,8 @@ import com.hyperlocal.delivery.model.User;
 import jakarta.persistence.EntityManagerFactory;
 
 /**
- * Regression test for the cartesian-product bug in
- * {@link ShipmentRepository#findWithDetailById}: fetch-joining both the
+ * Guards {@link ShipmentRepository#findWithDetailById} against a cartesian
+ * product: fetch-joining both the
  * {@code events} list (a Hibernate "bag" -- unindexed, so it cannot be
  * deduplicated the way a fetch-joined {@code Set} can) and the
  * {@code attempts} collection in the same query multiplies the result rows
@@ -147,15 +147,15 @@ class ShipmentRepositoryEntityGraphTest extends BaseIntegrationTest {
                         + "events, not 10 * 2 = 20")
                 .hasSize(10);
 
-        // Ordering must also survive: events.get(0) is the original auto-assign,
+        // Ordering must also hold: events.get(0) is the first auto-assign,
         // and the list must remain chronological (createdAt ASC), not
         // reshuffled or duplicated by the join.
         assertThat(reloaded.getEvents().get(0).getToStatus().name()).isEqualTo("ASSIGNED");
     }
 
     /**
-     * Confirms the two-query split fix does not reintroduce the N+1 problem
-     * the original combined {@code @EntityGraph} was written to solve: a
+     * Confirms the two-query split does not cause the N+1 problem that an
+     * {@code @EntityGraph} fetch exists to avoid: a
      * single {@code findWithDetailById} call must issue exactly two SELECTs
      * (one for the shipment + events + assignedAgent, one for attempts),
      * never one query per event or per attempt.

@@ -16,12 +16,10 @@ import com.hyperlocal.delivery.model.OtpPurpose;
  * <p>Registered by {@link com.hyperlocal.delivery.config.MailConfig} only
  * when {@code spring.mail.host} is set to a non-blank value — regardless of
  * active Spring profile, including {@code dev}, so a local run can still
- * send real OTP emails when SMTP is configured. See that class's Javadoc:
- * this used to be a directly {@code @ConditionalOnExpression}-gated
- * {@code @Component}, independent of {@link ConsoleOtpEmailService}'s old
- * {@code @Profile} gate, which let both register at once (e.g.
- * {@code dev} profile + real SMTP configured) and crashed startup with a
- * duplicate-bean error instead of picking one.
+ * send real OTP emails when SMTP is configured. See that class's Javadoc
+ * for how this bean and {@link ConsoleOtpEmailService} are kept mutually
+ * exclusive, so that {@code dev} profile + real SMTP configured registers
+ * only this one rather than failing startup with a duplicate-bean error.
  *
  * <p>On any SMTP failure, logs the error and throws {@link MailDeliveryException}
  * without retrying.

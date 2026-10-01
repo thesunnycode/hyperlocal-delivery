@@ -185,7 +185,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 10 — ShipmentEventDto must expose the superset of fields read by
+     * ShipmentEventDto must expose the superset of fields read by
      * all three frontend pages: owner/agent read {toStatus||status, label,
      * meta}, customer tracking reads {status, label, stamp}, admin register
      * inspect reads {time, label}.
@@ -230,7 +230,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 10 — DeliveryAttemptDto exposed via the shared shipment-detail
+     * DeliveryAttemptDto exposed via the shared shipment-detail
      * "attempts" array must use the singular "note" field
      * (the frontend's attempt lists read a.note, never a.notes), plus "no" and
      * "reason" as read by owner, agent, and admin pages.
@@ -431,7 +431,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 18 regression: the NON_TERMINAL set used by reassign covers both
+     * The NON_TERMINAL set used by reassign covers both
      * terminal statuses. The test above only drives a shipment to DELIVERED;
      * this one drives to RETURNED (the other terminal status) to make sure
      * that branch is rejected too, not just DELIVERED.
@@ -474,11 +474,10 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification: the real frontend
-     * (shipmentsApi.ts createShipment) sends {@code {customerName,
+     * The frontend (shipmentsApi.ts createShipment) sends {@code {customerName,
      * customerPhone, address, scheduledAt}} — note "address", not
      * "deliveryAddress". CreateShipmentRequest must accept that exact shape
-     * via @JsonAlias (same precedent as note/notes and fullName/name).
+     * via @JsonAlias (same approach as note/notes and name/fullName).
      */
     @Test
     void create_acceptsRealFrontendRequestShape_withAddressAndScheduledAtKeys() throws Exception {
@@ -502,10 +501,9 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification: the owner shipments page reads
-     * created.id / created.agentName on create, and selected.token /
-     * selected.address / selected.scheduledAt / selected.agentName /
-     * selected.agentId on the detail view — not trackingToken /
+     * The owner shipments page reads created.id / created.agentName on
+     * create, and selected.token / selected.address / selected.scheduledAt /
+     * selected.agentName / selected.agentId on the detail view — not trackingToken /
      * deliveryAddress / scheduledDeliveryAt / a nested assignedAgent object.
      * ShipmentResponseDto must expose the flat frontend-contract field names.
      */
@@ -554,9 +552,9 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification: the owner shipments page's list
-     * rows read s.token / s.customerName / s.scheduledAt / s.agentName —
-     * ShipmentSummaryDto must expose those flat field names too, not
+     * The owner shipments page's list rows read s.token / s.customerName /
+     * s.scheduledAt / s.agentName — ShipmentSummaryDto must expose those
+     * flat field names too, not
      * trackingToken / scheduledDeliveryAt / a nested assignedAgent object.
      */
     @Test
@@ -587,7 +585,7 @@ class ShipmentIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 4: GET /api/shipments?status=picked_up (lowercase snake_case) must
+     * GET /api/shipments?status=picked_up (lowercase snake_case) must
      * bind via the registered Converter<String, ShipmentStatus>, and the
      * returned status field must itself be lowercase snake_case (real
      * end-to-end response, not just the enum-level Jackson test).

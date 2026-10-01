@@ -79,8 +79,8 @@ public class ShipmentService {
 
         shipment = shipmentRepository.save(shipment);
 
-        // Single system event: a shipment starts life already ASSIGNED — there
-        // is no CREATED status, per STATE_MACHINE.md.
+        // Single system event: a shipment starts life already ASSIGNED — the
+        // ShipmentStatus enum has no CREATED status.
         ShipmentEvent assignEvent = ShipmentEvent.builder()
                 .shipment(shipment)
                 .fromStatus(null)
@@ -97,9 +97,9 @@ public class ShipmentService {
         // this same persistence context returns this exact managed
         // instance unchanged — the entity-graph JOIN does not retroactively
         // populate a null mappedBy field on an already-managed entity — so
-        // the just-saved event silently never appeared in this response
-        // (though it was already correctly persisted; any later GET showed
-        // it). Setting the collections directly is what the response
+        // the just-saved event would be missing from this response (though
+        // it is already correctly persisted; any later GET shows it).
+        // Setting the collections directly is what the response
         // actually needs: exactly one event (this one) and zero attempts,
         // both already known without another query.
         shipment.setEvents(List.of(assignEvent));
@@ -109,10 +109,9 @@ public class ShipmentService {
 
     /**
      * Shared implementation for every single-step agent transition. Verifies
-     * the caller is the shipment's assigned agent unconditionally — this is
-     * the fix for the bug in the old {@code updateStatus()}, where that check
-     * only ran in a branch that was unreachable in practice. Never reveals
-     * that a shipment exists to an agent who isn't assigned to it.
+     * the caller is the shipment's assigned agent unconditionally, before
+     * any status check, so no transition can skip it. Never reveals that a
+     * shipment exists to an agent who isn't assigned to it.
      *
      * <p>Acquires the row lock as the very first DB touch so two concurrent
      * transitions off the same starting status (e.g. two {@code /deliver}

@@ -97,7 +97,7 @@ public class AuthService {
         // a clear "already registered, log in instead" is far less confusing
         // to a real user than silently no-op'ing behind an identical success
         // screen. This trades away enumeration-resistance (an attacker can
-        // now probe which emails have accounts) for a normal registration
+        // probe which emails have accounts) for a normal registration
         // UX; /forgot-password and /resend-otp still use the neutral,
         // non-disclosing response, since a password-reset flow is a much
         // more attractive enumeration target than registration.
@@ -194,10 +194,9 @@ public class AuthService {
                     "Registration session has expired. Please restart registration.");
         }
 
-        // Deserialize registration payload. A row written by an older build
-        // stored a "password" field and no "passwordHash", so it cannot produce
-        // a usable account — treat it, and any other malformed row, as an
-        // expired session rather than a 500.
+        // Deserialize registration payload. A row with no "passwordHash" value
+        // cannot produce a usable account — treat it, and any other malformed
+        // row, as an expired session rather than a 500.
         PendingRegistrationPayload payload;
         try {
             payload = objectMapper.readValue(pending.getPayloadJson(), PendingRegistrationPayload.class);
@@ -488,7 +487,7 @@ public class AuthService {
     }
 
     /**
-     * Update the caller's own editable profile fields (X3): full name,
+     * Update the caller's own editable profile fields: full name,
      * phone, and — for a {@code BUSINESS_OWNER} only — the business name.
      * Email and role are never editable through this endpoint —
      * {@link UpdateAccountRequest} has no fields for them.
@@ -504,7 +503,7 @@ public class AuthService {
         if (req.phone() != null) {
             user.setPhone(req.phone());
         }
-        // Business name is owner-only (X3): a delivery agent sending this
+        // Business name is owner-only: a delivery agent sending this
         // field has it silently ignored, same posture as email/role.
         if (req.businessName() != null && user.getRole() == UserRole.BUSINESS_OWNER) {
             Business business = user.getBusiness();

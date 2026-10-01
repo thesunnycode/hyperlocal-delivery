@@ -50,13 +50,13 @@ class RegistrationRaceGuard {
 
     /**
      * Create the Business + User rows from an already-hashed password.
-     * Mirrors what {@code AuthService.createAccount} used to do inline;
-     * moved here only so the insert can be isolated in its own transaction.
+     * Called by {@code AuthService.createAccount}; it lives here only so the
+     * insert can be isolated in its own transaction.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User createBusinessAndUser(String businessName, String ownerName, String email,
                                        String phone, String businessPhone, String passwordHash) {
-        // passwordHash on Business is a legacy NOT NULL column never
+        // passwordHash on Business is a NOT NULL column that is never
         // consulted for authentication (only User.passwordHash is) — store
         // a non-authenticable placeholder to satisfy the constraint.
         Business business = Business.builder()

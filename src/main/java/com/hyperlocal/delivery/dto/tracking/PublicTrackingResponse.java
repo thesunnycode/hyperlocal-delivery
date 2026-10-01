@@ -11,18 +11,17 @@ import com.hyperlocal.delivery.util.TimeUtils;
  * Public tracking response that deliberately excludes sensitive information:
  * customerPhone, agent identity, internal IDs, and delivery attempts.
  *
- * <p>Field names match the real frontend contract directly (renamed, not
- * aliased, per the same response-side precedent used for {@code
- * ShipmentResponseDto}/{@code ShipmentSummaryDto} in this fix):
+ * <p>Field names match the frontend contract directly (the frontend's own
+ * names, not aliases, as in {@code ShipmentResponseDto}/{@code
+ * ShipmentSummaryDto}):
  * the customer tracking page ({@code /track/$token}) reads {@code s.address},
  * {@code s.scheduledAt},
  * and {@code s.events} (each item read as {@code {status, label, stamp}}) —
  * not {@code deliveryAddress}, {@code scheduledDeliveryAt}, or a {@code
- * timeline} array of {@code {status, at}}. This is a rename-only fix: no
- * field beyond this existing set (trackingToken, status, customerName,
- * address, scheduledAt, deliveredAt, businessName, businessPhone, events) is
- * added — agent identity, agent phone, internal ids, and attempt data
- * remain excluded.
+ * timeline} array of {@code {status, at}}. The response carries exactly
+ * this set of fields (trackingToken, status, customerName, address,
+ * scheduledAt, deliveredAt, businessName, businessPhone, events) — agent
+ * identity, agent phone, internal ids, and attempt data are excluded.
  */
 public record PublicTrackingResponse(
         String trackingToken,

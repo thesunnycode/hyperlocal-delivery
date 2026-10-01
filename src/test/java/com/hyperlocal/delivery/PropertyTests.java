@@ -21,8 +21,9 @@ import com.hyperlocal.delivery.model.User;
  * feature rather than within one endpoint — tenant isolation, refresh-token
  * one-shot use, audit-trail completeness, and response-envelope shape.
  *
- * <p>Example-based, not randomized: see docs/phase-08-testing/
- * task-17-write-property-based-tests.md for why this project doesn't use jqwik.
+ * <p>Example-based, not randomized: each invariant is checked against
+ * fixed, hand-built data rather than generated inputs, so no
+ * property-testing library (such as jqwik) is needed.
  */
 class PropertyTests extends BaseIntegrationTest {
 
@@ -54,7 +55,7 @@ class PropertyTests extends BaseIntegrationTest {
     }
 
     /**
-     * 26.1 — Tenant isolation: Business A can't see Business B's agents/shipments.
+     * Tenant isolation: Business A can't see Business B's agents/shipments.
      */
     @Test
     void tenantIsolation_businessA_cannotSeeBusinessB_agents() throws Exception {
@@ -95,7 +96,7 @@ class PropertyTests extends BaseIntegrationTest {
     }
 
     /**
-     * 26.2 — Refresh token one-shot: Login, refresh, verify old token rejected.
+     * Refresh token one-shot: Login, refresh, verify old token rejected.
      */
     @Test
     void refreshToken_oneShot_oldTokenRejected() throws Exception {
@@ -139,7 +140,7 @@ class PropertyTests extends BaseIntegrationTest {
     }
 
     /**
-     * 26.3 — Audit immutability: Drive transitions, verify event count matches.
+     * Audit immutability: Drive transitions, verify event count matches.
      */
     @Test
     void auditImmutability_eventCountMatchesTransitions() throws Exception {
@@ -185,7 +186,7 @@ class PropertyTests extends BaseIntegrationTest {
     }
 
     /**
-     * 26.4 — Response envelope conformance: success and error responses
+     * Response envelope conformance: success and error responses
      * match the expected JSON structure.
      */
     @Test

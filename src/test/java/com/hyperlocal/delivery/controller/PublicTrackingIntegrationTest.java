@@ -20,7 +20,7 @@ import com.hyperlocal.delivery.model.Business;
 import com.hyperlocal.delivery.model.User;
 
 /**
- * Integration test for public tracking endpoint (task 18.4).
+ * Integration test for public tracking endpoint.
  * Verifies that the public tracking response contains only safe fields
  * and excludes sensitive information.
  */
@@ -82,7 +82,7 @@ class PublicTrackingIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 18 regression: an exhaustive allowlist of every field
+     * An exhaustive allowlist of every field
      * {@link com.hyperlocal.delivery.dto.tracking.PublicTrackingResponse} is
      * permitted to expose. Unlike the individual {@code doesNotExist()}
      * checks above (which only catch fields we thought to name), this fails
@@ -125,14 +125,14 @@ class PublicTrackingIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Bug found via manual E2E verification (same bug class as
+     * Checks the frontend field names (as with
      * CreateShipmentRequest/ShipmentResponseDto): the customer tracking page
      * reads {@code s.address}, {@code s.scheduledAt}, and {@code s.events}
      * (each item read as {@code {status, label, stamp}}) — not {@code
      * deliveryAddress}, {@code scheduledDeliveryAt}, or a {@code timeline}
-     * array of {@code {status, at}}. Without this fix, the public tracking
-     * page customers reach via SMS renders the address, scheduled time, and
-     * entire status history as blank.
+     * array of {@code {status, at}}. With any other names, the public
+     * tracking page customers reach via SMS would render the address,
+     * scheduled time, and entire status history as blank.
      */
     @Test
     void publicTracking_returnsFrontendContractShape_addressScheduledAtAndEvents() throws Exception {
@@ -241,9 +241,8 @@ class PublicTrackingIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void oldPublicPrefixNoLongerReachable() throws Exception {
-        // The route has moved from /api/public/track/{token} to /api/track/{token}.
-        // This confirms the old prefix is gone rather than duplicated, and that
-        // no other production code path still depends on /api/public/**.
+        // The tracking route is /api/track/{token}. This confirms nothing is
+        // served under an /api/public/** prefix as a duplicate of it.
         mockMvc.perform(get("/api/public/track/anything"))
                 .andExpect(status().is4xxClientError());
     }

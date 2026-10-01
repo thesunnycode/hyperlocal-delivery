@@ -12,7 +12,7 @@ import com.hyperlocal.delivery.model.Business;
 import com.hyperlocal.delivery.model.User;
 
 /**
- * Integration tests for the owner-editable-account endpoint (X3).
+ * Integration tests for the owner-editable-account endpoint.
  */
 class AccountUpdateIntegrationTest extends BaseIntegrationTest {
 
@@ -75,8 +75,8 @@ class AccountUpdateIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Finding #8 (X3): an owner can rename their business through this
-     * endpoint — the design mock's "BUSINESS NAME · OWNER ONLY" field.
+     * An owner can rename their business through this
+     * endpoint (the business name is an owner-only field).
      */
     @Test
     void updateMe_ownerChangesBusinessName_reflectedInResponse() throws Exception {

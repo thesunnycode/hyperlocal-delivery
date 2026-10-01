@@ -47,18 +47,18 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Regression test for the {@code UserResponse.fullName -> name} rename:
-     * every login/register/me response embeds a {@code user} object, and the
+     * Checks the {@code UserResponse} field name: login, registration OTP
+     * verification and /me all return a {@code user} shape, and the
      * frontend reads {@code user.name} (the owner and agent account and
      * assignments pages) — never {@code user.fullName}.
      *
-     * <p>With the OTP-based registration flow, the register endpoint no longer
-     * returns user data directly. We verify the field name via the login
+     * <p>With the OTP-based registration flow, the register endpoint does not
+     * return user data directly. We verify the field name via the login
      * response instead.
      */
     @Test
     void registerResponseExposesUserNameNotFullName() throws Exception {
-        // The register endpoint now returns OtpSentResponse (no user object).
+        // The register endpoint returns OtpSentResponse (no user object).
         // Verify user.name field via login response instead, which uses the
         // same AuthResponse/UserResponse shape that verify-registration-otp returns.
         Business business = createAndSaveBusiness("Name Field Biz", "namefieldbiz@test.com");

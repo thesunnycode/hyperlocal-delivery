@@ -110,8 +110,8 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     void pickup_wrongAgent_returns404_notForbidden() throws Exception {
         long shipmentId = createShipmentAssignedTo(agent);
 
-        // Regression test for the agent-scoping bug: otherAgent is a real
-        // agent in the same business, but is NOT assigned to this shipment.
+        // Agent scoping: otherAgent is a real agent in the same business,
+        // but is NOT assigned to this shipment.
         mockMvc.perform(post("/api/shipments/" + shipmentId + "/pickup")
                         .header("Authorization", "Bearer " + otherAgentToken))
                 .andExpect(status().isNotFound());
@@ -185,7 +185,7 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 8: frontend calls {@code POST /{id}/fail} (logFailedAttempt),
+     * The frontend calls {@code POST /{id}/fail} (logFailedAttempt),
      * which must transition OUT_FOR_DELIVERY -> FAILED and append exactly
      * one immutable DeliveryAttempt row.
      */
@@ -232,9 +232,8 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * The spec's central owner constraint (STATE_MACHINE.md: "The owner
-     * cannot advance a shipment forward, cannot mark anything delivered")
-     * rests entirely on the five @PreAuthorize annotations on these
+     * The central owner constraint (the owner cannot advance a shipment
+     * forward and cannot mark anything delivered) rests entirely on the five @PreAuthorize annotations on these
      * endpoints. These two tests exercise that constraint directly rather
      * than trusting the annotation is present.
      */
@@ -258,9 +257,9 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 9: {@code GET /{id}} is now shared between owners and agents,
-     * branching internally on the caller's role instead of requiring agents
-     * to call a separate {@code /my-detail} path.
+     * {@code GET /{id}} is shared between owners and agents, branching
+     * internally on the caller's role; there is no separate
+     * {@code /my-detail} path for agents.
      */
     @Test
     void agentDetailUsesSharedIdPathNotMyDetail() throws Exception {
@@ -303,8 +302,8 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 7: frontend calls {@code POST /{id}/start-transit}, not the
-     * backend's old {@code /transit} path.
+     * The frontend calls {@code POST /{id}/start-transit} (not
+     * {@code /transit}).
      */
     @Test
     void startTransitPathMatchesFrontendContract() throws Exception {
@@ -322,8 +321,7 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 7: frontend calls {@code GET /mine}, not the backend's old
-     * {@code /my-assignments} path.
+     * The frontend calls {@code GET /mine} (not {@code /my-assignments}).
      */
     @Test
     void mineListPathMatchesFrontendContract() throws Exception {
@@ -333,8 +331,8 @@ class ShipmentActionEndpointsIntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Task 7: frontend calls {@code POST /{id}/reassign}, not the backend's
-     * old {@code PUT}-only mapping.
+     * The frontend calls {@code POST /{id}/reassign}, so the endpoint must
+     * accept POST rather than only {@code PUT}.
      */
     @Test
     void reassignAcceptsPostNotPut() throws Exception {

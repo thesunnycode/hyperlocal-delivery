@@ -13,11 +13,11 @@ import jakarta.validation.constraints.Size;
  * Request body for creating a new shipment.
  *
  * <p>{@code deliveryAddress} and {@code scheduledDeliveryAt} carry
- * {@code @JsonAlias} because the real frontend ({@code shipmentsApi.ts}
+ * {@code @JsonAlias} because the frontend ({@code shipmentsApi.ts}
  * {@code createShipment}) sends {@code address} and {@code scheduledAt} —
- * same precedent as the {@code note}/{@code notes} and
- * {@code fullName}/{@code name} request-side aliases fixed elsewhere in this
- * plan.
+ * the same request-side approach as the {@code note}/{@code notes} alias on
+ * {@code AdvanceRequest} and the {@code name}/{@code fullName} alias on
+ * {@code CreateAgentRequest}.
  */
 public record CreateShipmentRequest(
         @NotBlank @Size(min = 2, max = 200) String customerName,

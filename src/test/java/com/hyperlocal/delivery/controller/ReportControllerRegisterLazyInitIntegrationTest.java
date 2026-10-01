@@ -20,16 +20,16 @@ import com.hyperlocal.delivery.model.User;
 import com.hyperlocal.delivery.repository.ShipmentRepository;
 
 /**
- * Regression coverage for a bug found via manual E2E verification of the
- * admin Register page (not part of the original task plan): {@code GET
- * /api/reports/register} threw a 500 {@code LazyInitializationException}
- * touching {@code assignedAgent}, because {@code
- * ShipmentService#searchForRegister} loaded shipments via a plain {@code
- * findAll(Specification, Pageable)} with no eager fetch of the association,
- * and the app runs with {@code spring.jpa.open-in-view: false} — so by the
- * time {@code RegisterRowDto.from(shipment)} called {@code
+ * Coverage for the admin Register page's list endpoint: {@code GET
+ * /api/reports/register} must not throw a 500
+ * {@code LazyInitializationException} touching {@code assignedAgent}.
+ * {@code ShipmentService#searchForRegister} must eagerly fetch that
+ * association, because the app runs with
+ * {@code spring.jpa.open-in-view: false} — a plain {@code
+ * findAll(Specification, Pageable)} would leave it a lazy proxy, and by the
+ * time {@code RegisterRowDto.from(shipment)} calls {@code
  * shipment.getAssignedAgent().getFullName()} in the controller, outside the
- * service's transactional boundary, Hibernate had no session left to
+ * service's transactional boundary, Hibernate has no session left to
  * initialize the proxy with.
  *
  * <p>This is deliberately its own test class rather than an added method on
@@ -37,7 +37,7 @@ import com.hyperlocal.delivery.repository.ShipmentRepository;
  * @BeforeEach} runs inside {@link BaseIntegrationTest}'s class-level
  * rollback-only {@code @Transactional}, which keeps one Hibernate session
  * open across an entire test method — including its MockMvc call — and
- * would silently mask this exact bug (a test asserting only that {@code
+ * would silently mask this exact failure (a test asserting only that {@code
  * agentName} is present, not correctly populated, would pass whether or not
  * the fetch was eager). Splitting this into its own class lets the single
  * test method opt out of that wrapping transaction via {@code

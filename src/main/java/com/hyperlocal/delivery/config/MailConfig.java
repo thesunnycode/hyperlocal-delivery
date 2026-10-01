@@ -32,17 +32,15 @@ import com.hyperlocal.delivery.service.SmtpOtpEmailService;
  *
  * <p>Also wires up exactly one {@link OtpEmailService} bean, similarly —
  * but its console fallback additionally requires {@code dev}/{@code test}/
- * {@code mysql-test}, unlike the two pairs above. It used to be two
- * independently-conditioned {@code @Component}s — {@code SmtpOtpEmailService}
- * on {@code @ConditionalOnExpression(mail.host non-blank)},
- * {@code ConsoleOtpEmailService} on {@code @Profile({"dev","test",
- * "mysql-test"})} alone — which could both be true at once (the {@code dev}
- * profile with real SMTP configured for local OTP testing) and crashed
- * startup with "required a single bean, but 2 were found" instead of
- * picking one. Stacking {@code @ConditionalOnMissingBean} onto the existing
- * {@code @Profile} fixes that without also silently letting a prod deploy
- * with SMTP misconfigured start up logging live OTP codes in plaintext
- * instead of failing loudly — see that bean method's own Javadoc.
+ * {@code mysql-test}, unlike the agent-invite pair above. A {@code @Profile}
+ * condition alone would not be enough: the {@code dev} profile with real
+ * SMTP configured (for local OTP testing) satisfies both the SMTP bean's
+ * condition and the console bean's profile, and two {@code OtpEmailService}
+ * beans fail startup with "required a single bean, but 2 were found".
+ * Combining {@code @ConditionalOnMissingBean} with {@code @Profile} picks
+ * exactly one, while a prod deploy with SMTP misconfigured still fails
+ * loudly instead of logging live OTP codes in plaintext — see that bean
+ * method's own Javadoc.
  *
  * <p>All mailers are registered here as {@code @Bean} methods (rather than
  * component-scanned {@code @Component}s) so the {@code @ConditionalOnMissingBean}
@@ -76,18 +74,18 @@ public class MailConfig {
     }
 
     /**
-     * OTP verification emails. Unlike the two pairs above, the console
-     * fallback here stays restricted to {@code dev}/{@code test}/
+     * OTP verification emails. Unlike the agent-invite pair above, the
+     * console fallback here stays restricted to {@code dev}/{@code test}/
      * {@code mysql-test} via {@code @Profile}, on top of the same
      * {@code @ConditionalOnMissingBean}: an OTP code is a live credential
-     * (registration/login), not a one-time reset link, so a misconfigured
-     * prod deploy (SMTP_HOST blank) should still fail loudly at startup
-     * instead of silently degrading to logging real users' OTP codes in
-     * plaintext. The {@code @ConditionalOnMissingBean} half is what closes
-     * the original bug: within dev/test with SMTP *also* configured (e.g.
-     * for local OTP-email testing), it stops this bean from registering
-     * alongside {@code smtpOtpEmailService} and crashing startup with
-     * "required a single bean, but 2 were found".
+     * (it completes a registration or a password reset), so a misconfigured
+     * prod deploy (SMTP_HOST blank) should fail loudly at startup instead
+     * of silently degrading to logging real users' OTP codes in plaintext.
+     * The {@code @ConditionalOnMissingBean} half covers dev/test with SMTP
+     * <em>also</em> configured (e.g. for local OTP-email testing): it stops
+     * this bean from registering alongside {@code smtpOtpEmailService},
+     * which would otherwise fail startup with "required a single bean, but
+     * 2 were found".
      */
     @Bean
     @ConditionalOnExpression("!'${spring.mail.host:}'.isBlank()")

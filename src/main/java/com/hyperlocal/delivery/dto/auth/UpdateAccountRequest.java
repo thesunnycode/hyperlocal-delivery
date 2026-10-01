@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * Request body for editing the current user's own profile (X3). Full name,
+ * Request body for editing the current user's own profile. Full name,
  * phone, and (owner-only) business name are editable — email (login) and
  * role never are, because this record simply has no fields for them. All
  * fields are optional: a null field leaves the existing value unchanged
