@@ -73,7 +73,7 @@ public class StartupValidator implements InitializingBean {
             throw new IllegalStateException(
                     "Production configuration is incomplete: " + String.join("; ", problems));
         }
-        log.info("Startup validation passed: CORS origins and invite link base URL are configured");
+        log.info("Startup validation passed: required production settings are present");
     }
 
     private static void requireSet(String property, String envVar, String value, List<String> problems) {

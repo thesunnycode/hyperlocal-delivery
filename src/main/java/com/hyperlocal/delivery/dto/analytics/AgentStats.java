@@ -40,7 +40,7 @@ public class AgentStats {
     }
 
     /**
-     * Returns a copy with the computed average shipments per day.
+     * Sets the computed average shipments per day on this object and returns it (no copy is made).
      */
     public AgentStats withAvgShipmentsPerDay(Double avg) {
         this.avgShipmentsPerDay = avg;

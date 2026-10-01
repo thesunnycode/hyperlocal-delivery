@@ -45,7 +45,8 @@ public class DeliveryAttemptController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Attempt recorded successfully"),
         @ApiResponse(responseCode = "400", description = "Validation error"),
-        @ApiResponse(responseCode = "404", description = "Shipment not found or not assigned to this agent")
+        @ApiResponse(responseCode = "404", description = "Shipment not found or not assigned to this agent"),
+        @ApiResponse(responseCode = "422", description = "Shipment is not in OUT_FOR_DELIVERY status")
     })
     public ApiSuccess<DeliveryAttemptDto> record(
             @AuthenticationPrincipal CustomUserDetails principal,

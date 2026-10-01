@@ -52,7 +52,7 @@ public class DeliveryAttemptService {
      * Record a failed delivery attempt. Atomically:
      * 1. Validates the shipment is OUT_FOR_DELIVERY and the caller is the assigned agent
      * 2. Inserts a delivery_attempts row
-     * 3. Transitions the shipment to FAILED
+     * 3. Transitions the shipment to FAILED (RETURNED on the {@link #MAX_ATTEMPTS}th attempt)
      * 4. Inserts a shipment_events row
      *
      * <p>Locks the shipment row first (before any other check), both to

@@ -64,7 +64,7 @@ public class ShipmentController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Shipment created successfully"),
         @ApiResponse(responseCode = "400", description = "Validation error"),
-        @ApiResponse(responseCode = "404", description = "No available agents for auto-assignment")
+        @ApiResponse(responseCode = "422", description = "No active agents available (NO_AGENTS_AVAILABLE)")
     })
     public ApiSuccess<ShipmentResponseDto> create(
             @AuthenticationPrincipal CustomUserDetails principal,
@@ -156,9 +156,10 @@ public class ShipmentController {
     @PostMapping("/{id}/fail")
     @PreAuthorize("hasRole('DELIVERY_AGENT')")
     @Operation(summary = "Agent action: log a failed delivery attempt "
-            + "(OUT_FOR_DELIVERY → FAILED), appending one immutable attempt record")
+            + "(OUT_FOR_DELIVERY → FAILED, or RETURNED on the third failed attempt), "
+            + "appending one immutable attempt record")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Attempt recorded, shipment marked failed"),
+        @ApiResponse(responseCode = "200", description = "Attempt recorded, shipment marked failed or returned"),
         @ApiResponse(responseCode = "400", description = "Validation error"),
         @ApiResponse(responseCode = "404", description = "Shipment not found or not assigned to this agent"),
         @ApiResponse(responseCode = "422", description = "Shipment is not in OUT_FOR_DELIVERY status")

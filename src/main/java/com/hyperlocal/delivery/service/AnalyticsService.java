@@ -1,6 +1,5 @@
 package com.hyperlocal.delivery.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -191,7 +190,6 @@ public class AnalyticsService {
     private static double toDouble(Object value) {
         if (value == null) return 0.0;
         if (value instanceof Number n) return n.doubleValue();
-        if (value instanceof BigDecimal bd) return bd.doubleValue();
         return Double.parseDouble(value.toString());
     }
 }
