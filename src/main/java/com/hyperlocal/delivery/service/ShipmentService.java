@@ -292,7 +292,7 @@ public class ShipmentService {
         // fromStatus == toStatus == currentStatus (the status genuinely
         // didn't change, but the agent handoff must still leave a record —
         // otherwise moving a shipment off agent A silently loses the trail
-        // of who used to own it).
+        // of the previous owner).
         ShipmentEvent event = wasFailed
                 ? ShipmentEvent.builder()
                         .shipment(shipment)
