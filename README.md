@@ -24,8 +24,8 @@ no app — that updates live and never reveals who's carrying their order.
 <table align="center">
 <tr>
 <td align="center"><b>45</b><br><sub>endpoints</sub></td>
-<td align="center"><b>215</b><br><sub>tests</sub></td>
 <td align="center"><b>11</b><br><sub>tables</sub></td>
+<td align="center"><b>full stack</b><br><sub>one JAR</sub></td>
 <td align="center"><b>Java 17</b><br><sub>Spring Boot 4.1</sub></td>
 </tr>
 </table>
@@ -140,7 +140,7 @@ itself is compromised.
 ### API overview
 
 <details>
-<summary>46 endpoints across auth, agents, shipments, delivery attempts, public tracking, and reports — click to expand</summary>
+<summary>45 endpoints across auth, agents, shipments, delivery attempts, public tracking, and reports — click to expand</summary>
 
 | Area | Method | Endpoint | Auth |
 |---|---|---|---|
